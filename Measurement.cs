@@ -119,7 +119,7 @@ namespace Trolley_Control
         private static double average_temperature = 20.00; //degC
         private static double average_laser_beam_temperature = 20.00; //degC
         private static double average_EDM_beam_temperature = 20.0;  //degC
-        private static double vacuum_wavelength = 632.991374; //nm
+        private static double vacuum_wavelength = 632.99137225; //nm
         private static double dut_wavelength = 850; //nm
 
         byte[] speed; //the speed of the trolley;
@@ -549,7 +549,7 @@ namespace Trolley_Control
             H_RH = AverageHumidity;
             lambda_um = lamda / 1000;
 
-            f = alpha + beta * P_Pa + gamma * T_degC;
+            f = alpha + beta * P_Pa + gamma * Math.Pow(T_degC, 2);
             psv = SVP(T_degC);
             xv = (H_RH / 100) * f * psv / P_Pa;
 
@@ -599,7 +599,7 @@ namespace Trolley_Control
             H_RH = AverageHumidity;
             lambda_um = lamda / 1000;
 
-            f = alpha + beta * P_Pa + gamma * T_degC;
+            f = alpha + beta * P_Pa + gamma * Math.Pow(T_degC, 2);
             psv = SVP(T_degC);
             xv = (H_RH / 100) * f * psv / P_Pa;
 
