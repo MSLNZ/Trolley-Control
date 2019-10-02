@@ -91,9 +91,9 @@
             this.label11 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
+            this.BarometerTypeComboBox = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.Motor_Speed)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.FileMenu.SuspendLayout();
@@ -680,18 +680,9 @@
             this.label13.AutoSize = true;
             this.label13.Location = new System.Drawing.Point(15, 182);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(99, 13);
+            this.label13.Size = new System.Drawing.Size(55, 13);
             this.label13.TabIndex = 45;
-            this.label13.Text = "Pressure Correction";
-            // 
-            // textBox3
-            // 
-            this.textBox3.Location = new System.Drawing.Point(172, 179);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(158, 20);
-            this.textBox3.TabIndex = 44;
-            this.textBox3.Text = "0";
-            this.textBox3.TextChanged += new System.EventHandler(this.textBox3_TextChanged);
+            this.label13.Text = "Barometer";
             // 
             // label14
             // 
@@ -711,16 +702,29 @@
             this.label15.TabIndex = 47;
             this.label15.Text = "a+b.H+c.H2+d.H3";
             // 
+            // BarometerTypeComboBox
+            // 
+            this.BarometerTypeComboBox.FormattingEnabled = true;
+            this.BarometerTypeComboBox.Items.AddRange(new object[] {
+            "PTB220A",
+            "PTU303"});
+            this.BarometerTypeComboBox.Location = new System.Drawing.Point(167, 174);
+            this.BarometerTypeComboBox.Name = "BarometerTypeComboBox";
+            this.BarometerTypeComboBox.Size = new System.Drawing.Size(163, 21);
+            this.BarometerTypeComboBox.TabIndex = 48;
+            this.BarometerTypeComboBox.Text = "PTB220A";
+            this.BarometerTypeComboBox.SelectedIndexChanged += new System.EventHandler(this.BarometerTypeComboBox_SelectedIndexChanged);
+            // 
             // Tunnel_Control_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(1233, 808);
+            this.Controls.Add(this.BarometerTypeComboBox);
             this.Controls.Add(this.label15);
             this.Controls.Add(this.label14);
             this.Controls.Add(this.label13);
-            this.Controls.Add(this.textBox3);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label10);
@@ -831,9 +835,9 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.TextBox textBox3;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.ComboBox BarometerTypeComboBox;
     }
 }
 
