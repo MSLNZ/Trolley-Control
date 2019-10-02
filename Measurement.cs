@@ -83,7 +83,7 @@ namespace Trolley_Control
         private static DUTUpdateGui dutug;
         private OmegaTHLogger ref_logger1;
         private OmegaTHLogger ref_logger2;
-        private VaisalaBarometer ref_barometer;
+        private Barometer ref_barometer;
         private static DUT survey_device;
         private static bool set_averaging_pending; //a flag to allow the averaging value to be sent to the DUT.
         private static short current_execution_stage;
@@ -129,7 +129,7 @@ namespace Trolley_Control
         private bool doreset;
         //private  measurement_device;
 
-        public Measurement(ref MeasurementUpdateGui mg, ref Laser lsr, ref Trolley trol, ref DUTUpdateGui dutug_, ref OmegaTHLogger logger1, ref OmegaTHLogger logger2, ref VaisalaBarometer barometer)
+        public Measurement(ref MeasurementUpdateGui mg, ref Laser lsr, ref Trolley trol, ref DUTUpdateGui dutug_, ref OmegaTHLogger logger1, ref OmegaTHLogger logger2, ref Barometer barometer)
         {
             abort = false;
             doreset = false;
@@ -1504,8 +1504,8 @@ namespace Trolley_Control
                     vals[5] = vals[4] / vals[6];
 
                     vals[11] = Pressure;
-                    vals[12] = AverageHumidity;
                     vals[13] = asyc_meas.ref_barometer.Correction;
+                    vals[12] = AverageHumidity;
                     vals[14] = asyc_meas.ref_logger1.Correction;
                     vals[15] = asyc_meas.ref_logger2.Correction;
                     vals[16] = CO2;
