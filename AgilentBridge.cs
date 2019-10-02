@@ -11,13 +11,7 @@ namespace Trolley_Control
         
         
         private AgilentMUX agilent_bridge_mux;
-        private double A1_card1;
-        private double A2_card1;
-        private double A1_card2;
-        private double A2_card2;
-        private double A1_card3;
-        private double A2_card3;
-
+      
         /// <summary>
         /// Creates a new Agilent Bridge
         /// </summary>
@@ -33,37 +27,45 @@ namespace Trolley_Control
 
         public double A1Card1
         {
-            set {
-                 A1_card1 = value;
-            }
+            set { A1 = value; }
         }
 
         public double A2Card1
         {
-            set { A2_card1 = value; }
+            set { A2 = value; }
+        }
+
+        public double A3Card1
+        {
+            set { A3 = value; }
         }
 
         public double A1Card2
         {
-            set { A1_card2 = value; }
+            set { A1_2 = value; }
         }
 
         public double A2Card2
         {
-            set { A2_card2 = value;
-            }
+            set { A2_2 = value; }
+        }
+        public double A3Card2
+        {
+            set { A3_2 = value; }
         }
 
         public double A1Card3
         {
-            set {
-                A1_card3 = value;
-            }
+            set { A1_3 = value; }
         }
 
         public double A2Card3
         {
-            set { A2_card3 = value; }
+            set { A2_3 = value; }
+        }
+        public double A3Card3
+        {
+            set { A3_3 = value; }
         }
 
         /// <summary>
@@ -223,19 +225,19 @@ namespace Trolley_Control
 
         public double Correction_Card1(double bridge_reading)
         {
-            return bridge_reading + A1_card1 + A2_card1*bridge_reading;
+            return bridge_reading + A1 + A2*bridge_reading + A3 * Math.Pow(bridge_reading, 2);
         
     }
 
         public double Correction_Card2(double bridge_reading)
         {
-            return bridge_reading + A1_card2 + A2_card2*bridge_reading;
+            return bridge_reading + A1_2 + A2_2*bridge_reading + A3_2 * Math.Pow(bridge_reading, 2);
     
 }
 
         public double Correction_Card3(double bridge_reading)
         {
-            return bridge_reading + A1_card3 + A2_card3*bridge_reading;
+            return bridge_reading + A1_3 + A2_3*bridge_reading + A3_3 * Math.Pow(bridge_reading, 2);
         }
 
     }
