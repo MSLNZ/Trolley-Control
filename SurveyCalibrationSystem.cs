@@ -38,8 +38,6 @@ namespace Trolley_Control
         private MUX multiplexor;
         private AgilentMUX a_plexor;
         private ResistanceBridge bridge;
-        private AgilentBridge a_agilent;
-        private AgilentBridge b_agilent;
         private AgilentBridge c_agilent;
         private PRT[] prts;
         private bool force_update_server;
@@ -60,7 +58,7 @@ namespace Trolley_Control
         private Trolley tunnel_trolley;
         private OmegaTHLogger TH_logger1;
         private OmegaTHLogger TH_logger2;
-        private VaisalaBarometer barometer;
+        private Barometer barometer;
         private Measurement[] Measurement_list;
         private int current_measurement_index;
         private int active_measurment_index;
@@ -133,7 +131,9 @@ namespace Trolley_Control
             TH_logger1.devID = 0;
             TH_logger2 = new OmegaTHLogger(Humidity_logger_2.Text,ref thgui);
             TH_logger2.devID = 1;
-            barometer = new VaisalaBarometer(ref pbarug);
+            barometer = new PTB220TS(ref pbarug);  //this is the default barometer user can select another later if neccessary
+            setBarometerConfig("PTB220A");
+
             //Can have up to 100 PRTs
             prts = new PRT[100];
             //list of temperature measurements
@@ -181,7 +181,7 @@ namespace Trolley_Control
             TH_logger2.HLoggerEq = Convert.ToString(H_logger_2_correction.Text);
             TH_logger2.CalculateCorrection();
             
-            barometer.Correction = Convert.ToDouble(textBox3.Text);
+            
 
 
         }
@@ -192,7 +192,7 @@ namespace Trolley_Control
             {
                 switch (procNum)
                 {
-                    case ProcNameSerialCom.CHECKCOMPORTS:
+                    case BarometerExecutionStage.SETUP:
                         if (report)
                         {
                             barometer.ErrorReported = true;
@@ -205,10 +205,10 @@ namespace Trolley_Control
                         }
 
                         break;
-                    case ProcNameSerialCom.POLL:
+                    case BarometerExecutionStage.POLL:
                         if (msg.Equals("No Error"))
                         {
-                            Measurement.Pressure = barometer.getPressure;
+                            Measurement.Pressure = barometer.getPressure();
                             redrawLaserEnviroTextbox();
                         }
                         else
@@ -1332,23 +1332,8 @@ namespace Trolley_Control
                             line_read = line_read.Remove(0, 12);
                             bridgename = line_read;
                             c_agilent = new AgilentBridge(3, "GPIB3::", ref multiplexor);
-                            double c= getBridgeCorrection(line_read);
-                            c_agilent.A1Card1 = a1;
-                            c_agilent.A2Card1 = a2;
-                            c_agilent.A1Card2 = a4;
-                            c_agilent.A2Card2 = a5;
-                            c_agilent.A1Card3 = a7;
-                            c_agilent.A2Card3 = a8; 
+                            getBridgeCorrections(line_read);
                             bridge = c_agilent;
-                            bridge.A1 = a1;
-                            bridge.A2 = a2;
-                            bridge.A3 = a3;
-                            bridge.A1 = a4;
-                            bridge.A2 = a5;
-                            bridge.A3 = a6;
-                            bridge.A1 = a7;
-                            bridge.A2 = a8;
-                            bridge.A3 = a9;
                         continue;
                         }
                         else if (line_read.Contains("MUX_TYPE:"))
@@ -1363,12 +1348,8 @@ namespace Trolley_Control
                             break;
                         }
                         else break;
-
                     }
-
-                
             }
-
         }
 
         private void addTemperatureMeasurement(string location_n,string channel_n,string prt_n,string lab_n, string bridge_n, string mux_n)
@@ -1494,7 +1475,7 @@ namespace Trolley_Control
 
         }
 
-        private double getBridgeCorrection(string bridge_name_)
+        private void getBridgeCorrections(string bridge_name_)
         {
             //set the reader to point at the start of the file
             loadXML();
@@ -1505,27 +1486,61 @@ namespace Trolley_Control
             xmlreader.ReadToNextSibling("RESISTANCEBRIDGE");
             xmlreader.ReadToDescendant(string.Concat("resistancebridge", bridge_name_));
 
-
-
-            if (bridge_name_.Contains("F26")) {
-                xmlreader.ReadToFollowing("A2");
-                double A2_ = System.Convert.ToDouble(xmlreader.ReadElementString());
-                return A2_;
-            }
-
             xmlreader.ReadToFollowing("A1_1");
-            a1 = xmlreader.ReadElementContentAsDouble();
-            a2 = xmlreader.ReadElementContentAsDouble();
-            a3 = xmlreader.ReadElementContentAsDouble();
-            a4 = xmlreader.ReadElementContentAsDouble();
-            a5 = xmlreader.ReadElementContentAsDouble();
-            a6 = xmlreader.ReadElementContentAsDouble();
-            a7 = xmlreader.ReadElementContentAsDouble();
-            a8 = xmlreader.ReadElementContentAsDouble();
-            a9 = xmlreader.ReadElementContentAsDouble();
-            return 0.0;
-
+            c_agilent.A1Card1 = xmlreader.ReadElementContentAsDouble();
+            c_agilent.A2Card1 = xmlreader.ReadElementContentAsDouble();
+            c_agilent.A3Card1 = xmlreader.ReadElementContentAsDouble();
+            c_agilent.A1Card2 = xmlreader.ReadElementContentAsDouble();
+            c_agilent.A2Card2 = xmlreader.ReadElementContentAsDouble();
+            c_agilent.A3Card2 = xmlreader.ReadElementContentAsDouble();
+            c_agilent.A1Card3 = xmlreader.ReadElementContentAsDouble();
+            c_agilent.A2Card3 = xmlreader.ReadElementContentAsDouble();
+            c_agilent.A3Card3 = xmlreader.ReadElementContentAsDouble();
+           
             
+        }
+
+        private void setBarometerConfig(string barometer_name_)
+        {
+            loadXML();
+
+            xmlreader.ResetState();
+
+            //read the first node
+            xmlreader.ReadStartElement();
+            xmlreader.ReadToNextSibling("BAROMETER");
+            xmlreader.ReadToDescendant(string.Concat("barometer", barometer_name_));
+            xmlreader.ReadToFollowing("reportnumber");
+            barometer.ReportNum = xmlreader.ReadElementContentAsString();
+            barometer.ReportDate = xmlreader.ReadElementContentAsString();
+            barometer.EquipRegisterID = xmlreader.ReadElementContentAsString();
+            xmlreader.ReadElementContentAsString();
+            barometer.CommunicationString = xmlreader.ReadElementContentAsString();
+            xmlreader.ReadElementContentAsString();
+            string[] corr_strings = new string[11];
+            for (int i = 0; i < 11; i++)
+            {
+                corr_strings[i] = xmlreader.ReadElementContentAsString();
+            }
+            barometer.ParseCorrectionStrings(corr_strings);
+            barometer.setExecStage(BarometerExecutionStage.SETUP);
+           
+
+        }
+
+        private void BarometerTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (BarometerTypeComboBox.Text.Equals("PTB220A"))
+            {
+                barometer = new PTB220TS(ref pbarug);
+                setBarometerConfig("PTB220A");
+            }
+            else if (BarometerTypeComboBox.Text.Equals("PTU303"))
+            {
+                barometer.setExecStage(BarometerExecutionStage.TERMINATE);
+                barometer = new PTU303(ref pbarug);
+                setBarometerConfig("PTU303");
+            }
         }
 
         private void serverUpdater(object stateInfo)
@@ -1617,7 +1632,7 @@ namespace Trolley_Control
 
         public void Application_ApplicationExit(object sender, EventArgs e)
         {
-            if (barometer.IsOpen)
+            if (barometer.IsOpen())
             {
                 barometer.Close();
             }
@@ -1667,17 +1682,6 @@ namespace Trolley_Control
             string equation = Convert.ToString(H_logger_2_correction.Text);
             TH_logger2.HLoggerEq= equation;
             TH_logger2.CalculateCorrection();
-        }
-
-        private void textBox3_TextChanged(object sender, EventArgs e)
-        {
-            try {
-                barometer.Correction = Convert.ToDouble(textBox3.Text);
-            }
-            catch (FormatException)
-            {
-                return;
-            }
         }
     }
 }
