@@ -88,15 +88,16 @@
     <Compile Include="32Feet_BlueTooth.cs" />
     <Compile Include="AgilentBridge.cs" />
     <Compile Include="AgilentMUX.cs" />
+    <Compile Include="Barometer.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="DUT.cs" />
     <Compile Include="EDM.cs" />
     <Compile Include="INI2XML.cs" />
     <Compile Include="MUX.cs" />
     <Compile Include="PRT.cs" />
+    <Compile Include="PTU303.cs" />
     <Compile Include="RemoteDataServer.cs" />
     <Compile Include="ResistanceBridge.cs" />
-    <Compile Include="SerialCom.cs" />
     <Compile Include="SurveyCalibrationSystem.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -112,7 +113,7 @@
     <Compile Include="TemperatureMeasurement.cs" />
     <Compile Include="Total Station.cs" />
     <Compile Include="Trolley.cs" />
-    <Compile Include="VaisalaBarometer.cs" />
+    <Compile Include="PTB220TS.cs" />
     <EmbeddedResource Include="SurveyCalibrationSystem.resx">
       <DependentUpon>SurveyCalibrationSystem.cs</DependentUpon>
     </EmbeddedResource>
