@@ -52,7 +52,6 @@
             this.Laser_Control = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
             this.nm_label = new System.Windows.Forms.Label();
-            this.VacuumWavelenthTextbox = new System.Windows.Forms.TextBox();
             this.Laser_Reading_Label = new System.Windows.Forms.Label();
             this.DUT_Groupbox = new System.Windows.Forms.GroupBox();
             this.DUT_Reset_Button = new System.Windows.Forms.Button();
@@ -94,6 +93,10 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.BarometerTypeComboBox = new System.Windows.Forms.ComboBox();
+            this.VacuumWavelenthTextbox = new System.Windows.Forms.TextBox();
+            this.Laser_Picker_ComboBox = new System.Windows.Forms.ComboBox();
+            this.label16 = new System.Windows.Forms.Label();
+            this.LaserInfoButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.Motor_Speed)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.FileMenu.SuspendLayout();
@@ -178,7 +181,7 @@
             // 
             // BeamStrength
             // 
-            this.BeamStrength.Location = new System.Drawing.Point(56, 115);
+            this.BeamStrength.Location = new System.Drawing.Point(56, 133);
             this.BeamStrength.Name = "BeamStrength";
             this.BeamStrength.Size = new System.Drawing.Size(121, 23);
             this.BeamStrength.TabIndex = 11;
@@ -186,7 +189,7 @@
             // BeamStrength_label
             // 
             this.BeamStrength_label.AutoSize = true;
-            this.BeamStrength_label.Location = new System.Drawing.Point(56, 98);
+            this.BeamStrength_label.Location = new System.Drawing.Point(53, 115);
             this.BeamStrength_label.Name = "BeamStrength_label";
             this.BeamStrength_label.Size = new System.Drawing.Size(77, 13);
             this.BeamStrength_label.TabIndex = 12;
@@ -243,7 +246,7 @@
             // 
             // Laser_Reading
             // 
-            this.Laser_Reading.Location = new System.Drawing.Point(56, 163);
+            this.Laser_Reading.Location = new System.Drawing.Point(56, 184);
             this.Laser_Reading.Name = "Laser_Reading";
             this.Laser_Reading.Size = new System.Drawing.Size(121, 20);
             this.Laser_Reading.TabIndex = 14;
@@ -252,7 +255,7 @@
             // 
             // Reset_Laser
             // 
-            this.Reset_Laser.Location = new System.Drawing.Point(6, 98);
+            this.Reset_Laser.Location = new System.Drawing.Point(9, 119);
             this.Reset_Laser.Name = "Reset_Laser";
             this.Reset_Laser.Size = new System.Drawing.Size(44, 85);
             this.Reset_Laser.TabIndex = 16;
@@ -280,6 +283,9 @@
             // 
             // Laser_Control
             // 
+            this.Laser_Control.Controls.Add(this.LaserInfoButton);
+            this.Laser_Control.Controls.Add(this.label16);
+            this.Laser_Control.Controls.Add(this.Laser_Picker_ComboBox);
             this.Laser_Control.Controls.Add(this.label4);
             this.Laser_Control.Controls.Add(this.nm_label);
             this.Laser_Control.Controls.Add(this.VacuumWavelenthTextbox);
@@ -290,7 +296,7 @@
             this.Laser_Control.Controls.Add(this.BeamStrength);
             this.Laser_Control.Location = new System.Drawing.Point(18, 423);
             this.Laser_Control.Name = "Laser_Control";
-            this.Laser_Control.Size = new System.Drawing.Size(183, 189);
+            this.Laser_Control.Size = new System.Drawing.Size(183, 210);
             this.Laser_Control.TabIndex = 19;
             this.Laser_Control.TabStop = false;
             this.Laser_Control.Text = "Laser Control";
@@ -313,19 +319,10 @@
             this.nm_label.TabIndex = 33;
             this.nm_label.Text = "nm";
             // 
-            // VacuumWavelenthTextbox
-            // 
-            this.VacuumWavelenthTextbox.Location = new System.Drawing.Point(9, 45);
-            this.VacuumWavelenthTextbox.Name = "VacuumWavelenthTextbox";
-            this.VacuumWavelenthTextbox.Size = new System.Drawing.Size(139, 20);
-            this.VacuumWavelenthTextbox.TabIndex = 33;
-            this.VacuumWavelenthTextbox.Text = "632.991474";
-            this.VacuumWavelenthTextbox.TextChanged += new System.EventHandler(this.VacuumWavelenthTextbox_TextChanged);
-            // 
             // Laser_Reading_Label
             // 
             this.Laser_Reading_Label.AutoSize = true;
-            this.Laser_Reading_Label.Location = new System.Drawing.Point(56, 143);
+            this.Laser_Reading_Label.Location = new System.Drawing.Point(55, 168);
             this.Laser_Reading_Label.Name = "Laser_Reading_Label";
             this.Laser_Reading_Label.Size = new System.Drawing.Size(93, 13);
             this.Laser_Reading_Label.TabIndex = 21;
@@ -344,7 +341,7 @@
             this.DUT_Groupbox.Controls.Add(this.EDM_Reading);
             this.DUT_Groupbox.Location = new System.Drawing.Point(239, 423);
             this.DUT_Groupbox.Name = "DUT_Groupbox";
-            this.DUT_Groupbox.Size = new System.Drawing.Size(164, 189);
+            this.DUT_Groupbox.Size = new System.Drawing.Size(164, 210);
             this.DUT_Groupbox.TabIndex = 20;
             this.DUT_Groupbox.TabStop = false;
             this.DUT_Groupbox.Text = "DUT";
@@ -388,7 +385,7 @@
             // 
             // Stdev_Textbox
             // 
-            this.Stdev_Textbox.Location = new System.Drawing.Point(11, 163);
+            this.Stdev_Textbox.Location = new System.Drawing.Point(11, 184);
             this.Stdev_Textbox.Name = "Stdev_Textbox";
             this.Stdev_Textbox.Size = new System.Drawing.Size(132, 20);
             this.Stdev_Textbox.TabIndex = 4;
@@ -436,9 +433,9 @@
             this.Bluetooth_Groupbox.Controls.Add(this.Status_Label);
             this.Bluetooth_Groupbox.Controls.Add(this.Status_Textbox);
             this.Bluetooth_Groupbox.Controls.Add(this.Bluetooth_Listbox);
-            this.Bluetooth_Groupbox.Location = new System.Drawing.Point(18, 618);
+            this.Bluetooth_Groupbox.Location = new System.Drawing.Point(18, 639);
             this.Bluetooth_Groupbox.Name = "Bluetooth_Groupbox";
-            this.Bluetooth_Groupbox.Size = new System.Drawing.Size(338, 177);
+            this.Bluetooth_Groupbox.Size = new System.Drawing.Size(338, 166);
             this.Bluetooth_Groupbox.TabIndex = 21;
             this.Bluetooth_Groupbox.TabStop = false;
             this.Bluetooth_Groupbox.Text = "Bluetooth Connection Information";
@@ -446,7 +443,7 @@
             // Connections_Label
             // 
             this.Connections_Label.AutoSize = true;
-            this.Connections_Label.Location = new System.Drawing.Point(13, 77);
+            this.Connections_Label.Location = new System.Drawing.Point(15, 65);
             this.Connections_Label.Name = "Connections_Label";
             this.Connections_Label.Size = new System.Drawing.Size(108, 13);
             this.Connections_Label.TabIndex = 3;
@@ -455,7 +452,7 @@
             // Status_Label
             // 
             this.Status_Label.AutoSize = true;
-            this.Status_Label.Location = new System.Drawing.Point(13, 27);
+            this.Status_Label.Location = new System.Drawing.Point(15, 16);
             this.Status_Label.Name = "Status_Label";
             this.Status_Label.Size = new System.Drawing.Size(37, 13);
             this.Status_Label.TabIndex = 2;
@@ -463,7 +460,7 @@
             // 
             // Status_Textbox
             // 
-            this.Status_Textbox.Location = new System.Drawing.Point(16, 43);
+            this.Status_Textbox.Location = new System.Drawing.Point(16, 32);
             this.Status_Textbox.Name = "Status_Textbox";
             this.Status_Textbox.Size = new System.Drawing.Size(264, 20);
             this.Status_Textbox.TabIndex = 1;
@@ -472,7 +469,7 @@
             // Bluetooth_Listbox
             // 
             this.Bluetooth_Listbox.FormattingEnabled = true;
-            this.Bluetooth_Listbox.Location = new System.Drawing.Point(16, 93);
+            this.Bluetooth_Listbox.Location = new System.Drawing.Point(16, 81);
             this.Bluetooth_Listbox.Name = "Bluetooth_Listbox";
             this.Bluetooth_Listbox.Size = new System.Drawing.Size(264, 69);
             this.Bluetooth_Listbox.TabIndex = 0;
@@ -715,6 +712,53 @@
             this.BarometerTypeComboBox.Text = "PTB220A";
             this.BarometerTypeComboBox.SelectedIndexChanged += new System.EventHandler(this.BarometerTypeComboBox_SelectedIndexChanged);
             // 
+            // VacuumWavelenthTextbox
+            // 
+            this.VacuumWavelenthTextbox.Enabled = false;
+            this.VacuumWavelenthTextbox.Location = new System.Drawing.Point(9, 45);
+            this.VacuumWavelenthTextbox.Name = "VacuumWavelenthTextbox";
+            this.VacuumWavelenthTextbox.Size = new System.Drawing.Size(139, 20);
+            this.VacuumWavelenthTextbox.TabIndex = 33;
+            this.VacuumWavelenthTextbox.Text = "632.99137225";
+            this.VacuumWavelenthTextbox.TextChanged += new System.EventHandler(this.VacuumWavelenthTextbox_TextChanged);
+            // 
+            // Laser_Picker_ComboBox
+            // 
+            this.Laser_Picker_ComboBox.FormattingEnabled = true;
+            this.Laser_Picker_ComboBox.Items.AddRange(new object[] {
+            "3216A00160",
+            "US45220479",
+            "US45220374",
+            "US45220279",
+            "3216A00170",
+            "US52140451",
+            "US40091129"});
+            this.Laser_Picker_ComboBox.Location = new System.Drawing.Point(9, 91);
+            this.Laser_Picker_ComboBox.Name = "Laser_Picker_ComboBox";
+            this.Laser_Picker_ComboBox.Size = new System.Drawing.Size(139, 21);
+            this.Laser_Picker_ComboBox.TabIndex = 34;
+            this.Laser_Picker_ComboBox.Text = "3216A00160";
+            this.Laser_Picker_ComboBox.SelectedIndexChanged += new System.EventHandler(this.Laser_Picker_ComboBox_SelectedIndexChanged);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(6, 74);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(62, 13);
+            this.label16.TabIndex = 35;
+            this.label16.Text = "Laser Head";
+            // 
+            // LaserInfoButton
+            // 
+            this.LaserInfoButton.Location = new System.Drawing.Point(136, 13);
+            this.LaserInfoButton.Name = "LaserInfoButton";
+            this.LaserInfoButton.Size = new System.Drawing.Size(41, 26);
+            this.LaserInfoButton.TabIndex = 36;
+            this.LaserInfoButton.Text = "info";
+            this.LaserInfoButton.UseVisualStyleBackColor = true;
+            this.LaserInfoButton.Click += new System.EventHandler(this.LaserInfoButton_Click);
+            // 
             // Tunnel_Control_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -818,7 +862,6 @@
         private System.Windows.Forms.RadioButton AuxLaserRadioButton;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label nm_label;
-        private System.Windows.Forms.TextBox VacuumWavelenthTextbox;
         private System.Windows.Forms.ToolStripMenuItem loadTemperatureConfigFileToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openConfigFile;
         private System.Windows.Forms.Label label7;
@@ -838,6 +881,10 @@
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.ComboBox BarometerTypeComboBox;
+        private System.Windows.Forms.ComboBox Laser_Picker_ComboBox;
+        private System.Windows.Forms.TextBox VacuumWavelenthTextbox;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Button LaserInfoButton;
     }
 }
 
