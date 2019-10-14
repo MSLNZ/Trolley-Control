@@ -174,10 +174,11 @@ namespace Trolley_Control
         private double laser_footspace = 0;
         private double laser_splitangle = 0;
         private double laser_deadpath = 0;
-        
-
-
-
+        private string laser_report = "";
+        private string report_date = "";
+        private string equipreg_id = "";
+        private double warmup_time = 0;
+        private double output_power = 0;
         public IntPtr Handle_E1735A_DLL;
         public IntPtr FuncAddr_E1735A_ReadDeviceCount;
         public IntPtr FuncAddr_E1735A_SelectDevice;
@@ -710,9 +711,63 @@ namespace Trolley_Control
                 laser_deadpath = value;
             }
         } 
+
+        public string ReportNumber
+        {
+            get
+            {
+                return laser_report;
+            }
+            set
+            {
+                laser_report = value;
+            }
+        }
+        public string ReportDate
+        {
+            get
+            {
+                return report_date;
+            }
+            set
+            {
+                report_date = value;
+            }
+        }
+        public string EquipID
+        {
+            get
+            {
+                return equipreg_id;
+            }
+            set
+            {
+                equipreg_id = value;
+            }
+        }
+        public double WarmupTime
+        {
+            get
+            {
+                return warmup_time;
+            }
+            set
+            {
+                warmup_time = value;
+            }
+        }
+        public double Power
+        {
+            get
+            {
+                return output_power;
+            }
+            set
+            {
+                output_power = value;
+            }
+        }
         
-
-
         public void InitDLL()
         {
             Initialize_E1735A_DLL();
