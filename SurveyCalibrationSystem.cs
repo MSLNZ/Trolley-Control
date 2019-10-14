@@ -25,6 +25,7 @@ namespace Trolley_Control
     public delegate void DUTUpdateGui(short procedure, string message,bool report);
     public delegate void VaisalaUpdateGui(short procedure, string message, bool report);
     public delegate void PrintTemperatureData(double temperature, string msg, long index);
+    public delegate void GUIUpdater(string msg);
     public delegate void ShowPositions(string positions, string msg, bool report);
 
     public partial class Tunnel_Control_Form : Form
@@ -79,9 +80,10 @@ namespace Trolley_Control
         private DUTUpdateGui dutug;
         private THLoggerUpdateGUI thgui;
         private VaisalaUpdateGui pbarug;
+        private GUIUpdater gupdate;
         private Client TcpClient;
         private short mode = Mode.Debug;
-
+        private bool print = true;
         //private Message m;
 
 
@@ -116,6 +118,7 @@ namespace Trolley_Control
             dutug = new DUTUpdateGui(Update_DUT);  //delegate to update the gui with DUT related issues
             thgui = new THLoggerUpdateGUI(Update_THlogger); //delegate to update the gui with TH logger related issues
             pbarug = new VaisalaUpdateGui(Update_Pressure_Logger);
+            gupdate = new GUIUpdater(redrawLaserEnviroTextbox);
             //m = new Message();
 
             current_measurement_index = -1;
@@ -158,6 +161,10 @@ namespace Trolley_Control
             th_logger2_thread = new Thread(new ParameterizedThreadStart(TH_logger2.HLoggerQuery));
             th_logger2_thread.Start(TH_logger2);
 
+            //Thread to invoke the GUI to Update the LaserParameters RichTextBox
+            //Thread Printer = new Thread(new ThreadStart(redrawLaserEnviroTextbox));
+            //Printer.Start();
+
             Measurement_list[0] = new Measurement(ref mug, ref HP5519_Laser, ref tunnel_trolley, ref dutug,ref TH_logger1,ref TH_logger2, ref barometer);
             DUT.HostName= DUTHostName.Text;
             Measurement.SetDeviceType(Device.EDM);  //The default device under test is selected as EDM so set the first measurement DUT as EDM
@@ -168,9 +175,8 @@ namespace Trolley_Control
             active_measurment_index = 0;
             measurement_thread.Start(Measurement_list[active_measurment_index]);
 
-            
-            Measurement.LaserWavelength = Convert.ToDouble(VacuumWavelenthTextbox.Text);
-            HP5519_Laser.Wavelength = Convert.ToDouble(VacuumWavelenthTextbox.Text);
+            setLaserConfig(Laser_Picker_ComboBox.Text);
+           
 
             Measurement.CO2_Concentration = Convert.ToDouble(CO2_Level.Text)/1000000;
             Measurement.DUTWavelength = Convert.ToDouble(DUT_Wavelength.Text);
@@ -209,7 +215,9 @@ namespace Trolley_Control
                         if (msg.Equals("No Error"))
                         {
                             Measurement.Pressure = barometer.getPressure();
-                            redrawLaserEnviroTextbox();
+                            Thread printerThread = new Thread(new ThreadStart(doDrawPrep));
+                            printerThread.Start();
+                            //redrawLaserEnviroTextbox();
                         }
                         else
                         {
@@ -274,7 +282,9 @@ namespace Trolley_Control
                             if (OmegaTHLogger.numConnectedLoggers == 2) Measurement.AverageHumidity = (result1 + result2) / 2;                     //we have both omega loggers working.
                             else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger1.isActive)) Measurement.AverageHumidity = result1;     //only have one valid result - logger 1
                             else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger2.isActive)) Measurement.AverageHumidity = result2;     //only have one valid result - logger 2
-                            redrawLaserEnviroTextbox();
+                            Thread printerThread = new Thread(new ThreadStart(doDrawPrep));
+                            printerThread.Start();
+                            //redrawLaserEnviroTextbox();
                         }
                         else
                         {
@@ -599,8 +609,9 @@ namespace Trolley_Control
                     case ProcName.E1735A_SET_PARAMETER:
                         break;
                     case ProcName.E1735A_GET_PARAMETER:
-
-                        redrawLaserEnviroTextbox();
+                        Thread printerThread = new Thread(new ThreadStart(doDrawPrep));
+                        printerThread.Start();
+                        //redrawLaserEnviroTextbox();
                         
                         break;
                     default: break;
@@ -1105,10 +1116,8 @@ namespace Trolley_Control
             }
         }
 
-        private void redrawLaserEnviroTextbox()
+        private void doDrawPrep()
         {
-            
-           
             double avg_temp = Math.Round(Measurement.AverageTemperature, 2);
             double avg_temp2 = Math.Round(Measurement.AverageLaserBeamTemperature, 2);
             double avg_temp3 = Math.Round(Measurement.AverageEDMBeamTemperature, 2);
@@ -1118,13 +1127,13 @@ namespace Trolley_Control
 
 
             StringBuilder text = new StringBuilder();
-            
-            
+
+
             try
             {
 
-                LaserParameters.Clear();
                 
+
                 text.AppendLine("WaveLength (as read from HP5519 Laser head): " + HP5519_Laser.Wavelength.ToString() + " nm");
                 text.AppendLine("DUT WaveLength: " + Measurement.DUTWavelength.ToString() + " nm");
                 text.AppendLine("Average Tunnel Air Temp: " + avg_temp.ToString() + " °C");
@@ -1133,11 +1142,12 @@ namespace Trolley_Control
                 text.AppendLine("Air Pres: " + Measurement.Pressure.ToString() + " hPa");
                 text.AppendLine("Air Pres Correction: " + barometer.Correction.ToString() + " hPa");
                 text.AppendLine("Average %RH: " + AverRH.ToString() + "%");
-                text.AppendLine("Humidity Logger 1 Correction: " + RH1_Corr.ToString()+"%");
+                text.AppendLine("Humidity Logger 1 Correction: " + RH1_Corr.ToString() + "%");
                 text.AppendLine("Humidity Logger 2 Correction: " + RH2_Corr.ToString() + "%");
                 text.AppendLine("Agilent RI Corr: " + HP5519_Laser.AirCompensation.ToString());
                 text.AppendLine("Phase Refractive Index (Laser): " + Measurement.CalculatePhaseRefractiveIndex(Measurement.LaserWavelength).ToString());
-                try {
+                try
+                {
                     text.AppendLine("Group Refractive Index: " + Measurement.CalculateGroupRefractiveIndex(System.Convert.ToDouble(DUT_Wavelength.Text)));
                 }
                 catch (FormatException)
@@ -1145,18 +1155,14 @@ namespace Trolley_Control
                     text.AppendLine("Group Refractive Index: " + Measurement.CalculateGroupRefractiveIndex(850));
                 }
                 text.AppendLine("CO2 Level: " + Measurement.CO2.ToString() + "\n");
-                
 
-                //LaserParameters.AppendText(text.ToString());
-
-                
                 int[] a = Measurement.LaserPRTSUsed;
                 if (a != null)
                 {
                     string laser_prts = "";
                     for (int i = 0; i < a.Length; i++)
                     {
-                        laser_prts = string.Concat(laser_prts, (a[i]+1).ToString() + ",");
+                        laser_prts = string.Concat(laser_prts, (a[i] + 1).ToString() + ",");
                     }
                     text.AppendLine("Laser PRTs Used: " + laser_prts.ToString());
 
@@ -1167,7 +1173,7 @@ namespace Trolley_Control
                             string one_beam_prts = "";
                             for (int i = 0; i < b.Length; i++)
                             {
-                                one_beam_prts = string.Concat(one_beam_prts, (b[i]+1).ToString() + ",");
+                                one_beam_prts = string.Concat(one_beam_prts, (b[i] + 1).ToString() + ",");
                             }
                             text.AppendLine("EDM PRTs Used: " + one_beam_prts.ToString());
                             text.AppendLine("");
@@ -1180,20 +1186,38 @@ namespace Trolley_Control
                             break;
 
                     }
-                    
+
 
                 }
-                
+
                 for (int i = 0; i < 30; i++)
                 {
-                    text.AppendLine("Temperature PRT "+ (i+1).ToString()+": " + Measurement.getTemperature(i).ToString());
+                    text.AppendLine("Temperature PRT " + (i + 1).ToString() + ": " + Measurement.getTemperature(i).ToString());
                 }
 
-                LaserParameters.AppendText(text.ToString());
+              
+                redrawLaserEnviroTextbox(text.ToString());
             }
             catch (ObjectDisposedException)
             {
                 Application.Exit();
+            }
+
+            
+        }
+
+        private void redrawLaserEnviroTextbox(string p)
+        {
+
+            if (this.InvokeRequired == false)
+            {
+                LaserParameters.Clear();
+                LaserParameters.AppendText(p.ToString());
+            }
+            else
+            {
+                object[] textobj = { p };
+                this.BeginInvoke(new GUIUpdater(redrawLaserEnviroTextbox), textobj);
             }
         }
 
@@ -1454,9 +1478,10 @@ namespace Trolley_Control
                 Measurement.AverageTemperature = TemperatureMeasurement.calculateAverageTemperature();   //this is the temperature from all prts in the tunnel
                 double r = measurement_list[index].Result;
                 Measurement.setTemperature(r, index);
-                
 
-                redrawLaserEnviroTextbox();
+                Thread printerThread = new Thread(new ThreadStart(doDrawPrep));
+                printerThread.Start();
+                //redrawLaserEnviroTextbox();
             }
             else
             {
@@ -1525,6 +1550,53 @@ namespace Trolley_Control
             barometer.ParseCorrectionStrings(corr_strings);
             barometer.setExecStage(BarometerExecutionStage.SETUP);
            
+
+        }
+
+        private void setLaserConfig(string laser_serial)
+        {
+            loadXML();
+
+            xmlreader.ResetState();
+
+            //read the first node
+            xmlreader.ReadStartElement();
+            xmlreader.ReadToNextSibling("LASERMEASUREMENTSYSTEM");
+            xmlreader.ReadToDescendant(string.Concat("laserHP5519a_", laser_serial));
+            xmlreader.ReadToFollowing("reportnumber");
+            HP5519_Laser.ReportNumber = xmlreader.ReadElementContentAsString();
+            HP5519_Laser.ReportDate = xmlreader.ReadElementContentAsString();
+            HP5519_Laser.EquipID = xmlreader.ReadElementContentAsString();
+            xmlreader.ReadElementContentAsString();
+
+            try
+            {
+                HP5519_Laser.Wavelength = xmlreader.ReadElementContentAsDouble();
+                HP5519_Laser.WarmupTime = xmlreader.ReadElementContentAsDouble();
+                HP5519_Laser.Power = xmlreader.ReadElementContentAsDouble();
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Error During Laser Config Parse. Bad Format; element could not be read as double");
+                return;
+            }
+            VacuumWavelenthTextbox.Text = Convert.ToString(HP5519_Laser.Wavelength);
+        }
+
+        private void Laser_Picker_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            setLaserConfig(Laser_Picker_ComboBox.Text);
+        }
+
+        private void LaserInfoButton_Click(object sender, EventArgs e)
+        {
+            string i = "Report Number: " + HP5519_Laser.ReportNumber + "\n"
+                     + "Report Date: " + HP5519_Laser.ReportDate + "\n"
+                     + "Equipment Register ID: " + HP5519_Laser.EquipID + "\n"
+                     + "Laser Wavelength: " + HP5519_Laser.Wavelength.ToString() + " nm\n"
+                     + "Warmup Time: " + HP5519_Laser.WarmupTime.ToString() + "hours\n"
+                     + "Power: " + HP5519_Laser.Power.ToString() + "µW\n";
+            MessageBox.Show(i);
 
         }
 
