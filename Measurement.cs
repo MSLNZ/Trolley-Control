@@ -84,6 +84,7 @@ namespace Trolley_Control
         private OmegaTHLogger ref_logger1;
         private OmegaTHLogger ref_logger2;
         private Barometer ref_barometer;
+        private static string prt_string;
         private static DUT survey_device;
         private static bool set_averaging_pending; //a flag to allow the averaging value to be sent to the DUT.
         private static short current_execution_stage;
@@ -97,7 +98,8 @@ namespace Trolley_Control
         private static double hlogger1_correction = 0.0;
         private static double hlogger2_correction = 0.0;
         private static double offset = 2.0;
-
+        private static Object lockthis = new Object();
+        private static int d_type = Device.EDM;
 
 
 
@@ -117,7 +119,9 @@ namespace Trolley_Control
         private static double humidity = 50;       //%RH
         private static double pressure = 101.400;  //kpa
         private static double average_temperature = 20.00; //degC
+        private static double average_Laser_RI = 1.0; //no units
         private static double average_laser_beam_temperature = 20.00; //degC
+        private static double average_EDM_RI = 1.0; //no units
         private static double average_EDM_beam_temperature = 20.0;  //degC
         private static double vacuum_wavelength = 632.99137225; //nm
         private static double dut_wavelength = 850; //nm
@@ -240,6 +244,16 @@ namespace Trolley_Control
             set { average_EDM_beam_temperature = value; }
             get { return average_EDM_beam_temperature; }
         }
+        public static double AverageLaserRI
+        {
+            set { average_Laser_RI = value; }
+            get { return average_Laser_RI; }
+        }
+        public static double AverageEDMRI
+        {
+            set { average_EDM_RI = value; }
+            get { return average_EDM_RI; }
+        }
 
         public static void setTemperature(double res, long idx)
         {
@@ -265,6 +279,13 @@ namespace Trolley_Control
             set { dut_wavelength = value; }
 
         }
+
+        public static string PrintString
+        {
+            get { return prt_string; }
+            set { prt_string = value; }
+        }
+            
 
         /// <summary>
         /// Calculate the temperature of the air where the laser beam is passing through.
@@ -299,6 +320,44 @@ namespace Trolley_Control
             }
             average_laser_beam_temperature = sum / valid_results;
             return average_laser_beam_temperature;
+        }
+
+        /// <summary>
+        /// Calculate the average Phase RI laser beam is passing through.
+        /// </summary>
+        public static double CalculateAverageRILaserBeam(ref Laser r_laser,double wavelength)
+        {
+            double sum = 0.0;
+            int valid_results = 0;
+            double pos = r_laser.R_Sample;   //get the current laser position to figure out how much beam to include
+            double RI = 1;
+
+            //prts to include
+            //prts are included at:
+            //actual position of prts                 relative to laser reading (m): 0.8, 4.8, 8.8 , 12.8, 16.8, 20.8, 24.8, 28.8, 32.8, 36.8, 40.8, 44.8, 48.8, 52.8
+            //position position to increase prt count relative to laser reading (m): 2.8, 6.8, 10.8, 14.8, 18.8, 22.8, 26.8, 30.8, 34.8, 38.8, 42.8, 46.8, 50.8, 54.8
+            //if postion of laser is over 2.8 metres the prt count goes to 2, then every 4 m thereafter the prt count increases by 1.
+            //prt name mapping is stored in prtmap array. 
+            if (pos.Equals(double.NaN)) return -1;  //laser not returning a value
+            int num_prts_involved = Convert.ToInt32(Math.Ceiling((Math.Abs(pos) + offset) / 4));
+
+
+            laser_prts = new int[num_prts_involved];
+
+            for (int i = 0; i < num_prts_involved; i++)
+            {
+                laser_prts[i] = prtmap_over_bench[i];
+                double r = temperatures[prtmap_over_bench[i]];
+                if (r > 0)                  //I assume this condition is a good enough check that we have a valid reading.
+                {
+                    
+                    sum = sum + CalculatePhaseRefractiveIndex(wavelength, r); 
+                    valid_results++;
+                }
+            }
+            RI = sum / valid_results;
+            average_Laser_RI = RI;
+            return RI;
         }
 
         /// <summary>
@@ -405,6 +464,113 @@ namespace Trolley_Control
             return average_edm_beam_temp;
         }
 
+        /// <summary>
+        /// Calculates the average refractive index for the EDM beam;
+        /// </summary>
+        /// <param name="number_beam_folds">The number of beam folds. Minimum is 0, Maximum is 3</param>
+        public static double calculateAverageRIEDMBeam(int number_beam_folds, ref Laser r_laser, ref MeasurementUpdateGui ug, double wavelength, bool is_laser)
+        {
+            double beamRI = 0;
+           
+            try
+            {
+                if (number_beam_folds > 3 || number_beam_folds < 0)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                if (!edm_beam_temperature_error_reported)
+                {
+                    ug(ProcNameMeasurement.EDM_BEAM_TEMPERATURE, "The number of edm beam folds is not in the range 0 to 3", true);
+
+                }
+                //don't report this error again until have the correct number of beams
+                edm_beam_temperature_error_reported = true;
+                return 20.0;
+            }
+            edm_beam_temperature_error_reported = false;
+
+            double pos = r_laser.R_Sample;   //get the current laser position to figure out how much beam to include in the beam over bench
+            
+
+            //prts to include in average calcuation
+            int num_prts_involved = 15 - Convert.ToInt32(Math.Floor((Math.Abs(pos) + offset) / 4));
+            double first_row_avg = 0.0;  //the average for prts included in the first beam.
+
+
+            if (number_beam_folds == 0)
+            {
+                beamRI = firstAverageRI(num_prts_involved, ref ug, is_laser);
+
+
+
+            }
+            else if (number_beam_folds == 1)
+            {
+                first_row_avg = firstAverageRI(num_prts_involved, ref ug, is_laser);
+
+                //The partial second fold of the beam uses prts in row 1 (row over bench) and row 2 (row over walkway).  The average of these rows is used
+                //there are 12 prts in each row that are used for this part of the beam.  
+                //Range for bench row is 1 to 12.  Range for walkway row is 16 to 28. -->> should correspond to number written on the prts e.g 001 002 003 etc
+                //for this part of the beam we are average the two rows of prts
+
+                int valid_results = 0;
+                double second_row_avg = secondAverageRI(ref valid_results, 12, ref ug, is_laser);
+
+                //compute the weighted average of the first and second rows
+                double second_row_sum = second_row_avg * valid_results;
+                double first_row_sum = first_row_avg * num_prts_involved;
+                beamRI = (first_row_sum + second_row_sum) / (valid_results + num_prts_involved); //average beam temperature
+            }
+            else if (number_beam_folds == 2)
+            {
+                first_row_avg = firstAverageRI(num_prts_involved, ref ug, is_laser);
+                //The full second fold of the beam uses all prts in row 1 (row over bench) and row 2 (row over walkway).  The average of these rows is used
+                //Range for bench row is 1 to 15.  Range for walkway row is 16 to 30. -->> should correspond to number written on the prts e.g 001 002 003 etc
+                //For this part of the beam we are average the two rows of prts;
+                int valid_results = 0;
+                double second_row_avg = secondAverageRI(ref valid_results, 15, ref ug,is_laser);
+
+                //include the partial third beam temperatures - this only includes prts in row 2
+                int valid_results2 = 0;
+                double third_row_avg = thirdAverageRI(ref valid_results2, 11, ref ug,is_laser);
+
+                //compute the weighted average of the first and second rows
+                double first_row_sum = first_row_avg * num_prts_involved;
+                double second_row_sum = second_row_avg * valid_results;
+                double third_row_sum = third_row_avg + valid_results2;
+                beamRI = (first_row_sum + second_row_sum + third_row_sum) / (valid_results2 + valid_results + num_prts_involved);
+            }
+            else if (number_beam_folds == 3)
+            {
+                first_row_avg = firstAverageRI(num_prts_involved, ref ug,is_laser);
+                //The full second fold of the beam uses all prts in row 1 (row over bench) and row 2 (row over walkway).  The average of these rows is used
+                //Range for bench row is 1 to 15.  Range for walkway row is 16 to 30. -->> should correspond to number written on the prts e.g 001 002 003 etc
+                //For this part of the beam we are average the two rows of prts;
+
+
+                int valid_results = 0;
+                double second_row_avg = secondAverageRI(ref valid_results, 15, ref ug,is_laser);
+
+                //include the partial third beam temperatures - this only includes prts in row 2
+                int valid_results2 = 0;
+                double third_row_avg = thirdAverageRI(ref valid_results2, 15, ref ug,is_laser);
+
+                int valid_results3 = 0;
+                double fourth_row_avg = fourthAverageRI(ref valid_results3, 11, ref ug,is_laser);
+                //compute the weighted average of the first and second rows
+                double first_row_sum = first_row_avg * num_prts_involved;
+                double second_row_sum = second_row_avg * valid_results;
+                double third_row_sum = third_row_avg + valid_results2;
+                double fourth_row_sum = fourth_row_avg + valid_results3;
+                beamRI = (first_row_sum + second_row_sum + third_row_sum + fourth_row_sum) / (valid_results3 + valid_results2 + valid_results + num_prts_involved);
+            }
+            average_EDM_RI = beamRI;
+            return average_EDM_RI;
+        }
+
         private static double firstBeamAverage(int num_prts, ref MeasurementUpdateGui ug)
         {
             double sum = 0.0;
@@ -418,6 +584,30 @@ namespace Trolley_Control
                 if (r > 15.0 && r < 25.0)                  // I assume this condition is a good enough check that we have a valid reading.
                 {
                     sum = sum + r;
+                    valid_results++;
+                }
+                else
+                {
+                    ug(ProcNameMeasurement.EDM_BEAM_TEMPERATURE, "A PRT has a temperature reading which is not in the range 15 to 25 degree C", !beam_temperature_error_reported);
+                    beam_temperature_error_reported = true;
+                }
+            }
+            if (valid_results == num_prts) beam_temperature_error_reported = false;
+            return sum / valid_results;
+        }
+        private static double firstAverageRI(int num_prts, ref MeasurementUpdateGui ug, bool is_laser)
+        {
+            double sum = 0.0;
+            no_folds_prts = new int[num_prts];
+            int valid_results = 0;
+            for (int i = 0; i < num_prts; i++)
+            {
+                double r = temperatures[prtmap_over_bench[14 - i]];
+                no_folds_prts[i] = prtmap_over_bench[14 - i];
+                if (r > 15.0 && r < 25.0)                  // I assume this condition is a good enough check that we have a valid reading.
+                {
+                    if(is_laser) sum = sum + CalculatePhaseRefractiveIndex(DUTWavelength, r);
+                    else sum = sum + CalculateGroupRefractiveIndex(DUTWavelength, r);
                     valid_results++;
                 }
                 else
@@ -465,6 +655,50 @@ namespace Trolley_Control
             double second_row_avg = (average1 + average2) / 2;
             return second_row_avg;
         }
+
+        private static double secondAverageRI(ref int valid_results, int total_prts_per_row, ref MeasurementUpdateGui ug, bool is_laser)
+        {
+            double sum1 = 0.0;
+            double sum2 = 0.0;
+            fold_two_prts = new int[total_prts_per_row * 2];
+            for (int i = 0; i < total_prts_per_row; i++)
+            {
+                double row1 = temperatures[prtmap_over_bench[14 - i]];
+                double row2 = temperatures[prtmap_over_walkway[i]];
+
+                fold_two_prts[i] = prtmap_over_bench[14 - i];
+                fold_two_prts[i + total_prts_per_row] = prtmap_over_walkway[i];
+
+                if ((row1 > 15.0) && (row2 > 15.0) && (row1 < 25.0) && (row2 < 25.0))
+                {
+                    if (is_laser)
+                    {
+                        sum1 = sum1 + CalculatePhaseRefractiveIndex(DUTWavelength, row1);
+                        sum2 = sum2 + CalculatePhaseRefractiveIndex(DUTWavelength, row2);
+                    }
+                    else
+                    {
+                        sum1 = sum1 + CalculateGroupRefractiveIndex(DUTWavelength, row1);
+                        sum2 = sum2 + CalculateGroupRefractiveIndex(DUTWavelength, row2);
+                    }
+                    valid_results++;
+                }
+                else
+                {
+                    ug(ProcNameMeasurement.EDM_BEAM_TEMPERATURE, "A PRT has a temperature reading which is not in the range 15 to 25 degree C", !beam_temperature_error_reported);
+                    beam_temperature_error_reported = true;
+                }
+            }
+            if (valid_results == total_prts_per_row) beam_temperature_error_reported = false;
+            //compute the averages
+            double average1 = sum1 / valid_results;
+            double average2 = sum2 / valid_results;
+
+            //same number of points for each average so we okay to compute the average of the two prt rows
+            double second_row_avg = (average1 + average2) / 2;
+            return second_row_avg;
+        }
+
         private static double thirdBeamAverage(ref int valid_results, int total_prts_in_row, ref MeasurementUpdateGui ug)
         {
             double sum1 = 0.0;
@@ -491,6 +725,34 @@ namespace Trolley_Control
 
             return third_row;
         }
+
+        private static double thirdAverageRI(ref int valid_results, int total_prts_in_row, ref MeasurementUpdateGui ug, bool is_laser)
+        {
+            double sum1 = 0.0;
+            fold_three_prts = new int[total_prts_in_row];
+            for (int i = 0; i < total_prts_in_row; i++)
+            {
+                double row2 = temperatures[prtmap_over_walkway[14 - i]];
+                fold_three_prts[i] = prtmap_over_walkway[14 - i];
+
+                if (row2 > 15.0 && row2 < 25.0)
+                {
+                    if (is_laser) sum1 = sum1 + CalculatePhaseRefractiveIndex(DUTWavelength, row2);
+                    else sum1 = sum1 + CalculateGroupRefractiveIndex(DUTWavelength, row2);
+                    valid_results++;
+                }
+                else
+                {
+                    ug(ProcNameMeasurement.EDM_BEAM_TEMPERATURE, "A PRT has a temperature reading which is not in the range 15 to 25 degree C", !beam_temperature_error_reported);
+                    beam_temperature_error_reported = true;
+                }
+            }
+            if (valid_results == total_prts_in_row) beam_temperature_error_reported = false;
+            //compute the average
+            double third_row = sum1 / valid_results;
+
+            return third_row;
+        }
         private static double fourthBeamAverage(ref int valid_results, int total_prts_in_row, ref MeasurementUpdateGui ug)
         {
             double sum1 = 0.0;
@@ -502,6 +764,38 @@ namespace Trolley_Control
                 if (row2 > 15.0 && row2 < 25.0)
                 {
                     sum1 = sum1 + row2;
+                    valid_results++;
+                }
+                else
+                {
+                    ug(ProcNameMeasurement.EDM_BEAM_TEMPERATURE, "A PRT has a temperature reading which is not in the range 15 to 25 degree C", !beam_temperature_error_reported);
+                    beam_temperature_error_reported = true;
+                }
+            }
+
+            if (valid_results == total_prts_in_row) beam_temperature_error_reported = false;
+
+            //compute the average
+            double fourth_row = sum1 / valid_results;
+
+            return fourth_row;
+        }
+
+
+
+        private static double fourthAverageRI(ref int valid_results, int total_prts_in_row, ref MeasurementUpdateGui ug, bool is_laser)
+        {
+            double sum1 = 0.0;
+            fold_four_prts = new int[total_prts_in_row];
+            for (int i = 0; i < total_prts_in_row; i++)
+            {
+                double row2 = temperatures[prtmap_over_walkway[i]];
+                fold_four_prts[i] = prtmap_over_walkway[i];
+                if (row2 > 15.0 && row2 < 25.0)
+                {
+                    if(is_laser) sum1 = sum1 + CalculatePhaseRefractiveIndex(DUTWavelength, row2);
+                    else sum1 = sum1 + CalculateGroupRefractiveIndex(DUTWavelength, row2);
+
                     valid_results++;
                 }
                 else
@@ -712,9 +1006,80 @@ namespace Trolley_Control
             
         }
 
-        public static void SetDeviceType(short device)
+        /// <summary>
+        /// Calculates the group refractive index (see NIST paper - Refractive index of air: new equations for the visible and near infrared. Philip E. Ciddor 1996).
+        /// Note - Temperature, Pressure and Humidity are input parameters to this equation as well, but these are continually updated within this class.
+        /// </summary>
+        /// <param name="t">The vacuum wavelength of the source</param>
+        public static double CalculateGroupRefractiveIndex(double lamda, double t)
         {
 
+            const double alpha = 1.00062, beta = 3.14E-8, gamma = 5.6E-7;
+            const double w0 = 295.235, w1 = 2.6422, w2 = -0.03238, w3 = 0.004028;
+            const double k0 = 238.0185, k1 = 5792105, k2 = 57.362, k3 = 167917;
+            const double a0 = 1.58123E-6, a1 = -2.9331E-8, a2 = 1.1043E-10;
+            const double b0 = 5.707E-6, b1 = -2.051E-8;
+            const double c0 = 1.9898E-4, c1 = -2.376E-6;
+            const double d = 1.83E-11;
+            const double e = -0.765E-8;
+            const double p_R1 = 101325;
+            const double T_R1 = 288.15;
+            const double Z_a = 0.9995922115;
+            const double Rho_vs = 0.00985938;
+            const double R = 8.314472;
+            const double M_v = 0.018015;
+
+            double T_degC, T_K, P_Pa, H_RH, lambda_um, psv, f, xv, S, r_as, r_vs, M_a, r_axs, Z_m, rho_axs, rho_v, rho_a, n;
+
+            T_degC = t;
+            T_K = T_degC + 273.15;
+            P_Pa = Pressure * 100;
+            H_RH = AverageHumidity;
+            lambda_um = lamda / 1000;
+
+            f = alpha + beta * P_Pa + gamma * T_degC;
+            psv = SVP(T_degC);
+            xv = (H_RH / 100) * f * psv / P_Pa;
+
+            S = 1 / Math.Pow(lambda_um, 2);
+
+            //equation 1
+            r_as = 1E-8 * ((k1 / (k0 - S)) + (k3 / (k2 - S)));
+
+            //equation 11
+
+            r_vs = 1E-8 * 1.022 * (w0 + (3 * w1 * S) + (5 * w2 * Math.Pow(S, 2)) + (7 * w3 * Math.Pow(S, 3)));
+            //double r_vs_2 = 1.022 * 1E-8 * (w0 + w1 * S + w2 * Math.Pow(S, 2) + w3 * Math.Pow(S, 3));
+
+            M_a = 0.0289635 + 1.2011 * 1E-8 * (CO2_Concentration * 1000000 - 400);
+
+            //equation 2
+            //double r_axs2 = r_as * (1 + 5.34 * 1E-7 * (CO2_Concentration - 450));
+
+            //equation 10
+
+            double n1, n2, d1, d2, r_axs_prime;
+            n1 = k1 * (k0 + S);
+            d1 = Math.Pow((k0 - S), 2);
+            n2 = k3 * (k2 + S);
+            d2 = Math.Pow(k2 - S, 2);
+            r_axs_prime = (1 + 5.34 * 1E-7 * (CO2_Concentration * 1000000 - 450));
+            r_axs = 1E-8 * ((n1 / d1) + (n2 / d2)) * r_axs_prime;
+
+            Z_m = 1 - (P_Pa / T_K) * (a0 + a1 * T_degC + a2 * Math.Pow(T_degC, 2) + (b0 + b1 * T_degC) * xv + (c0 + c1 * T_degC) * Math.Pow(xv, 2)) + Math.Pow((P_Pa / T_K), 2) * (d + e * Math.Pow(xv, 2));
+            rho_axs = p_R1 * M_a / (Z_a * R * T_R1);
+            rho_v = xv * P_Pa * M_v / (Z_m * R * T_K);
+            rho_a = (1 - xv) * P_Pa * M_a / (Z_m * R * T_K);
+            n = 1 + (rho_a / rho_axs) * r_axs + (rho_v / Rho_vs) * r_vs;
+            return n;
+
+
+
+        }
+
+        public void SetDeviceType(short device)
+        {
+            d_type = device;
             switch (device)
             {
                 case Device.EDM:
@@ -731,6 +1096,106 @@ namespace Trolley_Control
 
             }
 
+        }
+
+        public void doDrawPrep()
+        {
+            //only one thread at a time please
+            lock (lockthis)
+            {
+                Thread.Sleep(20);
+                double avg_temp = Math.Round(Measurement.AverageTemperature, 2);
+                double avg_temp2 = Math.Round(Measurement.AverageLaserBeamTemperature, 2);
+                double avg_temp3 = Math.Round(Measurement.AverageEDMBeamTemperature, 2);
+                double AverRH = Math.Round(Measurement.AverageHumidity, 2);
+                double RH1_Corr = Math.Round(ref_logger1.Correction, 2);
+                double RH2_Corr = Math.Round(ref_logger2.Correction, 2);
+                StringBuilder text = new StringBuilder();
+
+
+                try
+                {
+                    text.AppendLine("WaveLength (as read from HP5519 Laser head): " + reflaser.Wavelength.ToString() + " nm");
+                    text.AppendLine("DUT WaveLength: " + DUTWavelength.ToString() + " nm");
+                    text.AppendLine("Average Tunnel Air Temp: " + avg_temp.ToString() + " °C");
+                    text.AppendLine("Average Laser Beam Temp: " + avg_temp2.ToString() + " °C");
+                    text.AppendLine("Average EDM Beam Temp: " + avg_temp3.ToString() + " °C");
+                    text.AppendLine("Air Pres: " + Pressure.ToString() + " hPa");
+                    text.AppendLine("Air Pres Correction: " + ref_barometer.Correction.ToString() + " hPa");
+                    text.AppendLine("Average %RH: " + AverRH.ToString() + "%");
+                    text.AppendLine("Humidity Logger 1 Correction: " + RH1_Corr.ToString() + "%");
+                    text.AppendLine("Humidity Logger 2 Correction: " + RH2_Corr.ToString() + "%");
+                    text.AppendLine("Agilent RI Corr: " + reflaser.AirCompensation.ToString());
+                    text.AppendLine("Phase Refractive Index (Laser): " + CalculateAverageRILaserBeam(ref reflaser,LaserWavelength).ToString());
+                    try
+                    {
+                        if (d_type == Device.SECOND_LASER) {
+                            text.AppendLine("Phase Refractive Index (second laser) :" + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser,ref mug, DUTWavelength,true));
+                        }
+                        else
+                        {
+                            text.AppendLine("Group Refractive Index (EDM Device) : " + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, DUTWavelength, false));
+                        }
+                    }
+                    catch (FormatException)
+                    {
+                        if (d_type == Device.SECOND_LASER)
+                        {
+                            text.AppendLine("Phase Refractive Index (" + d_type.ToString() + ") : " + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, 850, true));
+                        }
+                        else
+                        {
+                            text.AppendLine("Group Refractive Index (" + d_type.ToString() + ") : " + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, 850, false));
+                        }
+                    }
+                    text.AppendLine("CO2 Level: " + CO2.ToString() + "\n");
+
+                    int[] a = LaserPRTSUsed;
+                    if (a != null)
+                    {
+                        string laser_prts = "";
+                        for (int i = 0; i < a.Length; i++)
+                        {
+                            laser_prts = string.Concat(laser_prts, (a[i] + 1).ToString() + ",");
+                        }
+                        text.AppendLine("Laser PRTs Used: " + laser_prts.ToString());
+
+                        switch (DUT.Beamfolds)
+                        {
+                            case 0:
+                                int[] b = Row1PRTSUsed;
+                                string one_beam_prts = "";
+                                for (int i = 0; i < b.Length; i++)
+                                {
+                                    one_beam_prts = string.Concat(one_beam_prts, (b[i] + 1).ToString() + ",");
+                                }
+                                text.AppendLine("EDM PRTs Used: " + one_beam_prts.ToString());
+                                text.AppendLine("");
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                        }
+                    }
+
+                    for (int i = 0; i < 30; i++)
+                    {
+                        text.AppendLine("Temperature PRT " + (i + 1).ToString() + ": " + Measurement.getTemperature(i).ToString());
+                    }
+
+                    PrintString = text.ToString(); ;
+
+                }
+                catch (ObjectDisposedException)
+                {
+                    Application.Exit();
+                    PrintString = "";
+                }
+
+            }
         }
 
         public bool AveragingPending
@@ -1385,7 +1850,7 @@ namespace Trolley_Control
                     vals[0] = asyc_meas.reflaser.R_Sample;
 
                     //Refractive index correction for the laser
-                    vals[1] = CalculatePhaseRefractiveIndex(LaserWavelength);
+                    vals[1] = CalculateAverageRILaserBeam(ref asyc_meas.reflaser,asyc_meas.reflaser.Wavelength);
 
                     //refractive index correction applied
                     vals[2] = vals[0] / vals[1];
@@ -1493,12 +1958,12 @@ namespace Trolley_Control
                     if(device_type.Equals("Laser Aux"))
                     {
                         vals[4] = vals[3]; //aux laser refractive index must be set to 1;
-                        vals[6] = CalculatePhaseRefractiveIndex(dut_wavelength, vals[10]);
+                        vals[6] = calculateAverageRIEDMBeam(DUT.Beamfolds,ref asyc_meas.reflaser,ref asyc_meas.mug,DUTWavelength,true);
                     }
                     else if(device_type.Equals("EDM")||device_type.Equals("Total Station"))
                     {
                         vals[4] = vals[3]*(1+EDM_TS_default_correction);
-                        vals[6] = CalculateGroupRefractiveIndex(dut_wavelength);
+                        vals[6] = calculateAverageRIEDMBeam(DUT.Beamfolds,ref asyc_meas.reflaser,ref asyc_meas.mug,DUTWavelength,false);
                     }
 
                     vals[5] = vals[4] / vals[6];
