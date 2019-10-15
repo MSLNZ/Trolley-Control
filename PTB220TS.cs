@@ -153,7 +153,7 @@ namespace Trolley_Control
                     if (!ErrorReported)
                     {
 
-                        update_gui(BarometerExecutionStage.SETUP, "Barometer Error - Could not find a valid serial COM port - Check the barometer is connected and there is a relevant COM port in the Windows Device manager", true);
+                        //update_gui(BarometerExecutionStage.SETUP, "Barometer Error - Could not find a valid serial COM port - Check the barometer is connected and there is a relevant COM port in the Windows Device manager", true);
 
                     }
                     Thread.Sleep(5000);
