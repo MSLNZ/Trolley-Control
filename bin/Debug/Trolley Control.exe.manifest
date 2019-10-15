@@ -54,14 +54,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Trolley Control.exe" size="128512">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Trolley Control.exe" size="135680">
       <assemblyIdentity name="Trolley Control" version="1.0.0.0" language="neutral" processorArchitecture="x86" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>Nf4Nou5BEl0q5MtD1ZyFyXvK46NNbPh41fhcDTVo9ks=</dsig:DigestValue>
+        <dsig:DigestValue>34EpSxTUCHB7hdEKB7xHt6MkgeiYbcFDS6hDCJq2i+M=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
