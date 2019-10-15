@@ -410,7 +410,7 @@ namespace Trolley_Control
                 //for this part of the beam we are average the two rows of prts
                
                 int valid_results = 0;
-                double second_row_avg = secondBeamAverage(ref valid_results, 12, ref ug);
+                double second_row_avg = secondBeamAverage(ref valid_results, 5, ref ug);
 
                 //compute the weighted average of the first and second rows
                 double second_row_sum = second_row_avg * valid_results;
@@ -517,7 +517,7 @@ namespace Trolley_Control
                 //for this part of the beam we are average the two rows of prts
 
                 int valid_results = 0;
-                double second_row_avg = secondAverageRI(ref valid_results, 12, ref ug, is_laser);
+                double second_row_avg = secondAverageRI(ref valid_results, 5, ref ug, is_laser);
 
                 //compute the weighted average of the first and second rows
                 double second_row_sum = second_row_avg * valid_results;
@@ -627,7 +627,8 @@ namespace Trolley_Control
             for (int i = 0; i < total_prts_per_row; i++)
             {
                 double row1 = temperatures[prtmap_over_bench[14 - i]];
-                double row2 = temperatures[prtmap_over_walkway[i]];
+                double row2 = temperatures[prtmap_over_bench[14 - i]];
+                //double row2 = temperatures[prtmap_over_walkway[i]];
 
 
 
@@ -664,7 +665,8 @@ namespace Trolley_Control
             for (int i = 0; i < total_prts_per_row; i++)
             {
                 double row1 = temperatures[prtmap_over_bench[14 - i]];
-                double row2 = temperatures[prtmap_over_walkway[i]];
+                double row2 = temperatures[prtmap_over_bench[14 - i]];
+                //double row2 = temperatures[prtmap_over_walkway[i]];
 
                 fold_two_prts[i] = prtmap_over_bench[14 - i];
                 fold_two_prts[i + total_prts_per_row] = prtmap_over_walkway[i];
