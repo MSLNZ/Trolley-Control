@@ -125,7 +125,7 @@ namespace Trolley_Control
             active_measurment_index = 0;
             writer = null;
             Measurement_list = new Measurement[1];
-            path = @"I:\MSL\Private\LENGTH\Edm\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
+            path = @"I:\MSL\Private\LENGTH\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
             
 
             HP5519_Laser = new Laser(ref dlg);
