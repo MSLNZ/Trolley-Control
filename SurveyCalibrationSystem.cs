@@ -167,8 +167,7 @@ namespace Trolley_Control
 
             Measurement_list[0] = new Measurement(ref mug, ref HP5519_Laser, ref tunnel_trolley, ref dutug,ref TH_logger1,ref TH_logger2, ref barometer);
             DUT.HostName= DUTHostName.Text;
-            Measurement.SetDeviceType(Device.EDM);  //The default device under test is selected as EDM so set the first measurement DUT as EDM
-           
+            
 
             //start the main measurement thread, give it the first measurement in the measurement list.
             measurement_thread = new Thread(new ParameterizedThreadStart(Measurement.Measure));
@@ -186,8 +185,10 @@ namespace Trolley_Control
             TH_logger1.CalculateCorrection();
             TH_logger2.HLoggerEq = Convert.ToString(H_logger_2_correction.Text);
             TH_logger2.CalculateCorrection();
-            
-            
+
+            Measurement_list[active_measurment_index].SetDeviceType(Device.EDM);  //The default device under test is selected as EDM so set the first measurement DUT as EDM
+
+
 
 
         }
@@ -215,9 +216,9 @@ namespace Trolley_Control
                         if (msg.Equals("No Error"))
                         {
                             Measurement.Pressure = barometer.getPressure();
-                            Thread printerThread = new Thread(new ThreadStart(doDrawPrep));
+                            Thread printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
                             printerThread.Start();
-                            //redrawLaserEnviroTextbox();
+                            redrawLaserEnviroTextbox(Measurement.PrintString);
                         }
                         else
                         {
@@ -282,9 +283,10 @@ namespace Trolley_Control
                             if (OmegaTHLogger.numConnectedLoggers == 2) Measurement.AverageHumidity = (result1 + result2) / 2;                     //we have both omega loggers working.
                             else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger1.isActive)) Measurement.AverageHumidity = result1;     //only have one valid result - logger 1
                             else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger2.isActive)) Measurement.AverageHumidity = result2;     //only have one valid result - logger 2
-                            Thread printerThread = new Thread(new ThreadStart(doDrawPrep));
+                           
+                            Thread printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
                             printerThread.Start();
-                            //redrawLaserEnviroTextbox();
+                            redrawLaserEnviroTextbox(Measurement.PrintString);
                         }
                         else
                         {
@@ -609,9 +611,10 @@ namespace Trolley_Control
                     case ProcName.E1735A_SET_PARAMETER:
                         break;
                     case ProcName.E1735A_GET_PARAMETER:
-                        Thread printerThread = new Thread(new ThreadStart(doDrawPrep));
+                        
+                        Thread printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
                         printerThread.Start();
-                        //redrawLaserEnviroTextbox();
+                        redrawLaserEnviroTextbox(Measurement.PrintString);
                         
                         break;
                     default: break;
@@ -1080,7 +1083,7 @@ namespace Trolley_Control
 
             if (EDMRadioButton.Checked)
             {
-                Measurement.SetDeviceType(Device.EDM);
+                Measurement_list[active_measurment_index].SetDeviceType(Device.EDM);
             }
         }
 
@@ -1089,7 +1092,7 @@ namespace Trolley_Control
 
             if (TotalStationRadioButton.Checked)
             {
-                Measurement.SetDeviceType(Device.TOTAL_STATION);
+                Measurement_list[active_measurment_index].SetDeviceType(Device.TOTAL_STATION);
             }
             
         }
@@ -1098,7 +1101,7 @@ namespace Trolley_Control
         {
             if (AuxLaserRadioButton.Checked)
             {
-                Measurement.SetDeviceType(Device.SECOND_LASER);
+                Measurement_list[active_measurment_index].SetDeviceType(Device.SECOND_LASER);
             }
         }
 
@@ -1115,104 +1118,13 @@ namespace Trolley_Control
                 MessageBox.Show("Invalid entry! Please enter a numeric");
             }
         }
-
-        private void doDrawPrep()
-        {
-            double avg_temp = Math.Round(Measurement.AverageTemperature, 2);
-            double avg_temp2 = Math.Round(Measurement.AverageLaserBeamTemperature, 2);
-            double avg_temp3 = Math.Round(Measurement.AverageEDMBeamTemperature, 2);
-            double AverRH = Math.Round(Measurement.AverageHumidity, 2);
-            double RH1_Corr = Math.Round(TH_logger1.Correction, 2);
-            double RH2_Corr = Math.Round(TH_logger2.Correction, 2);
-
-
-            StringBuilder text = new StringBuilder();
-
-
-            try
-            {
-
-                
-
-                text.AppendLine("WaveLength (as read from HP5519 Laser head): " + HP5519_Laser.Wavelength.ToString() + " nm");
-                text.AppendLine("DUT WaveLength: " + Measurement.DUTWavelength.ToString() + " nm");
-                text.AppendLine("Average Tunnel Air Temp: " + avg_temp.ToString() + " °C");
-                text.AppendLine("Average Laser Beam Temp: " + avg_temp2.ToString() + " °C");
-                text.AppendLine("Average EDM Beam Temp: " + avg_temp3.ToString() + " °C");
-                text.AppendLine("Air Pres: " + Measurement.Pressure.ToString() + " hPa");
-                text.AppendLine("Air Pres Correction: " + barometer.Correction.ToString() + " hPa");
-                text.AppendLine("Average %RH: " + AverRH.ToString() + "%");
-                text.AppendLine("Humidity Logger 1 Correction: " + RH1_Corr.ToString() + "%");
-                text.AppendLine("Humidity Logger 2 Correction: " + RH2_Corr.ToString() + "%");
-                text.AppendLine("Agilent RI Corr: " + HP5519_Laser.AirCompensation.ToString());
-                text.AppendLine("Phase Refractive Index (Laser): " + Measurement.CalculatePhaseRefractiveIndex(Measurement.LaserWavelength).ToString());
-                try
-                {
-                    text.AppendLine("Group Refractive Index: " + Measurement.CalculateGroupRefractiveIndex(System.Convert.ToDouble(DUT_Wavelength.Text)));
-                }
-                catch (FormatException)
-                {
-                    text.AppendLine("Group Refractive Index: " + Measurement.CalculateGroupRefractiveIndex(850));
-                }
-                text.AppendLine("CO2 Level: " + Measurement.CO2.ToString() + "\n");
-
-                int[] a = Measurement.LaserPRTSUsed;
-                if (a != null)
-                {
-                    string laser_prts = "";
-                    for (int i = 0; i < a.Length; i++)
-                    {
-                        laser_prts = string.Concat(laser_prts, (a[i] + 1).ToString() + ",");
-                    }
-                    text.AppendLine("Laser PRTs Used: " + laser_prts.ToString());
-
-                    switch (DUT.Beamfolds)
-                    {
-                        case 0:
-                            int[] b = Measurement.Row1PRTSUsed;
-                            string one_beam_prts = "";
-                            for (int i = 0; i < b.Length; i++)
-                            {
-                                one_beam_prts = string.Concat(one_beam_prts, (b[i] + 1).ToString() + ",");
-                            }
-                            text.AppendLine("EDM PRTs Used: " + one_beam_prts.ToString());
-                            text.AppendLine("");
-                            break;
-                        case 1:
-                            break;
-                        case 2:
-                            break;
-                        case 3:
-                            break;
-
-                    }
-
-
-                }
-
-                for (int i = 0; i < 30; i++)
-                {
-                    text.AppendLine("Temperature PRT " + (i + 1).ToString() + ": " + Measurement.getTemperature(i).ToString());
-                }
-
-              
-                redrawLaserEnviroTextbox(text.ToString());
-            }
-            catch (ObjectDisposedException)
-            {
-                Application.Exit();
-            }
-
-            
-        }
-
         private void redrawLaserEnviroTextbox(string p)
         {
 
             if (this.InvokeRequired == false)
             {
                 LaserParameters.Clear();
-                LaserParameters.AppendText(p.ToString());
+                if(p!=null) LaserParameters.AppendText(p.ToString());
             }
             else
             {
@@ -1479,9 +1391,10 @@ namespace Trolley_Control
                 double r = measurement_list[index].Result;
                 Measurement.setTemperature(r, index);
 
-                Thread printerThread = new Thread(new ThreadStart(doDrawPrep));
+             
+                Thread printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
                 printerThread.Start();
-                //redrawLaserEnviroTextbox();
+                redrawLaserEnviroTextbox(Measurement.PrintString);
             }
             else
             {
