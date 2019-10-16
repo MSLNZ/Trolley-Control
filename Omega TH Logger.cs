@@ -36,6 +36,12 @@ namespace Trolley_Control
         private short dev_id = 255;
         private double correction = 0.0;
         protected static readonly int port = 2000;
+        private string report_num = "";
+        private string report_date = "";
+        private string equip_id = "";
+        private string type = "";
+        private string location = "";
+        private string rawcorrection = "";
 
 
 
@@ -46,6 +52,48 @@ namespace Trolley_Control
             TcpClient = new Client();
             h_update = th_update;
             hostname = hostname_;
+        }
+
+        public string ReportNumber
+        {
+            set { report_num = value; }
+            get { return report_num; }
+        }
+
+        public string ReportDate
+        {
+            set { report_date = value; }
+            get { return report_date; }
+        }
+
+        public string EquipID
+        {
+            set { equip_id = value; }
+            get { return equip_id; }
+        }
+
+        public string Type
+        {
+            set { type = value; }
+            get { return type; }
+        }
+
+        public string IP
+        {
+            set { hostname = value; }
+            get { return hostname; }
+        }
+
+        public string Location
+        {
+            set { location = value; }
+            get { return location; }
+        }
+
+        public string RawCorrection
+        {
+            set { rawcorrection = value; }
+            get { return rawcorrection; }
         }
 
         public string HLoggerEq
