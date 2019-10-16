@@ -126,16 +126,15 @@ namespace Trolley_Control
             writer = null;
             Measurement_list = new Measurement[1];
             path = @"I:\MSL\Private\LENGTH\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
+
             
 
             HP5519_Laser = new Laser(ref dlg);
             tunnel_trolley = new Trolley(ref tug, ref Bluetooth_Virtual_Serial_Port);
-            TH_logger1 = new OmegaTHLogger(Humidity_logger_1.Text,ref thgui);
-            TH_logger1.devID = 0;
-            TH_logger2 = new OmegaTHLogger(Humidity_logger_2.Text,ref thgui);
-            TH_logger2.devID = 1;
+            TH_logger1 = new OmegaTHLogger(Humidity_logger_1.Text, ref thgui);
+            TH_logger2 = new OmegaTHLogger(Humidity_logger_2.Text, ref thgui);
             barometer = new PTB220TS(ref pbarug);  //this is the default barometer user can select another later if neccessary
-            setBarometerConfig("PTB220A");
+            
 
             //Can have up to 100 PRTs
             prts = new PRT[100];
@@ -145,6 +144,19 @@ namespace Trolley_Control
             //The temperature measurement threads.
             Threads = new Thread[1];
 
+
+            Measurement_list[0] = new Measurement(ref mug, ref HP5519_Laser, ref tunnel_trolley, ref dutug, ref TH_logger1, ref TH_logger2, ref barometer);
+            DUT.HostName = DUTHostName.Text;
+
+            //start the main measurement thread, give it the first measurement in the measurement list.
+            measurement_thread = new Thread(new ParameterizedThreadStart(Measurement.Measure));
+            active_measurment_index = 0;
+            measurement_thread.Start(Measurement_list[active_measurment_index]);
+
+            setBarometerConfig("PTB220A");
+            setHumidityConfig();
+            setLaserConfig(Laser_Picker_ComboBox.Text);
+
             //Thread to control the laser
             laserquerythread = new Thread(new ParameterizedThreadStart(Laser.Query));
             laserquerythread.Start(HP5519_Laser);  // pass the laser object into the context of the new thread
@@ -153,38 +165,30 @@ namespace Trolley_Control
             trolley_move_thread = new Thread(new ParameterizedThreadStart(Trolley.Query));
             trolley_move_thread.Start(tunnel_trolley);
 
+
             //Thread to control and monitor the first temperature and humidity logger.
             th_logger1_thread = new Thread(new ParameterizedThreadStart(TH_logger1.HLoggerQuery));
             th_logger1_thread.Start(TH_logger1);
+
 
             //Thread to control and monitor the second temperature and humidity logger.
             th_logger2_thread = new Thread(new ParameterizedThreadStart(TH_logger2.HLoggerQuery));
             th_logger2_thread.Start(TH_logger2);
 
+
+          
             //Thread to invoke the GUI to Update the LaserParameters RichTextBox
             //Thread Printer = new Thread(new ThreadStart(redrawLaserEnviroTextbox));
             //Printer.Start();
 
-            Measurement_list[0] = new Measurement(ref mug, ref HP5519_Laser, ref tunnel_trolley, ref dutug,ref TH_logger1,ref TH_logger2, ref barometer);
-            DUT.HostName= DUTHostName.Text;
-            
-
-            //start the main measurement thread, give it the first measurement in the measurement list.
-            measurement_thread = new Thread(new ParameterizedThreadStart(Measurement.Measure));
-            active_measurment_index = 0;
-            measurement_thread.Start(Measurement_list[active_measurment_index]);
-
-            setLaserConfig(Laser_Picker_ComboBox.Text);
            
+
 
             Measurement.CO2_Concentration = Convert.ToDouble(CO2_Level.Text)/1000000;
             Measurement.DUTWavelength = Convert.ToDouble(DUT_Wavelength.Text);
             DUT.Beamfolds = 0;
 
-            TH_logger1.HLoggerEq = Convert.ToString(H_logger_1_correction.Text);
-            TH_logger1.CalculateCorrection();
-            TH_logger2.HLoggerEq = Convert.ToString(H_logger_2_correction.Text);
-            TH_logger2.CalculateCorrection();
+           
 
             Measurement_list[active_measurment_index].SetDeviceType(Device.EDM);  //The default device under test is selected as EDM so set the first measurement DUT as EDM
 
@@ -929,19 +933,19 @@ namespace Trolley_Control
             // Alert the user which type of device under test is checked, give the option of cancelling
             if (EDMRadioButton.Checked)
             {
-                DialogResult dia_res = MessageBox.Show("The device under test is set to EDM", "is this correct?", MessageBoxButtons.YesNo);
+                DialogResult dia_res = MessageBox.Show("The device under test is set to EDM", "is the wavelength correct?", MessageBoxButtons.YesNo);
                 if (dia_res == DialogResult.No) return;
 
             }
             else if (TotalStationRadioButton.Checked)
             {
-                DialogResult dia_res = MessageBox.Show("The device under test is set to Total Station", "is this correct?", MessageBoxButtons.YesNo);
+                DialogResult dia_res = MessageBox.Show("The device under test is set to Total Station", "is the wavelength correct?", MessageBoxButtons.YesNo);
                 if (dia_res == DialogResult.No) return;
                 device = Device.TOTAL_STATION;
             }
             else
             {
-                DialogResult dia_res = MessageBox.Show("The device under test is set to 2nd Laser", "is this correct?", MessageBoxButtons.YesNo);
+                DialogResult dia_res = MessageBox.Show("The device under test is set to 2nd Laser", "is the wavelength correct?", MessageBoxButtons.YesNo);
                 if (dia_res == DialogResult.No) return;
                 device = Device.SECOND_LASER;
             }
@@ -1423,7 +1427,6 @@ namespace Trolley_Control
             xmlreader.ReadStartElement();
             xmlreader.ReadToNextSibling("RESISTANCEBRIDGE");
             xmlreader.ReadToDescendant(string.Concat("resistancebridge", bridge_name_));
-
             xmlreader.ReadToFollowing("A1_1");
             c_agilent.A1Card1 = xmlreader.ReadElementContentAsDouble();
             c_agilent.A2Card1 = xmlreader.ReadElementContentAsDouble();
@@ -1466,6 +1469,142 @@ namespace Trolley_Control
 
         }
 
+        private void setHumidityConfig()
+        {
+            bool foundloggers = false;
+            int num_loggers_found = 0;
+            string r_num = "";
+            string r_date = "";
+            string e_id = "";
+            string type = "";
+            string ip = "";
+            string location = "";
+            string correction = "";
+
+            //find up to two loggers with location tunnel.
+            loadXML();
+            xmlreader.ResetState();
+
+            //read the first node
+            xmlreader.ReadStartElement();
+            xmlreader.ReadToNextSibling("HUMIDITY");
+            xmlreader.Read();
+            //xmlreader.ReadToDescendant(string.Concat("humidityOmega1"));  //if this ever changes we need to change the code
+
+            while (!(xmlreader.EOF || foundloggers))
+            {
+                xmlreader.ReadToFollowing("reportnumber");
+                try {
+                    r_num = xmlreader.ReadElementContentAsString();
+                    r_date = xmlreader.ReadElementContentAsString();
+                    e_id = xmlreader.ReadElementContentAsString();
+                    type = xmlreader.ReadElementContentAsString();
+                    ip = xmlreader.ReadElementContentAsString();
+                    location = xmlreader.ReadElementContentAsString();
+                    correction = xmlreader.ReadElementContentAsString();
+                }
+                catch (System.InvalidOperationException)
+                {
+                    if (num_loggers_found == 1)
+                    {
+                        MessageBox.Show("Only one humidity logger was found; Non fatal, check configuration file matches real devices and their locations");
+                        //TH_logger2 = new OmegaTHLogger("1.1.1.1", ref thgui);
+                        TH_logger2.devID = 1;
+                        TH_logger2.ReportNumber = TH_logger1.ReportNumber;
+                        TH_logger2.ReportDate = TH_logger1.ReportDate;
+                        TH_logger2.EquipID = TH_logger1.EquipID;
+                        TH_logger2.Location = TH_logger1.Location;
+                        TH_logger2.Type = TH_logger1.Type;
+                        TH_logger2.IP = "1.1.1.1";
+                        TH_logger2.RawCorrection = TH_logger1.RawCorrection;
+
+                        string cor = TH_logger2.RawCorrection;
+                        //remove invalid part of the raw correction string.
+                        while (cor.Contains("^"))
+                        {
+                            
+                            int removal_index = cor.IndexOf('^');
+                            string c = cor.Remove(removal_index);
+                            cor = string.Concat(c, cor.Substring(removal_index + 1));
+                        }
+
+                        Humidity_logger_2.Text = "1.1.1.1";
+                        TH_logger2.HLoggerEq = cor;
+                        TH_logger2.CalculateCorrection();
+
+                        //Thread to control and monitor the second temperature and humidity logger.
+                        th_logger2_thread = new Thread(new ParameterizedThreadStart(TH_logger2.HLoggerQuery));
+                        th_logger2_thread.Start(TH_logger2);
+                        foundloggers = true;
+                    }
+
+                    if (num_loggers_found == 2)
+                    {
+                        MessageBox.Show("No humidity loggers were found, Fatal, check configuration file matches real devices and their locations");
+                    }
+                    return;
+                }
+
+                if (location.Equals("TUNNEL")) //we found a humidity location which is in the tunnel...good
+                {
+                    num_loggers_found++;
+                    if (num_loggers_found == 1)
+                    {
+                        
+                        TH_logger1.devID = 0;
+                        TH_logger1.ReportNumber = r_num;
+                        TH_logger1.ReportDate = r_date;
+                        TH_logger1.EquipID = e_id;
+                        TH_logger1.Location = location;
+                        TH_logger1.Type = type;
+                        TH_logger1.IP = ip;
+                        TH_logger1.RawCorrection = correction;
+
+                        //remove invalid part of the raw correction string.
+                        while (correction.Contains("^"))
+                        {
+                            int removal_index = correction.IndexOf('^');
+                            string c = correction.Remove(removal_index);
+                            correction = string.Concat(c,correction.Substring(removal_index+1));
+                        }
+                        Humidity_logger_1.Text = ip;
+                        TH_logger1.HLoggerEq = correction;
+                        TH_logger1.CalculateCorrection();
+
+                        
+                        
+                    }
+                    else if(num_loggers_found == 2){
+                        
+                        TH_logger2.devID = 1;
+                        TH_logger2.ReportNumber = r_num;
+                        TH_logger2.ReportDate = r_date;
+                        TH_logger2.EquipID = e_id;
+                        TH_logger2.Location = location;
+                        TH_logger2.Type = type;
+                        TH_logger2.IP = ip;
+                        TH_logger2.RawCorrection = correction;
+
+                        //remove invalid part of the raw correction string.
+                        while (correction.Contains("^"))
+                        {
+                            int removal_index = correction.IndexOf('^');
+                            string c = correction.Remove(removal_index);
+                            correction = string.Concat(c, correction.Substring(removal_index + 1));
+                        }
+
+                        Humidity_logger_2.Text = ip;
+                        TH_logger2.HLoggerEq = correction;
+                        TH_logger2.CalculateCorrection();
+
+                        
+                        foundloggers = true;
+                    }
+                    xmlreader.Read();
+                }
+            }
+        }
+
         private void setLaserConfig(string laser_serial)
         {
             loadXML();
@@ -1495,6 +1634,8 @@ namespace Trolley_Control
             }
             VacuumWavelenthTextbox.Text = Convert.ToString(HP5519_Laser.Wavelength);
         }
+
+     
 
         private void Laser_Picker_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1655,18 +1796,27 @@ namespace Trolley_Control
             Measurement.OneOffReset = true;
         }
 
-        private void H_logger_1_correction_TextChanged(object sender, EventArgs e)
+        private void H_Logger_1_Button_Click(object sender, EventArgs e)
         {
-            string equation = Convert.ToString(H_logger_1_correction.Text);
-            TH_logger1.HLoggerEq = equation;
-            TH_logger1.CalculateCorrection();
+            string i = "Report Number: " + TH_logger1.ReportNumber + "\n"
+                     + "Report Date: " + TH_logger1.ReportDate + "\n"
+                     + "Equipment Register ID: " + TH_logger1.EquipID + "\n"
+                     + "Location: " + TH_logger1.Location.ToString() + "\n"
+                     + "IP: " + TH_logger1.IP.ToString() + "\n"
+                     + "Raw Correction: " + TH_logger1.RawCorrection.ToString() + "\n";
+            MessageBox.Show(i);
+           
         }
 
-        private void H_logger_2_correction_TextChanged(object sender, EventArgs e)
+        private void H_Logger_2_Button_Click(object sender, EventArgs e)
         {
-            string equation = Convert.ToString(H_logger_2_correction.Text);
-            TH_logger2.HLoggerEq= equation;
-            TH_logger2.CalculateCorrection();
+            string i = "Report Number: " + TH_logger2.ReportNumber + "\n"
+                    + "Report Date: " + TH_logger2.ReportDate + "\n"
+                    + "Equipment Register ID: " + TH_logger2.EquipID + "\n"
+                    + "Location: " + TH_logger2.Location.ToString() + "\n"
+                    + "IP: " + TH_logger2.IP.ToString() + "\n"
+                    + "Raw Correction: " + TH_logger2.RawCorrection.ToString() + "\n";
+            MessageBox.Show(i);
         }
     }
 }
