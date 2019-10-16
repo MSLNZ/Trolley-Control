@@ -83,20 +83,14 @@
             this.CO2_Level = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
-            this.H_logger_1_correction = new System.Windows.Forms.TextBox();
-            this.H_logger_2_correction = new System.Windows.Forms.TextBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
             this.BarometerTypeComboBox = new System.Windows.Forms.ComboBox();
             this.VacuumWavelenthTextbox = new System.Windows.Forms.TextBox();
             this.Laser_Picker_ComboBox = new System.Windows.Forms.ComboBox();
             this.label16 = new System.Windows.Forms.Label();
             this.LaserInfoButton = new System.Windows.Forms.Button();
+            this.H_Logger_1_Button = new System.Windows.Forms.Button();
+            this.H_Logger_2_Button = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.Motor_Speed)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.FileMenu.SuspendLayout();
@@ -536,6 +530,7 @@
             // 
             // Humidity_logger_1
             // 
+            this.Humidity_logger_1.Enabled = false;
             this.Humidity_logger_1.Location = new System.Drawing.Point(172, 57);
             this.Humidity_logger_1.Name = "Humidity_logger_1";
             this.Humidity_logger_1.Size = new System.Drawing.Size(158, 20);
@@ -545,11 +540,12 @@
             // 
             // Humidity_logger_2
             // 
+            this.Humidity_logger_2.Enabled = false;
             this.Humidity_logger_2.Location = new System.Drawing.Point(172, 82);
             this.Humidity_logger_2.Name = "Humidity_logger_2";
             this.Humidity_logger_2.Size = new System.Drawing.Size(158, 20);
             this.Humidity_logger_2.TabIndex = 29;
-            this.Humidity_logger_2.Text = "131.203.15.84";
+            this.Humidity_logger_2.Text = "131.203.15.83";
             this.Humidity_logger_2.TextChanged += new System.EventHandler(this.Humidity_logger_2_TextChanged);
             // 
             // EDMRadioButton
@@ -593,7 +589,7 @@
             // 
             // CO2_Level
             // 
-            this.CO2_Level.Location = new System.Drawing.Point(167, 205);
+            this.CO2_Level.Location = new System.Drawing.Point(167, 190);
             this.CO2_Level.Name = "CO2_Level";
             this.CO2_Level.Size = new System.Drawing.Size(163, 20);
             this.CO2_Level.TabIndex = 35;
@@ -603,7 +599,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(15, 208);
+            this.label6.Location = new System.Drawing.Point(16, 193);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(64, 13);
             this.label6.TabIndex = 36;
@@ -612,92 +608,20 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(339, 208);
+            this.label8.Location = new System.Drawing.Point(339, 193);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(27, 13);
             this.label8.TabIndex = 37;
             this.label8.Text = "ppm";
             // 
-            // H_logger_1_correction
-            // 
-            this.H_logger_1_correction.Location = new System.Drawing.Point(121, 114);
-            this.H_logger_1_correction.Name = "H_logger_1_correction";
-            this.H_logger_1_correction.Size = new System.Drawing.Size(209, 20);
-            this.H_logger_1_correction.TabIndex = 38;
-            this.H_logger_1_correction.Text = "-11.3+0.314R-0.00462R2+0.0000314R3";
-            this.H_logger_1_correction.TextChanged += new System.EventHandler(this.H_logger_1_correction_TextChanged);
-            // 
-            // H_logger_2_correction
-            // 
-            this.H_logger_2_correction.Location = new System.Drawing.Point(121, 149);
-            this.H_logger_2_correction.Name = "H_logger_2_correction";
-            this.H_logger_2_correction.Size = new System.Drawing.Size(209, 20);
-            this.H_logger_2_correction.TabIndex = 39;
-            this.H_logger_2_correction.Text = "-9+0.285R-0.00409R2+0.0000265R3";
-            this.H_logger_2_correction.TextChanged += new System.EventHandler(this.H_logger_2_correction_TextChanged);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(15, 108);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(92, 13);
-            this.label9.TabIndex = 40;
-            this.label9.Text = "Humidity Logger 1";
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(15, 121);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(100, 13);
-            this.label10.TabIndex = 41;
-            this.label10.Text = "Correction Equation";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(15, 143);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(92, 13);
-            this.label11.TabIndex = 42;
-            this.label11.Text = "Humidity Logger 2";
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(15, 156);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(100, 13);
-            this.label12.TabIndex = 43;
-            this.label12.Text = "Correction Equation";
-            // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(15, 182);
+            this.label13.Location = new System.Drawing.Point(16, 150);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(55, 13);
             this.label13.TabIndex = 45;
             this.label13.Text = "Barometer";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(339, 117);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(94, 13);
-            this.label14.TabIndex = 46;
-            this.label14.Text = "a+b.H+c.H2+d.H3";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(339, 152);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(94, 13);
-            this.label15.TabIndex = 47;
-            this.label15.Text = "a+b.H+c.H2+d.H3";
             // 
             // BarometerTypeComboBox
             // 
@@ -705,7 +629,7 @@
             this.BarometerTypeComboBox.Items.AddRange(new object[] {
             "PTB220A",
             "PTU303"});
-            this.BarometerTypeComboBox.Location = new System.Drawing.Point(167, 174);
+            this.BarometerTypeComboBox.Location = new System.Drawing.Point(167, 150);
             this.BarometerTypeComboBox.Name = "BarometerTypeComboBox";
             this.BarometerTypeComboBox.Size = new System.Drawing.Size(163, 21);
             this.BarometerTypeComboBox.TabIndex = 48;
@@ -759,22 +683,36 @@
             this.LaserInfoButton.UseVisualStyleBackColor = true;
             this.LaserInfoButton.Click += new System.EventHandler(this.LaserInfoButton_Click);
             // 
+            // H_Logger_1_Button
+            // 
+            this.H_Logger_1_Button.Location = new System.Drawing.Point(342, 55);
+            this.H_Logger_1_Button.Name = "H_Logger_1_Button";
+            this.H_Logger_1_Button.Size = new System.Drawing.Size(37, 22);
+            this.H_Logger_1_Button.TabIndex = 49;
+            this.H_Logger_1_Button.Text = "Info";
+            this.H_Logger_1_Button.UseVisualStyleBackColor = true;
+            this.H_Logger_1_Button.Click += new System.EventHandler(this.H_Logger_1_Button_Click);
+            // 
+            // H_Logger_2_Button
+            // 
+            this.H_Logger_2_Button.Location = new System.Drawing.Point(342, 80);
+            this.H_Logger_2_Button.Name = "H_Logger_2_Button";
+            this.H_Logger_2_Button.Size = new System.Drawing.Size(37, 23);
+            this.H_Logger_2_Button.TabIndex = 50;
+            this.H_Logger_2_Button.Text = "Info";
+            this.H_Logger_2_Button.UseVisualStyleBackColor = true;
+            this.H_Logger_2_Button.Click += new System.EventHandler(this.H_Logger_2_Button_Click);
+            // 
             // Tunnel_Control_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(1233, 808);
+            this.Controls.Add(this.H_Logger_2_Button);
+            this.Controls.Add(this.H_Logger_1_Button);
             this.Controls.Add(this.BarometerTypeComboBox);
-            this.Controls.Add(this.label15);
-            this.Controls.Add(this.label14);
             this.Controls.Add(this.label13);
-            this.Controls.Add(this.label12);
-            this.Controls.Add(this.label11);
-            this.Controls.Add(this.label10);
-            this.Controls.Add(this.label9);
-            this.Controls.Add(this.H_logger_2_correction);
-            this.Controls.Add(this.H_logger_1_correction);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.AuxLaserRadioButton);
             this.Controls.Add(this.label6);
@@ -871,20 +809,14 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Button DUT_Reset_Button;
-        private System.Windows.Forms.TextBox H_logger_1_correction;
-        private System.Windows.Forms.TextBox H_logger_2_correction;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.Label label15;
         private System.Windows.Forms.ComboBox BarometerTypeComboBox;
         private System.Windows.Forms.ComboBox Laser_Picker_ComboBox;
         private System.Windows.Forms.TextBox VacuumWavelenthTextbox;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Button LaserInfoButton;
+        private System.Windows.Forms.Button H_Logger_1_Button;
+        private System.Windows.Forms.Button H_Logger_2_Button;
     }
 }
 
