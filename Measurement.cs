@@ -100,6 +100,8 @@ namespace Trolley_Control
         private static double offset = 2.0;
         private static Object lockthis = new Object();
         private static int d_type = Device.EDM;
+        private static int previous_num_prts_edm = 1;
+        private static int previous_num_prts_laser = 1;
 
 
 
@@ -385,11 +387,16 @@ namespace Trolley_Control
             }
             edm_beam_temperature_error_reported = false;
 
+            int num_prts_involved;
             double pos = r_laser.R_Sample;   //get the current laser position to figure out how much beam to include in the beam over bench
             double average_edm_beam_temp = 0.0;
-
+            if (pos.Equals(double.NaN)) return -1;  //laser not returning a value
+           
             //prts to include in average calcuation
-            int num_prts_involved = 15 - Convert.ToInt32(Math.Floor((Math.Abs(pos) + offset) / 4));
+            num_prts_involved = 15 - Convert.ToInt32(Math.Floor((Math.Abs(pos) + offset) / 4));
+    
+            
+
             double first_row_avg = 0.0;  //the average for prts included in the first beam.
 
 
@@ -492,11 +499,14 @@ namespace Trolley_Control
             }
             edm_beam_temperature_error_reported = false;
 
+            int num_prts_involved;
             double pos = r_laser.R_Sample;   //get the current laser position to figure out how much beam to include in the beam over bench
-            
-
+            if (pos.Equals(double.NaN)) return -1;  //laser not returning a value
+          
+            //we got a valid sample from the laser
             //prts to include in average calcuation
-            int num_prts_involved = 15 - Convert.ToInt32(Math.Floor((Math.Abs(pos) + offset) / 4));
+            num_prts_involved = 15 - Convert.ToInt32(Math.Floor((Math.Abs(pos) + offset) / 4));
+                
             double first_row_avg = 0.0;  //the average for prts included in the first beam.
 
 
