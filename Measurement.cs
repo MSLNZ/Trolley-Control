@@ -578,15 +578,16 @@ namespace Trolley_Control
             }
             else if (number_beam_folds == 1)
             {
+                
                 first_row_avg = firstAverageRI(num_prts_involved, ref ug, is_laser,store);
 
                 //The partial second fold of the beam uses prts in row 1 (row over bench) and row 2 (row over walkway).  The average of these rows is used
-                //there are 12 prts in each row that are used for this part of the beam.  
-                //Range for bench row is 1 to 12.  Range for walkway row is 16 to 28. -->> should correspond to number written on the prts e.g 001 002 003 etc
+                //there are 5 prts in row 2 that are used (This is the special mod that this version refers to).
+                //Range for bench row is 1 to 15.  Range for walkway row is 16 to 20. -->> should correspond to number written on the prts e.g 001 002 003 etc
                 //for this part of the beam we are average the two rows of prts
 
                 int valid_results = 0;
-                double second_row_avg = secondAverageRI(ref valid_results, 12, ref ug, is_laser,store);
+                double second_row_avg = secondAverageRI(ref valid_results, 5, ref ug, is_laser,store);
 
                 //compute the weighted average of the first and second rows
                 double second_row_sum = second_row_avg * valid_results;
@@ -683,6 +684,7 @@ namespace Trolley_Control
                         MeasurementPoint.group_humidities1[prtmap_over_bench[14 - i]] = AverageHumidity;
                         MeasurementPoint.group_wavelength = DUTWavelength;
 
+                        //Note we still use group wavelength here because we expect the user to have entered laser wavelength in the DUT wavelength box
                         if (is_laser) sum = sum + CalculatePhaseRefractiveIndex(MeasurementPoint.group_wavelength, MeasurementPoint.group_temperatures1[prtmap_over_bench[14 - i]], MeasurementPoint.group_pressures1[prtmap_over_bench[14 - i]], MeasurementPoint.group_humidities1[prtmap_over_bench[14 - i]]);
                         else sum = sum + CalculateGroupRefractiveIndex(MeasurementPoint.group_wavelength, MeasurementPoint.group_temperatures1[prtmap_over_bench[14 - i]], MeasurementPoint.group_pressures1[prtmap_over_bench[14 - i]], MeasurementPoint.group_humidities1[prtmap_over_bench[14 - i]]);
                     }
