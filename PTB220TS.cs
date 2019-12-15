@@ -267,7 +267,7 @@ namespace Trolley_Control
                     s_port.Dispose();
                     Thread.Sleep(1000);
                     current_exe_stage = BarometerExecutionStage.SETUP;
-                    update_gui(BarometerExecutionStage.SETUP, "The Vaisala Serial Port Has Unexpectedly Closed", !error_reported);
+                    //update_gui(BarometerExecutionStage.SETUP, "The Vaisala Serial Port Has Unexpectedly Closed", !error_reported);
                     return false;
                 }
                 catch (IOException)
@@ -277,7 +277,7 @@ namespace Trolley_Control
                     s_port.Dispose();
                     Thread.Sleep(1000);
                     current_exe_stage = BarometerExecutionStage.SETUP;
-                    update_gui(BarometerExecutionStage.SETUP, "The Vaisala Serial Port Has Unexpectedly Closed", !error_reported);
+                    //update_gui(BarometerExecutionStage.SETUP, "The Vaisala Serial Port Has Unexpectedly Closed", !error_reported);
                     return false;
                 }
                 catch (Exception e)
@@ -287,7 +287,7 @@ namespace Trolley_Control
                     s_port.Dispose();
                     Thread.Sleep(1000);
                     current_exe_stage = BarometerExecutionStage.SETUP;
-                    update_gui(BarometerExecutionStage.SETUP, e.ToString(), !error_reported);
+                    //update_gui(BarometerExecutionStage.SETUP, e.ToString(), !error_reported);
                     return false;
                 }
             }
