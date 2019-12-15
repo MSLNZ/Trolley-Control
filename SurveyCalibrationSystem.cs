@@ -220,7 +220,15 @@ namespace Trolley_Control
                         if (msg.Equals("No Error"))
                         {
                             Measurement.Pressure = barometer.getPressure();
-                            Thread printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
+                            Thread printerThread;
+                            try
+                            {
+                                printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                return;
+                            }
                             printerThread.Start();
                             redrawLaserEnviroTextbox(Measurement.PrintString);
                         }
@@ -287,8 +295,15 @@ namespace Trolley_Control
                             if (OmegaTHLogger.numConnectedLoggers == 2) Measurement.AverageHumidity = (result1 + result2) / 2;                     //we have both omega loggers working.
                             else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger1.isActive)) Measurement.AverageHumidity = result1;     //only have one valid result - logger 1
                             else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger2.isActive)) Measurement.AverageHumidity = result2;     //only have one valid result - logger 2
-                           
-                            Thread printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
+
+                            Thread printerThread;
+                            try {
+                                printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
+                            }
+                            catch (IndexOutOfRangeException)
+                            {
+                                return;
+                            }
                             printerThread.Start();
                             redrawLaserEnviroTextbox(Measurement.PrintString);
                         }
@@ -615,8 +630,17 @@ namespace Trolley_Control
                     case ProcName.E1735A_SET_PARAMETER:
                         break;
                     case ProcName.E1735A_GET_PARAMETER:
+
+                        Thread printerThread;
+                        try
+                        {
+                            printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            return;
+                        }
                         
-                        Thread printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
                         printerThread.Start();
                         redrawLaserEnviroTextbox(Measurement.PrintString);
                         
@@ -1395,8 +1419,15 @@ namespace Trolley_Control
                 double r = measurement_list[index].Result;
                 Measurement.setTemperature(r, index);
 
-             
-                Thread printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
+                Thread printerThread;
+                try
+                {
+                    printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    return;
+                }
                 printerThread.Start();
                 redrawLaserEnviroTextbox(Measurement.PrintString);
             }
