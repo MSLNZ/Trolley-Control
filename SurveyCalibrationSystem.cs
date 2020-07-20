@@ -1576,7 +1576,7 @@ namespace Trolley_Control
                     return;
                 }
 
-                if (location.Equals("TUNNEL")) //we found a humidity location which is in the tunnel...good
+                if (location.Equals("TUNNEL")) //we found a humidity device which is in the tunnel...good
                 {
                     num_loggers_found++;
                     if (num_loggers_found == 1)

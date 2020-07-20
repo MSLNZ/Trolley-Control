@@ -768,12 +768,12 @@ namespace Trolley_Control
 
                         if (is_laser)
                         {
-                            sum1 = sum1 + CalculatePhaseRefractiveIndex(MeasurementPoint.group_wavelength, MeasurementPoint.group_temperatures2[prtmap_over_bench[14 - i]], MeasurementPoint.group_pressures2[prtmap_over_walkway[14 - i]], MeasurementPoint.group_humidities2[prtmap_over_walkway[14 - i]]);
+                            sum1 = sum1 + CalculatePhaseRefractiveIndex(MeasurementPoint.group_wavelength, MeasurementPoint.group_temperatures2[prtmap_over_bench[14 - i]], MeasurementPoint.group_pressures2[prtmap_over_bench[14 - i]], MeasurementPoint.group_humidities2[prtmap_over_bench[14 - i]]);
                             sum2 = sum2 + CalculatePhaseRefractiveIndex(MeasurementPoint.group_wavelength, MeasurementPoint.group_temperatures2[prtmap_over_walkway[i]], MeasurementPoint.group_pressures2[prtmap_over_walkway[i]], MeasurementPoint.group_humidities2[prtmap_over_walkway[i]]);
                         }
                         else
                         {
-                            sum1 = sum1 + CalculateGroupRefractiveIndex(MeasurementPoint.group_wavelength, MeasurementPoint.group_temperatures2[prtmap_over_bench[14 - i]], MeasurementPoint.group_pressures2[prtmap_over_walkway[14 - i]], MeasurementPoint.group_humidities2[prtmap_over_walkway[14 - i]]);
+                            sum1 = sum1 + CalculateGroupRefractiveIndex(MeasurementPoint.group_wavelength, MeasurementPoint.group_temperatures2[prtmap_over_bench[14 - i]], MeasurementPoint.group_pressures2[prtmap_over_bench[14 - i]], MeasurementPoint.group_humidities2[prtmap_over_bench[14 - i]]);
                             sum2 = sum2 + CalculateGroupRefractiveIndex(MeasurementPoint.group_wavelength, MeasurementPoint.group_temperatures2[prtmap_over_walkway[i]], MeasurementPoint.group_pressures2[prtmap_over_walkway[i]], MeasurementPoint.group_humidities2[prtmap_over_walkway[i]]);
                         }
                     }

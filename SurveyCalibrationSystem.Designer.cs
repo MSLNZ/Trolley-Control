@@ -535,7 +535,7 @@
             this.Humidity_logger_1.Name = "Humidity_logger_1";
             this.Humidity_logger_1.Size = new System.Drawing.Size(158, 20);
             this.Humidity_logger_1.TabIndex = 28;
-            this.Humidity_logger_1.Text = "131.203.13.216";
+            this.Humidity_logger_1.Text = "172.16.14.157";
             this.Humidity_logger_1.TextChanged += new System.EventHandler(this.Humidity_logger_1_TextChanged);
             // 
             // Humidity_logger_2
@@ -545,7 +545,7 @@
             this.Humidity_logger_2.Name = "Humidity_logger_2";
             this.Humidity_logger_2.Size = new System.Drawing.Size(158, 20);
             this.Humidity_logger_2.TabIndex = 29;
-            this.Humidity_logger_2.Text = "131.203.15.83";
+            this.Humidity_logger_2.Text = "172.16.14.156";
             this.Humidity_logger_2.TextChanged += new System.EventHandler(this.Humidity_logger_2_TextChanged);
             // 
             // EDMRadioButton
