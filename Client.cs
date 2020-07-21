@@ -67,7 +67,7 @@ namespace Trolley_Control
                 
             }
          
-            catch (SocketException)
+            catch (SocketException e)
             {
                 return false;
             }

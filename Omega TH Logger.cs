@@ -35,7 +35,7 @@ namespace Trolley_Control
         private bool isactive = false;
         private short dev_id = 255;
         private double correction = 0.0;
-        protected static readonly int port = 2000;
+        protected static readonly int port = 14;
         private string report_num = "";
         private string report_date = "";
         private string equip_id = "";
