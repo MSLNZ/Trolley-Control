@@ -27,6 +27,8 @@ namespace Trolley_Control
     public delegate void PrintTemperatureData(double temperature, string msg, long index);
     public delegate void GUIUpdater(string msg);
     public delegate void ShowPositions(string positions, string msg, bool report);
+    public delegate void OnOK();
+    
 
     public partial class Tunnel_Control_Form : Form
     {
@@ -71,6 +73,8 @@ namespace Trolley_Control
         private Thread measurement_thread;
         private Thread file_opener_thread;
         private Thread painter_thread;
+        private static string[] showed_messages = { "", "", "", "", "", "", "", "", "", "" };
+        private static int num_errors_reported = 0;
         
         
         //private System.IO.Stream fileStream;
@@ -81,6 +85,8 @@ namespace Trolley_Control
         private THLoggerUpdateGUI thgui;
         private VaisalaUpdateGui pbarug;
         private GUIUpdater gupdate;
+        private static event OnOK OnOkClick;
+
         private Client TcpClient;
         private short mode = Mode.Debug;
         private bool print = true;
@@ -108,7 +114,6 @@ namespace Trolley_Control
             EDMRadioButton.Checked = true;
             TotalStationRadioButton.Checked = false;
             AuxLaserRadioButton.Checked = false;
-
             doIni2XmlConversion();
            
             TcpClient = new Client();
@@ -119,7 +124,8 @@ namespace Trolley_Control
             thgui = new THLoggerUpdateGUI(Update_THlogger); //delegate to update the gui with TH logger related issues
             pbarug = new VaisalaUpdateGui(Update_Pressure_Logger);
             gupdate = new GUIUpdater(redrawLaserEnviroTextbox);
-            //m = new Message();
+           
+        //m = new Message();
 
             current_measurement_index = -1;
             active_measurment_index = 0;
@@ -266,13 +272,13 @@ namespace Trolley_Control
                     case ProcNameHumidity.CONNECT:
                         if(!msg.Equals("No Error"))
                         {
-                            MessageBox.Show(msg.ToString());
+                            Show(msg.ToString());
                         }
                         break;
                     case ProcNameHumidity.EQUATION_FORMAT:
                         if (!msg.Equals("No Error"))
                         {
-                            MessageBox.Show(msg.ToString());
+                            Show(msg.ToString());
                         }
                         break;
                     case ProcNameHumidity.SEND_RECEIVE:
@@ -310,7 +316,7 @@ namespace Trolley_Control
                         else
                         {
                             //There has been a send receive error....update the GUI
-                            MessageBox.Show(msg.ToString());
+                            Show(msg.ToString());
                         }
                         break;
                     case ProcNameHumidity.IDLE:
@@ -401,9 +407,9 @@ namespace Trolley_Control
                         }
                         break;
                     case ProcNameMeasurement.EDM_BEAM_TEMPERATURE:
-                        if ((msg != MeasurementError.NO_ERROR)&& (report == true))
+                        if ((msg != MeasurementError.NO_ERROR) && (report == true))
                         {
-                            DialogResult dia_r = MessageBox.Show(msg);
+                            Show(msg.ToString());
                         }
                         break;
                     case ProcNameMeasurement.TROLLEY_SET:
@@ -673,8 +679,53 @@ namespace Trolley_Control
             }
         }
 
+       
 
+        public static void Show(string text)
+        {
+            System.Threading.ParameterizedThreadStart pT = new System.Threading.ParameterizedThreadStart(InvokeShow);
+            pT.BeginInvoke(text, null, null);
+        }
 
+        private static void InvokeShow(object text)
+        {
+            bool found = false;
+            int found_index=0;
+            int first_empty_index=0;
+            for (int i = 0; i < showed_messages.Length; i++) {
+                if (showed_messages[i].Equals(""))
+                {
+                    first_empty_index = i;
+                }
+                if (showed_messages[i].Equals(text))
+                {
+                    //this message is already displayed on the screen
+                    found = true;
+                    found_index = i;
+                    break;
+                }
+                
+            }
+
+            if (found) return; //don't display the message box again.
+            else {
+                showed_messages[first_empty_index] = (string ) text;
+                if (MessageBox.Show(text.ToString()) == DialogResult.OK)
+                {
+                    
+                    //ok has been pressed, so we need to remove the message from the showed messages array 
+                    for(int i = 0; i<showed_messages.Length; i++)
+                    {
+                        //find the index of the entry-another thread may have changed the entry while the dialog box sat there waiting to be cleared
+                        if (showed_messages[i].Equals(text))
+                        {
+                            showed_messages[i] = "";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         private void Go_Stop_Button_Click(object sender, EventArgs e)
         {
