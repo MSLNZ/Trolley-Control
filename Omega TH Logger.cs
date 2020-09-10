@@ -259,7 +259,7 @@ namespace Trolley_Control
                     {
                         if (!error_reported)
                         {
-                            h_update(ProcNameHumidity.SEND_RECEIVE, "An orror occured sending/receiving data from the humidity device", true);   //error not reported - report
+                            h_update(ProcNameHumidity.SEND_RECEIVE, "An orror occured sending/receiving data from the humidity device. This means one or more data requests to the TH logger failed.  It seems as though this is normal behaviour for the Omega loggers. If humidity values are being reported in the GUI, then you can assume that things are working as they should be.", true);   //error not reported - report
                             error_reported = true;
                         }
                     }
@@ -281,7 +281,7 @@ namespace Trolley_Control
                         timer_zero1 = Environment.TickCount;
                     }
                 }
-                Thread.Sleep(5000);  //we only sample the logger every 5 seconds
+                Thread.Sleep(20000);  //we only sample the logger every 20 seconds
             }
 
         }
