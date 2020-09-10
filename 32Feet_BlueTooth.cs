@@ -29,6 +29,7 @@ namespace Trolley_Control
         private BluetoothClient client;
         private List<string> items;
         private bool monitor = true;
+        private bool make_bt_thread = true;
 
         private const string address = "00126F2082F4";
 
@@ -78,6 +79,7 @@ namespace Trolley_Control
                 items.Clear();
                 try
                 {
+                    if (client != null) client.Close();
                     client = new BluetoothClient();
                
                 }
@@ -92,7 +94,7 @@ namespace Trolley_Control
                 
                     
                     Thread.Sleep(1000);
-                    //invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Starting scan for bluetooth devices", false);
+                    invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Starting scan for bluetooth devices", false);
                     devices = client.DiscoverDevicesInRange();
                     bool found_trolley = false;
                     int index = 0;
@@ -115,19 +117,29 @@ namespace Trolley_Control
                 }
             }
           
-            //invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Scan Complete", false);
-            //invoke_gui(ProcNameTrolley.BLUETOOTH_AVAILIBLE, items, false);
-
+            invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Scan Complete", false);
+            invoke_gui(ProcNameTrolley.BLUETOOTH_AVAILIBLE, items, false);
+            Thread.Sleep(1000);
 
             //the tunnel trolley has been discovered so we can now try and connect to it
-            BluetoothClientThread = new Thread(new ThreadStart(ConnectSerial));
-            BluetoothClientThread.Start();
-            //invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Attempting to pair with trolley", false);
+            //make a thread if there isn't one running already
+
+            if (make_bt_thread)
+            {
+                BluetoothClientThread = new Thread(new ThreadStart(ConnectSerial));
+                BluetoothClientThread.Start();
+            }
+            else ConnectSerial();
+                
+            
             
         }
 
         public void ConnectSerial() {
 
+           
+            //let this thread recursively call scan until we get connected
+            make_bt_thread = false;
             //this is the address we want  
             BluetoothAddress addr = BluetoothAddress.Parse(address);
             nguid = new Guid("00001101-0000-1000-8000-00805F9B34FB");
@@ -143,6 +155,8 @@ namespace Trolley_Control
 
             try
             {
+                invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Attempting to pair with trolley", false);
+                Thread.Sleep(1000);
                 client.Connect(ep);
             }
             catch(Exception e)
@@ -153,6 +167,7 @@ namespace Trolley_Control
 
             try
             {
+                //if (serialstream != null) serialstream.Close();
                 if(client.Connected) serialstream = client.GetStream();
                 
                 
@@ -165,11 +180,12 @@ namespace Trolley_Control
 
             if (client.Connected)
             {
+                make_bt_thread = true;
                 BluetoothMonitorThread = new Thread(new ThreadStart(MonitorConnection));
                 BluetoothMonitorThread.Start();
                 invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connected", false);
             }
-            
+            //BluetoothClientThread is now finished
         }
 
         public void MonitorConnection()
@@ -193,18 +209,25 @@ namespace Trolley_Control
                     }
                     catch (IOException)
                     {
-                        //invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
+                        invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
                         connected = false;
                         StartScan();
-
                         break;
                     }
 
                     catch (TimeoutException)
                     {
-                        //invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
+                        invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
                         connected = false;
                         StartScan();
+                        break;
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
+                        connected = false;
+                        StartScan();
+                        break;
                     }
                 }
             }
