@@ -12,7 +12,8 @@ namespace Trolley_Control
         public struct Mode
     {
         public const short Debug = 0;
-        public const short Run = 1;
+        public const short SUPPRESS_DEBUG_INFO = 1;
+        
     }
     public struct ProcNameMeasurement
     {
@@ -129,6 +130,7 @@ namespace Trolley_Control
         private static int d_type = Device.EDM;
         private static int previous_num_prts_edm = 1;
         private static int previous_num_prts_laser = 1;
+        private static bool run = true;
 
 
 
@@ -327,7 +329,206 @@ namespace Trolley_Control
             get { return prt_string; }
             set { prt_string = value; }
         }
-            
+        
+        public static bool MeasurementLoopEnabled
+        {
+            get { return run; }
+            set { run = value; }
+        }
+
+        public bool AveragingPending
+        {
+            get
+            {
+                return set_averaging_pending;
+            }
+            set
+            {
+                set_averaging_pending = value;
+            }
+        }
+
+        public bool DoReset
+        {
+            set { doreset = value; }
+            get { return doreset; }
+        }
+
+        public static bool OneOffReset
+        {
+            set { one_off_reset = value; }
+            get { return one_off_reset; }
+        }
+
+        public bool AbortMeasurement
+        {
+            set { abort = value; }
+            get { return abort; }
+        }
+
+
+
+        public static bool executionStatus
+        {
+            get
+            {
+                return measurement_status;
+            }
+            set
+            {
+                measurement_status = value;
+            }
+
+        }
+
+
+
+        public static short CurrentExecutionStage
+        {
+            get
+            {
+                return current_execution_stage;
+            }
+            set
+            {
+                current_execution_stage = value;
+            }
+        }
+        //target values
+        public double[] Intermediate
+        {
+            set
+            {
+                intermediate_stops = value;
+            }
+            get
+            {
+                return intermediate_stops;
+            }
+        }
+
+        public double[][] getIntermediateValue
+        {
+            get
+            {
+                return intermediate_values;
+            }
+        }
+
+        public int NumInt
+        {
+            get
+            {
+                return number_int_values;
+            }
+            set
+            {
+                number_int_values = value;
+            }
+        }
+
+
+        public double StartPosition
+        {
+
+            get
+            {
+                return start_pos;
+            }
+            set
+            {
+                start_pos = value;
+            }
+        }
+
+        public double[] StartPositionValue
+        {
+            get
+            {
+                return start_pos_value;
+            }
+            set
+            {
+                start_pos_value = value;
+            }
+        }
+
+        public double IntPosition
+        {
+
+            get
+            {
+                return intermediate;
+            }
+            set
+            {
+                intermediate = value;
+            }
+        }
+        public double EndPos
+        {
+
+            get
+            {
+                return end_pos;
+            }
+            set
+            {
+                end_pos = value;
+            }
+        }
+        public double DTime
+        {
+            get
+            {
+                return dwell_time;
+            }
+            set
+            {
+                dwell_time = value;
+            }
+        }
+        public double NSamples
+        {
+            get
+            {
+                return num_samples;
+            }
+            set
+            {
+                num_samples = value;
+            }
+        }
+        public string Direction
+        {
+            set { direction = value; }
+            get { return direction; }
+        }
+
+        public double[] EndPosValue
+        {
+            get
+            {
+                return end_pos_value;
+            }
+            set
+            {
+                end_pos_value = value;
+            }
+
+        }
+
+        public static double Target
+        {
+            get { return targt; }
+            set { targt = value; }
+        }
+
+        public static void OneMeasurement()
+        {
+            do_one_off = true;
+            executionStatus = true;
+        }
 
         /// <summary>
         /// Calculate the temperature of the air where the laser beam is passing through.
@@ -385,10 +586,13 @@ namespace Trolley_Control
             //prt name mapping is stored in prtmap array. 
             if (pos.Equals(double.NaN)) return -1;  //laser not returning a value
             int num_prts_involved = Convert.ToInt32(Math.Ceiling((Math.Abs(pos) + offset) / 4));
-
-
             laser_prts = new int[num_prts_involved];
 
+            //reset all the measurement point arrays to zero
+            Array.Clear(MeasurementPoint.phase_temperatures, 0, 30);
+            Array.Clear(MeasurementPoint.phase_pressures, 0, 30);
+            Array.Clear(MeasurementPoint.phase_humidities, 0, 30);
+           
             for (int i = 0; i < num_prts_involved; i++)
             {
                 laser_prts[i] = prtmap_over_bench[i];
@@ -411,7 +615,10 @@ namespace Trolley_Control
                 }
             }
             if(store) MeasurementPoint.RI_averaging_point = valid_results;
-            RI = sum / valid_results;
+
+            if (valid_results != 0) RI = sum / valid_results;
+            else RI = 1;
+
             average_Laser_RI = RI;
             return RI;
         }
@@ -671,6 +878,11 @@ namespace Trolley_Control
             double sum = 0.0;
             no_folds_prts = new int[num_prts];
             int valid_results = 0;
+
+            Array.Clear(MeasurementPoint.group_temperatures1, 0, 30);
+            Array.Clear(MeasurementPoint.group_pressures1, 0, 30);
+            Array.Clear(MeasurementPoint.group_humidities1, 0, 30);
+
             for (int i = 0; i < num_prts; i++)
             {
                 double r = temperatures[prtmap_over_bench[14 - i]];
@@ -746,6 +958,11 @@ namespace Trolley_Control
             double sum1 = 0.0;
             double sum2 = 0.0;
             fold_two_prts = new int[total_prts_per_row * 2];
+
+            Array.Clear(MeasurementPoint.group_temperatures2, 0, 30);
+            Array.Clear(MeasurementPoint.group_pressures2, 0, 30);
+            Array.Clear(MeasurementPoint.group_humidities2, 0, 30);
+
             for (int i = 0; i < total_prts_per_row; i++)
             {
                 double row1 = temperatures[prtmap_over_bench[14 - i]];
@@ -839,6 +1056,11 @@ namespace Trolley_Control
         {
             double sum1 = 0.0;
             fold_three_prts = new int[total_prts_in_row];
+
+            Array.Clear(MeasurementPoint.group_temperatures3, 0, 30);
+            Array.Clear(MeasurementPoint.group_pressures3, 0, 30);
+            Array.Clear(MeasurementPoint.group_humidities3, 0, 30);
+
             for (int i = 0; i < total_prts_in_row; i++)
             {
                 double row2 = temperatures[prtmap_over_walkway[14 - i]];
@@ -910,6 +1132,11 @@ namespace Trolley_Control
         {
             double sum1 = 0.0;
             fold_four_prts = new int[total_prts_in_row];
+
+            Array.Clear(MeasurementPoint.group_temperatures4, 0, 30);
+            Array.Clear(MeasurementPoint.group_pressures4, 0, 30);
+            Array.Clear(MeasurementPoint.group_humidities4, 0, 30);
+
             for (int i = 0; i < total_prts_in_row; i++)
             {
                 double row2 = temperatures[prtmap_over_walkway[i]];
@@ -1142,9 +1369,6 @@ namespace Trolley_Control
             rho_a = (1 - xv) * P_Pa * M_a / (Z_m * R * T_K);
             n = 1 + (rho_a / rho_axs) * r_axs + (rho_v / Rho_vs) * r_vs;
             return n;
-
-
-            
         }
 
         /// <summary>
@@ -1217,9 +1441,6 @@ namespace Trolley_Control
             rho_a = (1 - xv) * P_Pa * M_a / (Z_m * R * T_K);
             n = 1 + (rho_a / rho_axs) * r_axs + (rho_v / Rho_vs) * r_vs;
             return n;
-
-
-
         }
 
         public void SetDeviceType(short device)
@@ -1238,9 +1459,7 @@ namespace Trolley_Control
                     break;
                 default:
                     break;
-
             }
-
         }
 
         public void doDrawPrep()
@@ -1330,93 +1549,15 @@ namespace Trolley_Control
                     {
                         text.AppendLine("Temperature PRT " + (i + 1).ToString() + ": " + Measurement.getTemperature(i).ToString());
                     }
-
                     PrintString = text.ToString(); ;
-
                 }
                 catch (ObjectDisposedException)
                 {
                     Application.Exit();
                     PrintString = "";
                 }
-
             }
         }
-
-        public bool AveragingPending
-        {
-            get
-            {
-                return set_averaging_pending;
-            }
-            set
-            {
-                set_averaging_pending = value;
-            }
-        }
-
-        public bool DoReset
-        {
-            set { doreset = value; }
-            get { return doreset; }
-        }
-
-        public static bool OneOffReset
-        {
-            set { one_off_reset = value; }
-            get { return one_off_reset; }
-        }
-
-        public bool AbortMeasurement
-        {
-            set { abort = value; }
-            get { return abort; }
-        }
-
-        
-
-        public static bool executionStatus
-        {
-            get
-            {
-                return measurement_status;
-            }
-            set
-            {
-                measurement_status = value;
-            }
-
-        }
-
-        
-
-        public static short CurrentExecutionStage
-        {
-            get
-            {
-                return current_execution_stage;
-            }
-            set
-            {
-                current_execution_stage = value;
-            }
-        }
-
-        
-
-        //target values
-        public double[] Intermediate
-        {
-            set
-            {
-                intermediate_stops = value;
-            }
-            get
-            {
-                return intermediate_stops;
-            }
-        }
-
         public void setIntermediateValue(double[] values, int index)
         {
             try
@@ -1429,135 +1570,11 @@ namespace Trolley_Control
                 intermediate_values[index] = values;
             }
         }
-
-        public double[][] getIntermediateValue
-        {
-            get
-            {
-                return intermediate_values;
-            }
-        }
-
-        public int NumInt
-        {
-            get
-            {
-                return number_int_values;
-            }
-            set
-            {
-                number_int_values = value;
-            }
-        }
-
-
-        public double StartPosition
-        {
-
-            get
-            {
-                return start_pos;
-            }
-            set
-            {
-                start_pos = value;
-            }
-        }
-
-        public double[] StartPositionValue
-        {
-            get
-            {
-                return start_pos_value;
-            }
-            set
-            {
-                start_pos_value = value;
-            }
-        }
-
-        public double IntPosition
-        {
-
-            get
-            {
-                return intermediate;
-            }
-            set
-            {
-                intermediate = value;
-            }
-        }
-        public double EndPos
-        {
-
-            get
-            {
-                return end_pos;
-            }
-            set
-            {
-                end_pos = value;
-            }
-        }
-        public double DTime
-        {
-            get
-            {
-                return dwell_time;
-            }
-            set
-            {
-                dwell_time = value;
-            }
-        }
-        public double NSamples
-        {
-            get
-            {
-                return num_samples;
-            }
-            set
-            {
-                num_samples = value;
-            }
-        }
-        public string Direction
-        {
-            set { direction = value; }
-            get { return direction; }
-        }
-
-        public double[] EndPosValue
-        {
-            get
-            {
-                return end_pos_value;
-            }
-            set
-            {
-                end_pos_value = value;
-            }
-
-        }
-
-        public static double Target
-        {
-            get { return targt; }
-            set { targt = value; }
-        }
-
-        public static void OneMeasurement()
-        {
-            do_one_off = true;
-            executionStatus = true;
-        }
-
         public static void Measure(object stateinfo)
         {
             Measurement asyc_meas = (Measurement)stateinfo;
             int i = 0;
-            while (true)
+            while (MeasurementLoopEnabled)
             {
                 Thread.Sleep(10);  //Don't thrash the thread!
                 //if we need a one off measurement
@@ -1582,7 +1599,6 @@ namespace Trolley_Control
                         Measurement.do_one_off = false;
                     }
                 }
-
                 if (Measurement.one_off_reset)
                 {
                     short exstg = Measurement.current_execution_stage;
@@ -1604,7 +1620,6 @@ namespace Trolley_Control
                         Measurement.one_off_reset = false;
                     }
                 }
-                
                 switch (Measurement.CurrentExecutionStage)
                 {
                        
@@ -1614,7 +1629,6 @@ namespace Trolley_Control
                         //Try and connect if need be
                         if (DUT.TryConnect())
                         {
-
                             //reset the laser
                             if (asyc_meas.DoReset) asyc_meas.reflaser.Reset();
 
@@ -1632,15 +1646,8 @@ namespace Trolley_Control
 
                         //Try and connect if need be
                         if (DUT.TryConnect())
-                        {
-
-                            //dwell time count
-                            //Thread.Sleep((int) asyc_meas.dwell_time * 1000);
-
-                            
-
-
-                            while (i < asyc_meas.Intermediate.Length)
+                        { 
+                            while ((i < asyc_meas.Intermediate.Length)&& MeasurementLoopEnabled)
                             {
                                 //get the target.
                                 double target = asyc_meas.Intermediate[i];
@@ -1654,9 +1661,11 @@ namespace Trolley_Control
                                     break;
                                 }
 
-                                //read the edm and laser
-                                DUT_Request(asyc_meas, i, false);
-
+                                //if we can't do a read of the edm and laser the trolley is not allowed to move so wait 
+                                while (MeasurementLoopEnabled)
+                                {
+                                    if (DUT_Request(asyc_meas, i, false)) break;
+                                }
                                 i++;
                             }
                         }
@@ -1699,35 +1708,20 @@ namespace Trolley_Control
 
                 case "REVERSE":
                     //read the target and the laser to detemine if we need to move
-                    if (asyc_meas.reflaser.R_Sample < target)
+                    if ((asyc_meas.reflaser.R_Sample < target) && MeasurementLoopEnabled)
                     {
-                        //asyc_meas.speed[0] = 127;  //set the trolley speed 50%
-
                         //move the trolley forward at 50% of full speed
                         asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.STOP;
                         Thread.Sleep(100);
-
-
                         byte[] sb = new byte[1];
                         sb[0] = 160;
                         asyc_meas.reftrolley.SpeedByte = sb;
-
-                        //asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
                         asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-
-
                         Thread.Sleep(100);
                         asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, asyc_meas.Direction, false);
-                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.REVERSE;
                         Thread.Sleep(100);
-
                         asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
-                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.GO;
-
-                        
-
                         Thread.Sleep(1000);
-
 
                         if ((asyc_meas.reflaser.R_Sample) > target - 0.5)
                         {
@@ -1779,7 +1773,7 @@ namespace Trolley_Control
                         bool done3 = false;
 
                         //wait until we reach the target. or until we are told to stop
-                        while (asyc_meas.reflaser.R_Sample < target)
+                        while ((asyc_meas.reflaser.R_Sample < target) && MeasurementLoopEnabled)
                         {
                             if (((asyc_meas.reflaser.R_Sample) > target - 0.025) & !done1)
                             {
@@ -1824,7 +1818,7 @@ namespace Trolley_Control
                 case "FORWARD":
 
                     //read the target and the laser to detemine if we need to move
-                    if (asyc_meas.reflaser.R_Sample > target)
+                    if ((asyc_meas.reflaser.R_Sample > target) && MeasurementLoopEnabled)
                     {
                         //asyc_meas.speed[0] = 127;  //set the trolley speed 50%
 
@@ -1902,7 +1896,7 @@ namespace Trolley_Control
                         bool done3 = false;
 
                         //wait until we reach the target. or until we are told to stop
-                        while (asyc_meas.reflaser.R_Sample > target)
+                        while ((asyc_meas.reflaser.R_Sample > target) && MeasurementLoopEnabled)
                         {
                             if (((asyc_meas.reflaser.R_Sample) < target + 0.025) & !done1)
                             {
