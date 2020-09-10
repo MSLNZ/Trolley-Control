@@ -16,7 +16,7 @@ namespace Trolley_Control
     {
         private TcpClient client;
         private NetworkStream stream;
-        private int timeout = 10000; //The default timeout
+        private int timeout = 1000; //The default timeout
 
         public Client()
         {
@@ -42,6 +42,10 @@ namespace Trolley_Control
                 // connected to the same address as specified by the server, port 
                 // combination.
                 // Connect to the specified host.
+                if (client != null)
+                {
+                    client.Close(); //allows thread associated with previous socket connection to terminate. 
+                }
                 
                 client = new TcpClient();
 
@@ -89,26 +93,6 @@ namespace Trolley_Control
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         public bool sendReceiveData(String request,ref string result)
         {
             try
@@ -118,7 +102,7 @@ namespace Trolley_Control
 
                 // Get a client stream for reading and writing. 
                 //  Stream stream = client.GetStream();
-                client.SendTimeout = 1000;
+                client.SendTimeout = timeout;
                 stream = client.GetStream();
 
                 // Send the message to the connected TcpServer. 
@@ -147,8 +131,11 @@ namespace Trolley_Control
             {
                 return false;
             }
-            catch (System.IO.IOException)
+            catch (System.IO.IOException e)
             {
+                //This error usually occurs because the device failed to respond.  
+                //The appropriate course of action here is to close the Network stream and Close the socket connection (this releases resoures appropriately).
+                if (client != null) client.Close(); // this will close the network stream associated with the socket connection too.
                 return false;
             }
             catch (TimeoutException)
