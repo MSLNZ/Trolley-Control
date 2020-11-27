@@ -100,6 +100,7 @@ namespace Trolley_Control
         private FileStream stream;
         private StreamWriter writer;
         private string path = "";
+        private string config_filename="";
 
         public Tunnel_Control_Form()
         {
@@ -112,7 +113,6 @@ namespace Trolley_Control
             Forward_Reverse_Button.Text = "Forward";
             Go_Stop_Button.Text = "Go";
             EDMRadioButton.Checked = true;
-            TotalStationRadioButton.Checked = false;
             AuxLaserRadioButton.Checked = false;
             doIni2XmlConversion();
            
@@ -483,7 +483,7 @@ namespace Trolley_Control
                         {
                             //there are no more measurements to do.
                             MessageBox.Show("All measurements are complete, if you want to do more, then you need to add them");
-                            path = @"I:\MSL\Private\LENGTH\Edm\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
+                            path = @"I:\MSL\Private\LENGTH\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
                             running = false;
                             DUT.Disconnect();
                             writer.Close();  //close the next file 
@@ -761,12 +761,12 @@ namespace Trolley_Control
         private void UpdateForward()
         {
             tunnel_trolley.ProcToDo = ProcNameTrolley.FORWARD;
-            Go_Stop_Button.Text = "Reverse";
+            Forward_Reverse_Button.Text = "Reverse";
         }
         private void UpdateReverse()
         {
             tunnel_trolley.ProcToDo = ProcNameTrolley.REVERSE;
-            Go_Stop_Button.Text = "Forward";
+            Forward_Reverse_Button.Text = "Forward";
         }
 
         private void Forward_Reverse_Button_Click(object sender, EventArgs e)
@@ -831,11 +831,14 @@ namespace Trolley_Control
             // Call the ShowDialog method to show the dialog box.
             DialogResult result = openFileDialog1.ShowDialog();
 
+            
             // Process input if the user clicked OK.
             if (result == DialogResult.OK)
             {
+                
                 // Open the selected file to read.
                 System.IO.Stream fileStream = openFileDialog1.OpenFile();
+                config_filename = openFileDialog1.FileName;
                 file_opener_thread.Start(fileStream);
 
             }
@@ -1012,12 +1015,12 @@ namespace Trolley_Control
                 if (dia_res == DialogResult.No) return;
 
             }
-            else if (TotalStationRadioButton.Checked)
-            {
-                DialogResult dia_res = MessageBox.Show("The device under test is set to Total Station", "is the wavelength correct?", MessageBoxButtons.YesNo);
-                if (dia_res == DialogResult.No) return;
-                device = Device.TOTAL_STATION;
-            }
+            //else if (TotalStationRadioButton.Checked)
+            //{
+            //    DialogResult dia_res = MessageBox.Show("The device under test is set to Total Station", "is the wavelength correct?", MessageBoxButtons.YesNo);
+            //    if (dia_res == DialogResult.No) return;
+            //    device = Device.TOTAL_STATION;
+            //}
             else
             {
                 DialogResult dia_res = MessageBox.Show("The device under test is set to 2nd Laser", "is the wavelength correct?", MessageBoxButtons.YesNo);
@@ -1042,7 +1045,8 @@ namespace Trolley_Control
                 }
                 else return;
             }
-            
+
+            Measurement_list[current_measurement_index].ConfigFileName = config_filename; //give the measurement it configuration name
 
             while (true)
             {
@@ -1169,10 +1173,7 @@ namespace Trolley_Control
         private void TotalStationRadioButton_CheckedChanged(object sender, EventArgs e)
         {
 
-            if (TotalStationRadioButton.Checked)
-            {
-                Measurement_list[active_measurment_index].SetDeviceType(Device.TOTAL_STATION);
-            }
+            
             
         }
 
@@ -1473,6 +1474,7 @@ namespace Trolley_Control
                 Thread printerThread;
                 try
                 {
+                    
                     printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
                 }
                 catch (IndexOutOfRangeException)
