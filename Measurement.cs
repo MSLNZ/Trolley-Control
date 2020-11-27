@@ -131,6 +131,10 @@ namespace Trolley_Control
         private static int previous_num_prts_edm = 1;
         private static int previous_num_prts_laser = 1;
         private static bool run = true;
+        private string config_filename = "";
+        private static bool block = false;
+
+      
 
 
 
@@ -158,6 +162,7 @@ namespace Trolley_Control
         private static double average_EDM_beam_temperature = 20.0;  //degC
         private static double vacuum_wavelength = 632.99137225; //nm
         private static double dut_wavelength = 850; //nm
+       
 
         byte[] speed; //the speed of the trolley;
         private static bool do_one_off;
@@ -381,6 +386,12 @@ namespace Trolley_Control
 
         }
 
+        public string ConfigFileName
+        {
+            set { config_filename = value; }
+            get { return config_filename; }
+        }
+
 
 
         public static short CurrentExecutionStage
@@ -587,11 +598,6 @@ namespace Trolley_Control
             if (pos.Equals(double.NaN)) return -1;  //laser not returning a value
             int num_prts_involved = Convert.ToInt32(Math.Ceiling((Math.Abs(pos) + offset) / 4));
             laser_prts = new int[num_prts_involved];
-
-            //reset all the measurement point arrays to zero
-            Array.Clear(MeasurementPoint.phase_temperatures, 0, 30);
-            Array.Clear(MeasurementPoint.phase_pressures, 0, 30);
-            Array.Clear(MeasurementPoint.phase_humidities, 0, 30);
            
             for (int i = 0; i < num_prts_involved; i++)
             {
@@ -601,6 +607,14 @@ namespace Trolley_Control
                 {
                     if (store)
                     {
+                        if (i==0)
+                        {
+                            //reset all the measurement point arrays to zero
+                            Array.Clear(MeasurementPoint.phase_temperatures, 0, 30);
+                            Array.Clear(MeasurementPoint.phase_pressures, 0, 30);
+                            Array.Clear(MeasurementPoint.phase_humidities, 0, 30);
+                        }
+
                         MeasurementPoint.phase_temperatures[prtmap_over_bench[i]] = r;  //store the temperature used for the RI calculation
                         MeasurementPoint.phase_wavelength = wavelength;
                         MeasurementPoint.phase_pressures[prtmap_over_bench[i]] = Pressure;
@@ -875,13 +889,13 @@ namespace Trolley_Control
 
         private static double firstAverageRI(int num_prts, ref MeasurementUpdateGui ug, bool is_laser,bool store)
         {
+            
             double sum = 0.0;
             no_folds_prts = new int[num_prts];
             int valid_results = 0;
 
-            Array.Clear(MeasurementPoint.group_temperatures1, 0, 30);
-            Array.Clear(MeasurementPoint.group_pressures1, 0, 30);
-            Array.Clear(MeasurementPoint.group_humidities1, 0, 30);
+
+           
 
             for (int i = 0; i < num_prts; i++)
             {
@@ -891,6 +905,14 @@ namespace Trolley_Control
                 {
                     if (store)
                     {
+                        //clear the array first time through
+                        if (i==0)
+                        {
+                            Array.Clear(MeasurementPoint.group_temperatures1, 0, 30);
+                            Array.Clear(MeasurementPoint.group_pressures1, 0, 30);
+                            Array.Clear(MeasurementPoint.group_humidities1, 0, 30);
+                        }
+
                         MeasurementPoint.group_temperatures1[prtmap_over_bench[14 - i]] = r;  //store the temperature used for the RI calculation
                         MeasurementPoint.group_pressures1[prtmap_over_bench[14 - i]] = Pressure;
                         MeasurementPoint.group_humidities1[prtmap_over_bench[14 - i]] = AverageHumidity;
@@ -959,9 +981,7 @@ namespace Trolley_Control
             double sum2 = 0.0;
             fold_two_prts = new int[total_prts_per_row * 2];
 
-            Array.Clear(MeasurementPoint.group_temperatures2, 0, 30);
-            Array.Clear(MeasurementPoint.group_pressures2, 0, 30);
-            Array.Clear(MeasurementPoint.group_humidities2, 0, 30);
+            
 
             for (int i = 0; i < total_prts_per_row; i++)
             {
@@ -975,6 +995,13 @@ namespace Trolley_Control
                 {
                     if (store)
                     {
+                        if (i==0)
+                        {
+                            Array.Clear(MeasurementPoint.group_temperatures2, 0, 30);
+                            Array.Clear(MeasurementPoint.group_pressures2, 0, 30);
+                            Array.Clear(MeasurementPoint.group_humidities2, 0, 30);
+                        }
+                    
                         MeasurementPoint.group_temperatures2[prtmap_over_bench[14 - i]] = row1;  //store the temperature used for the RI calculation
                         MeasurementPoint.group_temperatures2[prtmap_over_walkway[i]] = row2;  //store the temperature used for the RI calculation
                         MeasurementPoint.group_pressures2[prtmap_over_bench[14 - i]] = Pressure;
@@ -1057,9 +1084,7 @@ namespace Trolley_Control
             double sum1 = 0.0;
             fold_three_prts = new int[total_prts_in_row];
 
-            Array.Clear(MeasurementPoint.group_temperatures3, 0, 30);
-            Array.Clear(MeasurementPoint.group_pressures3, 0, 30);
-            Array.Clear(MeasurementPoint.group_humidities3, 0, 30);
+            
 
             for (int i = 0; i < total_prts_in_row; i++)
             {
@@ -1069,6 +1094,13 @@ namespace Trolley_Control
                 {
                     if (store)
                     {
+                        if (i==0)
+                        {
+                            Array.Clear(MeasurementPoint.group_temperatures3, 0, 30);
+                            Array.Clear(MeasurementPoint.group_pressures3, 0, 30);
+                            Array.Clear(MeasurementPoint.group_humidities3, 0, 30);
+                        }
+
                         MeasurementPoint.group_temperatures3[prtmap_over_walkway[14 - i]] = row2;  //store the temperature used for the RI calculation
                         MeasurementPoint.group_pressures3[prtmap_over_walkway[14 - i]] = Pressure;
                         MeasurementPoint.group_humidities3[prtmap_over_walkway[14 - i]] = AverageHumidity;
@@ -1133,9 +1165,7 @@ namespace Trolley_Control
             double sum1 = 0.0;
             fold_four_prts = new int[total_prts_in_row];
 
-            Array.Clear(MeasurementPoint.group_temperatures4, 0, 30);
-            Array.Clear(MeasurementPoint.group_pressures4, 0, 30);
-            Array.Clear(MeasurementPoint.group_humidities4, 0, 30);
+            
 
             for (int i = 0; i < total_prts_in_row; i++)
             {
@@ -1146,6 +1176,13 @@ namespace Trolley_Control
 
                     if (store)
                     {
+                        if (i==0)
+                        {
+                            Array.Clear(MeasurementPoint.group_temperatures4, 0, 30);
+                            Array.Clear(MeasurementPoint.group_pressures4, 0, 30);
+                            Array.Clear(MeasurementPoint.group_humidities4, 0, 30);
+                        }
+
                         MeasurementPoint.group_temperatures4[prtmap_over_walkway[i]] = row2;  //store the temperature used for the RI calculation
                         MeasurementPoint.group_pressures4[prtmap_over_walkway[i]] = Pressure;
                         MeasurementPoint.group_humidities4[prtmap_over_walkway[i]] = AverageHumidity;
@@ -1490,26 +1527,32 @@ namespace Trolley_Control
                     text.AppendLine("Humidity Logger 1 Correction: " + RH1_Corr.ToString() + "%");
                     text.AppendLine("Humidity Logger 2 Correction: " + RH2_Corr.ToString() + "%");
                     text.AppendLine("Agilent RI Corr: " + reflaser.AirCompensation.ToString());
-                    text.AppendLine("Phase Refractive Index (Laser): " + CalculateAverageRILaserBeam(ref reflaser,LaserWavelength,false).ToString());
-                    try
+
+                    if (block != true)
                     {
-                        if (d_type == Device.SECOND_LASER) {
-                            text.AppendLine("Phase Refractive Index (second laser) :" + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser,ref mug, DUTWavelength,true,false));
-                        }
-                        else
+                        text.AppendLine("Phase Refractive Index (Laser): " + CalculateAverageRILaserBeam(ref reflaser,LaserWavelength,false).ToString());
+                    
+                        try
                         {
-                            text.AppendLine("Group Refractive Index (EDM Device) : " + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, DUTWavelength, false,false));
+                            if (d_type == Device.SECOND_LASER)
+                            {
+                                text.AppendLine("Phase Refractive Index (second laser) :" + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, DUTWavelength, true, false));
+                            }
+                            else
+                            {
+                                text.AppendLine("Group Refractive Index (EDM Device) : " + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, DUTWavelength, false, false));
+                            }
                         }
-                    }
-                    catch (FormatException)
-                    {
-                        if (d_type == Device.SECOND_LASER)
+                        catch (FormatException)
                         {
-                            text.AppendLine("Phase Refractive Index (" + d_type.ToString() + ") : " + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, 850, true,false));
-                        }
-                        else
-                        {
-                            text.AppendLine("Group Refractive Index (" + d_type.ToString() + ") : " + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, 850, false,false));
+                            if (d_type == Device.SECOND_LASER)
+                            {
+                                text.AppendLine("Phase Refractive Index (" + d_type.ToString() + ") : " + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, 850, true, false));
+                            }
+                            else
+                            {
+                                text.AppendLine("Group Refractive Index (" + d_type.ToString() + ") : " + calculateAverageRIEDMBeam(DUT.Beamfolds, ref reflaser, ref mug, 850, false, false));
+                            }
                         }
                     }
                     text.AppendLine("CO2 Level: " + CO2.ToString() + "\n");
@@ -1653,7 +1696,7 @@ namespace Trolley_Control
                                 double target = asyc_meas.Intermediate[i];
                                 Measurement.Target = target;
                                 //read the target and the laser to detemine if we need to move
-                                MoveToTarget(asyc_meas, target);
+                                MoveToTargetWindow(asyc_meas, target);
 
                                 if (asyc_meas.AbortMeasurement == true)
                                 {
@@ -1680,7 +1723,7 @@ namespace Trolley_Control
                             double target_end = asyc_meas.EndPos;
                             Measurement.Target = target_end;
 
-                            MoveToTarget(asyc_meas, target_end);
+                            MoveToTargetWindow(asyc_meas, target_end);
                             
 
                             if (asyc_meas.AbortMeasurement == true)
@@ -1694,7 +1737,7 @@ namespace Trolley_Control
                         }
                         break;
                     case ExecutionStage.IDLE:
-                        Thread.Sleep(1000); 
+                        Thread.Sleep(200); 
                         break;
                 }
             }
@@ -1941,6 +1984,255 @@ namespace Trolley_Control
             }
             return true;
         }
+
+        public static bool MoveToTargetWindow(Measurement current_meas, double target)
+        {
+            Measurement asyc_meas = current_meas;
+            bool not_in_target_window = true;
+      
+            //read the target and the laser to detemine which way we need to move
+            while (not_in_target_window)
+            {
+                if ((asyc_meas.reflaser.R_Sample < (target - 0.05)) && MeasurementLoopEnabled)
+                {
+                   
+                    //we need to move the trolley in reverse
+                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
+                    Thread.Sleep(100);
+                    byte[] sb = new byte[1];
+                    sb[0] = 160;
+                    asyc_meas.reftrolley.SpeedByte = sb;
+                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                    Thread.Sleep(100);
+                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "REVERSE", false);
+                    Thread.Sleep(100);
+                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
+                    Thread.Sleep(1000);
+
+                    //we're too close to ramp the speed up so just move slowly to target
+                    if ((asyc_meas.reflaser.R_Sample) > target - 0.5)
+                    {
+                        sb[0] = 80;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                    }
+                    else
+                    {
+                        //we're far enough away to ramp the speed up.
+                        sb[0] = 150;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 110;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 80;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 70;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 50;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 40;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 30;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                    }
+
+                    bool done1 = false;
+                    bool done2 = false;
+                    bool done3 = false;
+
+                    //wait until we reach the target. or until we are told to stop
+                    while ((asyc_meas.reflaser.R_Sample < target) && MeasurementLoopEnabled)
+                    {
+                        Thread.Sleep(10);
+                        //make sure we are moving in the correct direction
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "REVERSE", false);
+                        Thread.Sleep(10);
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
+                        
+                      
+                        if (((asyc_meas.reflaser.R_Sample) > target - 0.025) & !done1)
+                        {
+                            sb[0] = 155;
+                            asyc_meas.reftrolley.SpeedByte = sb;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                            done1 = true;
+                            done2 = true;
+                            done3 = true;
+                        }
+
+                        if (((asyc_meas.reflaser.R_Sample) > target - 0.05) & !done2)
+                        {
+                            sb[0] = 130;
+                            asyc_meas.reftrolley.SpeedByte = sb;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                            done2 = true;
+                            done3 = true;
+                        }
+
+                        if (((asyc_meas.reflaser.R_Sample) > target - 0.2) & !done3)
+                        {
+                            sb[0] = 100;
+                            asyc_meas.reftrolley.SpeedByte = sb;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                            done3 = true;
+                        }
+
+                        if (asyc_meas.AbortMeasurement == true)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else if ((asyc_meas.reflaser.R_Sample > (target + 0.05)) && MeasurementLoopEnabled) {
+
+
+                    //we need to move the trolley forward
+                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
+                    Thread.Sleep(100);
+                    byte[] sb = new byte[1];
+                    sb[0] = 160;
+                    asyc_meas.reftrolley.SpeedByte = sb;
+                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                    Thread.Sleep(100);
+                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "FORWARD", false);
+                    Thread.Sleep(100);
+                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
+                    Thread.Sleep(1000);
+
+
+
+                    if ((asyc_meas.reflaser.R_Sample) < target + 0.50)
+                    {
+                        sb[0] = 80;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                    }
+                    else
+                    {
+                        sb[0] = 150;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 110;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 80;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 50;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 40;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 30;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                        sb[0] = 20;
+                        asyc_meas.reftrolley.SpeedByte = sb;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                        Thread.Sleep(300);
+                    }
+
+                    bool done1 = false;
+                    bool done2 = false;
+                    bool done3 = false;
+
+                    //wait until we reach the target. or until we are told to stop
+                    while ((asyc_meas.reflaser.R_Sample > target) && MeasurementLoopEnabled)
+                    {
+                        Thread.Sleep(10);
+                        //make sure we are moving in the correct direction
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "FORWARD", false);
+                        Thread.Sleep(10);
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
+
+                        if (((asyc_meas.reflaser.R_Sample) < target + 0.025) & !done1)
+                        {
+                            sb[0] = 155;
+                            asyc_meas.reftrolley.SpeedByte = sb;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                            done1 = true;
+                            done2 = true;
+                            done3 = true;
+                        }
+
+                        if (((asyc_meas.reflaser.R_Sample) < target + 0.05) & !done2)
+                        {
+                            sb[0] = 130;
+                            asyc_meas.reftrolley.SpeedByte = sb;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                            done2 = true;
+                            done3 = true;
+                        }
+
+                        if (((asyc_meas.reflaser.R_Sample) < target + 0.2) & !done3)
+                        {
+                            sb[0] = 100;
+                            asyc_meas.reftrolley.SpeedByte = sb;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
+                            done3 = true;
+                        }
+
+                        if (asyc_meas.AbortMeasurement == true)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                else
+                {
+                    //if we get to here we are in the target window.  But we still need to account for a possible runaway trolley situation.
+
+                    //stop the trolley immediately
+                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
+
+                    bool trolley_stationary = false;
+                    while (!trolley_stationary)
+                    {
+                        //stop the trolley
+                        double reading1 = asyc_meas.reflaser.R_Sample;
+                        Thread.Sleep(100);
+                        double reading2 = asyc_meas.reflaser.R_Sample;
+
+                        if (Math.Abs(reading1 - reading2) > 0.00001)
+                        {
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
+                        }
+                        else trolley_stationary = true;
+                    }
+
+                    //check if we are still in the target window.
+                    if((asyc_meas.reflaser.R_Sample <= (target+0.05)) && (asyc_meas.reflaser.R_Sample >= (target - 0.05)))
+                    {
+                        //we're in the target window and the trolley is stationary, so we're done
+                        not_in_target_window = false;        
+                    }
+                }
+            }   
+            //dwell for the given dwell time
+            Thread.Sleep((int)asyc_meas.DTime * 1000);
+            return true;
+        }
         public static bool DUT_Request(Measurement current_meas, int array_index, bool reset)
         {
 
@@ -1988,6 +2280,7 @@ namespace Trolley_Control
                     //Record a reading of the laser.
                     vals[0] = asyc_meas.reflaser.R_Sample;
 
+                    block = true;
                     //Refractive index correction for the laser
                     vals[1] = CalculateAverageRILaserBeam(ref asyc_meas.reflaser,asyc_meas.reflaser.Wavelength,true);
 
@@ -2093,10 +2386,14 @@ namespace Trolley_Control
 
                     vals[10] = average_EDM_beam_temperature;
 
+                    
                     //remove the DUT default correction
-                    if(device_type.Equals("Laser Aux"))
+                    if (device_type.Equals("Laser Aux"))
                     {
                         vals[4] = vals[3]; //aux laser refractive index must be set to 1;
+
+                        //stop the gui from manipulating t,p,h while this executes;
+                        
                         vals[6] = calculateAverageRIEDMBeam(DUT.Beamfolds,ref asyc_meas.reflaser,ref asyc_meas.mug,DUTWavelength,true,true);
                     }
                     else if(device_type.Equals("EDM")||device_type.Equals("Total Station"))
@@ -2220,6 +2517,8 @@ namespace Trolley_Control
                         fold3_humidities = string.Concat(fold3_humidities, MeasurementPoint.group_humidities4[i].ToString(), ",");
 
                     }
+                    block = false;
+                    
 
                     //array to hold the values we measure 0 = laser raw reading, 1 = RI correction laser, 2 = Laser with MSL RI Correction applied ,
                     //                                    3 = DUT raw reading, 4 = DUT with default correction removed, 5 = DUT with MSL RI Correction applied ,  
@@ -2233,6 +2532,9 @@ namespace Trolley_Control
                         case ExecutionStage.START:
                             asyc_meas.start_pos_value = vals;
 
+                            string version = "Software Version 1.0";
+                            string config_file = "Configuration File Name: " + asyc_meas.ConfigFileName;
+
                             string line_title = "Position,Laser Raw,RI Correction Laser,Laser with Phase RI Correction,DUT Raw Reading,DUT with Default Correction Removed,DUT with group RI applied,DUT Group RI Correction,DUT Standard Deviation,DUT averaging,Laser Beam Temperature,Average DUT beam Temperature,Average Pressure,Average Humidity,Barometer Correction, Humidity Logger 1 Correction, Humidity Logger 2 Correction, CO2 Concentration, DateTime,Laser PRTS Used, EDM PRTS Used,"+phase_prt_names + fold0_EDM_prt_names + fold1_EDM_prt_names + fold2_EDM_prt_names + fold3_EDM_prt_names + phase_pressure_names + fold0_pressure_names + fold1_pressure_names + fold2_pressure_names + fold3_pressure_names + phase_humidity_names + fold0_humidity_names+fold1_humidity_names+fold2_humidity_names+fold3_humidity_names;
 
                             string line = "Start," + vals[0].ToString() + "," + vals[1].ToString() + "," + vals[2].ToString()
@@ -2245,8 +2547,21 @@ namespace Trolley_Control
                                         + phase_temperatures + fold0_temperatures + fold1_temperatures + fold2_temperatures + fold3_temperatures
                                         + phase_pressures + fold0_pressures + fold1_pressures + fold2_pressures + fold3_pressures
                                         + phase_humidities + fold0_humidities + fold1_humidities + fold2_humidities + fold3_humidities;
-                                        
 
+
+
+                            if (!asyc_meas.WriteFile(version))
+                            {
+                                asyc_meas.mug(ProcNameMeasurement.FILE_WRITE, MeasurementError.FILE_ERROR, true);
+                            }
+                            if (!asyc_meas.WriteFile(config_file))
+                            {
+                                asyc_meas.mug(ProcNameMeasurement.FILE_WRITE, MeasurementError.FILE_ERROR, true);
+                            }
+                            if (!asyc_meas.WriteFile(""))
+                            {
+                                asyc_meas.mug(ProcNameMeasurement.FILE_WRITE, MeasurementError.FILE_ERROR, true);
+                            }
                             if (!asyc_meas.WriteFile(line_title))
                             {
                                 asyc_meas.mug(ProcNameMeasurement.FILE_WRITE, MeasurementError.FILE_ERROR, true);
