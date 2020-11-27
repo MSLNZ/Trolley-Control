@@ -103,7 +103,7 @@ namespace Trolley_Control
             bool return_value = true;
 
             //if we need to connect then try
-            if (connection_pending)
+            if (connection_pending && !TCPClient.isConnected())
             {
                 if (!TCPClient.Connect(HostName,port))
                 {
