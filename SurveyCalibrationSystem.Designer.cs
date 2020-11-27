@@ -81,7 +81,6 @@
             this.Humidity_logger_1 = new System.Windows.Forms.TextBox();
             this.Humidity_logger_2 = new System.Windows.Forms.TextBox();
             this.EDMRadioButton = new System.Windows.Forms.RadioButton();
-            this.TotalStationRadioButton = new System.Windows.Forms.RadioButton();
             this.AuxLaserRadioButton = new System.Windows.Forms.RadioButton();
             this.openConfigFile = new System.Windows.Forms.OpenFileDialog();
             this.CO2_Level = new System.Windows.Forms.TextBox();
@@ -214,7 +213,7 @@
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
-            this.openToolStripMenuItem.Text = "Open";
+            this.openToolStripMenuItem.Text = "Open Measurement Config";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // startMeasurementToolStripMenuItem
@@ -608,21 +607,10 @@
             this.EDMRadioButton.UseVisualStyleBackColor = true;
             this.EDMRadioButton.CheckedChanged += new System.EventHandler(this.EDMRadioButton_CheckedChanged);
             // 
-            // TotalStationRadioButton
-            // 
-            this.TotalStationRadioButton.AutoSize = true;
-            this.TotalStationRadioButton.Location = new System.Drawing.Point(132, 166);
-            this.TotalStationRadioButton.Name = "TotalStationRadioButton";
-            this.TotalStationRadioButton.Size = new System.Drawing.Size(85, 17);
-            this.TotalStationRadioButton.TabIndex = 31;
-            this.TotalStationRadioButton.Text = "Total Station";
-            this.TotalStationRadioButton.UseVisualStyleBackColor = true;
-            this.TotalStationRadioButton.CheckedChanged += new System.EventHandler(this.TotalStationRadioButton_CheckedChanged);
-            // 
             // AuxLaserRadioButton
             // 
             this.AuxLaserRadioButton.AutoSize = true;
-            this.AuxLaserRadioButton.Location = new System.Drawing.Point(280, 166);
+            this.AuxLaserRadioButton.Location = new System.Drawing.Point(100, 166);
             this.AuxLaserRadioButton.Name = "AuxLaserRadioButton";
             this.AuxLaserRadioButton.Size = new System.Drawing.Size(72, 17);
             this.AuxLaserRadioButton.TabIndex = 32;
@@ -716,7 +704,6 @@
             this.Controls.Add(this.label8);
             this.Controls.Add(this.AuxLaserRadioButton);
             this.Controls.Add(this.label6);
-            this.Controls.Add(this.TotalStationRadioButton);
             this.Controls.Add(this.CO2_Level);
             this.Controls.Add(this.EDMRadioButton);
             this.Controls.Add(this.Humidity_logger_2);
@@ -796,7 +783,6 @@
         private System.Windows.Forms.TextBox Humidity_logger_1;
         private System.Windows.Forms.TextBox Humidity_logger_2;
         private System.Windows.Forms.RadioButton EDMRadioButton;
-        private System.Windows.Forms.RadioButton TotalStationRadioButton;
         private System.Windows.Forms.RadioButton AuxLaserRadioButton;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label nm_label;
