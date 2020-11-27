@@ -224,7 +224,7 @@ namespace Trolley_Control
                         asyc_trolley.proc_to_do = ProcNameTrolley.IDLE;
                         break;
                     case ProcNameTrolley.IDLE:
-                        Thread.Sleep(50);
+                        Thread.Sleep(2);
                         break;
 
                 }
