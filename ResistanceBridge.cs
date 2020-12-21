@@ -9,7 +9,7 @@ namespace Trolley_Control
     abstract class ResistanceBridge : GPIBOverLANCommands
     {
 
-       
+
         protected MUX multi;
         protected Object thislock = new Object();
         protected double correctionA1;
@@ -25,22 +25,22 @@ namespace Trolley_Control
 
         protected short current_channel_in_use;
 
-        public ResistanceBridge(int GPIB_Address_, string SICL_,ref MUX multi_)
+        public ResistanceBridge(int GPIB_Address_, string SICL_, ref MUX multi_)
         {
-            base.GPIB_adr = GPIB_Address_;
-            base.SICL_interface_id = SICL_;
+            GPIB_adr = GPIB_Address_;
+            SICL_interface_id = SICL_;
             multi = multi_;
         }
 
         protected abstract void setRemoteMode();
-        
+
 
         /// <summary>
         /// - Current must be between 0 and 3 which equates to 0.1mA, 0.3mA, 1mA and 3mA.
         /// </summary>
         /// <param name="current">A value betweem 0 and 3</param>
         protected abstract void setCurrent(short current);
-        
+
 
         /// <summary>
         /// -Unit must be between 0 and 3 which equates to 0.1mA, 0.3mA, 1mA and 3mA.
@@ -56,8 +56,9 @@ namespace Trolley_Control
         /// </summary>
         /// <param name="multiplexor_channel">channel number is a value between 1 and 30</param>
         public abstract double getTemperature(PRT probe_type, short channel_number, bool probe_has_changed);
-        
-        public void setMUX(ref MUX mux){
+
+        public void setMUX(ref MUX mux)
+        {
             multi = mux;
         }
         /// <summary>

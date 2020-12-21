@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace Trolley_Control
 {
-    class PTU303:Barometer
+    class PTU303 : Barometer
     {
 
         public PTU303(ref VaisalaUpdateGui pbarug)
@@ -34,7 +34,7 @@ namespace Trolley_Control
                 MessageBox.Show("PTU303 has not been implemented yet");
 
             }
-         
+
         }
 
         public override bool IsOpen()
@@ -48,7 +48,7 @@ namespace Trolley_Control
                 MessageBox.Show("PTU303 has not been implemented yet");
                 return false;
             }
-            
+
         }
 
         public override double getPressure()

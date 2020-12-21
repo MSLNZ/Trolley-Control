@@ -22,11 +22,13 @@ namespace Trolley_Control
     public delegate void MeasurementUpdateGui(short procedure, string trolley_message, bool report_error);
     public delegate void BluetoothUpdateGUI(string message);
     public delegate void THLoggerUpdateGUI(short procedure, string trolley_message, bool report_error);
-    public delegate void DUTUpdateGui(short procedure, string message,bool report);
+    public delegate void DUTUpdateGui(short procedure, string message, bool report);
     public delegate void VaisalaUpdateGui(short procedure, string message, bool report);
     public delegate void PrintTemperatureData(double temperature, string msg, long index);
     public delegate void GUIUpdater(string msg);
     public delegate void ShowPositions(string positions, string msg, bool report);
+    public delegate void OnOK();
+
 
     public partial class Tunnel_Control_Form : Form
     {
@@ -43,7 +45,7 @@ namespace Trolley_Control
         private PRT[] prts;
         private bool force_update_server;
         private double OA_date;
-        private long interval = 5;
+        private double interval = 1;
         private short current_channel;
         private string ipaddress = "131.203.8.237";
         private string equiptype = "GPIB NETWORK GATEWAY";
@@ -51,9 +53,11 @@ namespace Trolley_Control
         private StringBuilder xdata_ = null;
         private StringBuilder ydata_ = null;
         private Thread serverUpdate;
+        private int tick_count;
         string xmlfilename;
-        private double a1=0, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0, a9=0;
-        
+        private double a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0, a6 = 0, a7 = 0, a8 = 0, a9 = 0;
+        private bool temperature_thread_exists = false;
+        private bool server_update_enabled = false;
         private string com;
         private Laser HP5519_Laser;
         private Trolley tunnel_trolley;
@@ -71,8 +75,11 @@ namespace Trolley_Control
         private Thread measurement_thread;
         private Thread file_opener_thread;
         private Thread painter_thread;
-        
-        
+        private static string[] showed_messages = { "", "", "", "", "", "", "", "", "", "" };
+        private static int num_errors_reported = 0;
+        PrintTemperatureData msgDelegate;
+
+
         //private System.IO.Stream fileStream;
         private MeasurementUpdateGui mug;
         private TrolleyUpdateGUI tug;
@@ -81,6 +88,8 @@ namespace Trolley_Control
         private THLoggerUpdateGUI thgui;
         private VaisalaUpdateGui pbarug;
         private GUIUpdater gupdate;
+        private static event OnOK OnOkClick;
+
         private Client TcpClient;
         private short mode = Mode.Debug;
         private bool print = true;
@@ -94,6 +103,7 @@ namespace Trolley_Control
         private FileStream stream;
         private StreamWriter writer;
         private string path = "";
+        private string config_filename = "";
 
         public Tunnel_Control_Form()
         {
@@ -106,11 +116,9 @@ namespace Trolley_Control
             Forward_Reverse_Button.Text = "Forward";
             Go_Stop_Button.Text = "Go";
             EDMRadioButton.Checked = true;
-            TotalStationRadioButton.Checked = false;
             AuxLaserRadioButton.Checked = false;
-
             doIni2XmlConversion();
-           
+
             TcpClient = new Client();
             dlg = new LaserUpdateGUI(Update_lsr);   //delegate to update the gui with laser related issues
             tug = new TrolleyUpdateGUI(Update_trolley);  //delegate to update the gui with trolley related issues
@@ -119,6 +127,8 @@ namespace Trolley_Control
             thgui = new THLoggerUpdateGUI(Update_THlogger); //delegate to update the gui with TH logger related issues
             pbarug = new VaisalaUpdateGui(Update_Pressure_Logger);
             gupdate = new GUIUpdater(redrawLaserEnviroTextbox);
+            msgDelegate = new PrintTemperatureData(showTemperatureData);
+
             //m = new Message();
 
             current_measurement_index = -1;
@@ -127,14 +137,14 @@ namespace Trolley_Control
             Measurement_list = new Measurement[1];
             path = @"I:\MSL\Private\LENGTH\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
 
-            
+
 
             HP5519_Laser = new Laser(ref dlg);
             tunnel_trolley = new Trolley(ref tug, ref Bluetooth_Virtual_Serial_Port);
             TH_logger1 = new OmegaTHLogger(Humidity_logger_1.Text, ref thgui);
             TH_logger2 = new OmegaTHLogger(Humidity_logger_2.Text, ref thgui);
             barometer = new PTB220TS(ref pbarug);  //this is the default barometer user can select another later if neccessary
-            
+
 
             //Can have up to 100 PRTs
             prts = new PRT[100];
@@ -151,6 +161,7 @@ namespace Trolley_Control
             //start the main measurement thread, give it the first measurement in the measurement list.
             measurement_thread = new Thread(new ParameterizedThreadStart(Measurement.Measure));
             active_measurment_index = 0;
+            Measurement_list[active_measurment_index].setThread(ref measurement_thread);
             measurement_thread.Start(Measurement_list[active_measurment_index]);
 
             setBarometerConfig("PTB220A");
@@ -163,6 +174,7 @@ namespace Trolley_Control
 
             //Thread to control and monitor the state of the trolley
             trolley_move_thread = new Thread(new ParameterizedThreadStart(Trolley.Query));
+            tunnel_trolley.TrolleyThread = trolley_move_thread;
             trolley_move_thread.Start(tunnel_trolley);
 
 
@@ -175,23 +187,13 @@ namespace Trolley_Control
             th_logger2_thread = new Thread(new ParameterizedThreadStart(TH_logger2.HLoggerQuery));
             th_logger2_thread.Start(TH_logger2);
 
-
-          
-            //Thread to invoke the GUI to Update the LaserParameters RichTextBox
-            //Thread Printer = new Thread(new ThreadStart(redrawLaserEnviroTextbox));
-            //Printer.Start();
-
-           
-
-
-            Measurement.CO2_Concentration = Convert.ToDouble(CO2_Level.Text)/1000000;
+            Measurement.CO2_Concentration = Convert.ToDouble(CO2_Level.Text) / 1000000;
             Measurement.DUTWavelength = Convert.ToDouble(DUT_Wavelength.Text);
             DUT.Beamfolds = 0;
 
-           
-
             Measurement_list[active_measurment_index].SetDeviceType(Device.EDM);  //The default device under test is selected as EDM so set the first measurement DUT as EDM
 
+            tick_count = Environment.TickCount;
 
 
 
@@ -212,7 +214,7 @@ namespace Trolley_Control
                             {
                                 barometer.ErrorReported = false;
                             }
-                            
+
                         }
 
                         break;
@@ -264,26 +266,26 @@ namespace Trolley_Control
                 switch (procNum)
                 {
                     case ProcNameHumidity.CONNECT:
-                        if(!msg.Equals("No Error"))
+                        if (!msg.Equals("No Error"))
                         {
-                            MessageBox.Show(msg.ToString());
+                            Show(msg.ToString());
                         }
                         break;
                     case ProcNameHumidity.EQUATION_FORMAT:
                         if (!msg.Equals("No Error"))
                         {
-                            MessageBox.Show(msg.ToString());
+                            Show(msg.ToString());
                         }
                         break;
                     case ProcNameHumidity.SEND_RECEIVE:
                         if (msg.Equals("No Error"))
                         {
                             //Update the GUI with the latest humidity(s)
-                            
+
                             if (TH_logger1.isActive)
                             {
                                 TH_logger1.CalculateCorrection();
-                                
+
                             }
                             else if (TH_logger2.isActive)
                             {
@@ -297,7 +299,8 @@ namespace Trolley_Control
                             else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger2.isActive)) Measurement.AverageHumidity = result2;     //only have one valid result - logger 2
 
                             Thread printerThread;
-                            try {
+                            try
+                            {
                                 printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
                             }
                             catch (IndexOutOfRangeException)
@@ -310,7 +313,7 @@ namespace Trolley_Control
                         else
                         {
                             //There has been a send receive error....update the GUI
-                            MessageBox.Show(msg.ToString());
+                            Show(msg.ToString());
                         }
                         break;
                     case ProcNameHumidity.IDLE:
@@ -328,34 +331,38 @@ namespace Trolley_Control
 
         private void Update_trolley(short procNum, object msg, bool report)
         {
+
             if (this.InvokeRequired == false)
             {
-                
-               
                 switch (procNum)
                 {
                     case ProcNameTrolley.OPEN:
                         if (!dialog_4_visible)
                         {
                             dialog_4_visible = true;
-                            DialogResult dialog_result4 = MessageBox.Show((string) msg, "ERROR", MessageBoxButtons.OK);
+                            DialogResult dialog_result4 = MessageBox.Show((string)msg, "ERROR", MessageBoxButtons.OK);
                             dialog_4_visible = false;
                         }
                         break;
                     case ProcNameTrolley.BLUETOOTH_CONNECTION:
                         if (report)
                         {
-                            string mssg = (string)msg;
-                            if(mssg =="Bluetooth Dongle not found - plug in Dongle and restart this program") tunnel_trolley.Errorstate = true;
-                            MessageBox.Show((string) msg);
+                            string msg_ = (string)msg;
+                            if (msg_ == "Bluetooth Dongle not found - plug in Dongle and restart this program") tunnel_trolley.Errorstate = true;
+                            if (msg_.Contains("Connection lost")) Bluetooth_Listbox.SelectedItem = "";
+                            MessageBox.Show(msg_);
                         }
                         else
                         {
                             Status_Textbox.Text = (string)msg;
+
                         }
                         break;
                     case ProcNameTrolley.BLUETOOTH_AVAILIBLE:
-                        Bluetooth_Listbox.DataSource = (List<string>) msg; 
+                        Bluetooth_Listbox.DataSource = (List<string>)msg;
+                        break;
+                    case ProcNameTrolley.BLUETOOTH_DATA:
+                        BTData_TextBox.Text = (string)msg;
                         break;
                     case ProcNameTrolley.IDLE:
                         break;
@@ -370,7 +377,7 @@ namespace Trolley_Control
 
         private void Update_measurement(short procNum, string msg, bool report)
         {
-            
+
             if (this.InvokeRequired == false)
             {
                 switch (procNum)
@@ -401,14 +408,20 @@ namespace Trolley_Control
                         }
                         break;
                     case ProcNameMeasurement.EDM_BEAM_TEMPERATURE:
-                        if ((msg != MeasurementError.NO_ERROR)&& (report == true))
+                        if ((msg != MeasurementError.NO_ERROR) && (report == true))
                         {
-                            DialogResult dia_r = MessageBox.Show(msg);
+                            Show(msg.ToString());
                         }
                         break;
                     case ProcNameMeasurement.TROLLEY_SET:
-                        if (msg.Equals("SPEED"))
+                        if (msg.Contains("SPEED"))
                         {
+                            //there is some speed information to parse
+                            string speed_setting = msg.Substring(5);
+                            byte[] sb = new byte[1];
+                            sb[0] = Convert.ToByte(speed_setting);
+                            tunnel_trolley.SpeedByte = sb;
+
                             Motor_Speed_Update();
                         }
                         else if (msg.Equals("REVERSE"))
@@ -427,14 +440,14 @@ namespace Trolley_Control
                         {
                             UpdateStop();
                         }
-                     
+
                         break;
                     case ProcNameMeasurement.DATA_CONVERSION:
                         if (msg == MeasurementError.EDM_FORMAT_ERROR)
                         {
                             Measurement.CurrentExecutionStage = ExecutionStage.IDLE;
                             MessageBox.Show("ERROR: EDM return data of unexpected format");
-                            
+
                         }
                         break;
                     case ProcNameMeasurement.FILE_WRITE:
@@ -445,30 +458,31 @@ namespace Trolley_Control
                         else
                         {
 
-                           
-                             if(writer==null) 
-                             {
-                                stream = new FileStream(path,FileMode.Append,System.Security.AccessControl.FileSystemRights.Write,FileShare.Write,1024,FileOptions.None);
-                                writer = new System.IO.StreamWriter(stream,Encoding.UTF8,1024,true);
+
+                            if (writer == null)
+                            {
+                                stream = new FileStream(path, FileMode.Append, System.Security.AccessControl.FileSystemRights.Write, FileShare.Write, 1024, FileOptions.None);
+                                writer = new System.IO.StreamWriter(stream, Encoding.UTF8, 1024, true);
                             }
                             using (writer)
                             {
                                 writer.WriteLine(msg);
                             }
-                            
+
                         }
                         break;
                     case ProcNameMeasurement.EXECUTION_COMPLETE:
 
                         //kill the run thread of the measurement
                         measurement_thread.Abort();
-                        
+
                         active_measurment_index++;
                         Measurement current_meas;
                         try
                         {
                             current_meas = (Measurement_list[active_measurment_index]);
                             measurement_thread = new Thread(new ParameterizedThreadStart(Measurement.Measure));
+                            current_meas.setThread(ref measurement_thread);
                             measurement_thread.Start(current_meas);
                             Measurement.executionStatus = true;
                             Measurement.CurrentExecutionStage = ExecutionStage.START;  //set the execution state flag to start
@@ -477,7 +491,7 @@ namespace Trolley_Control
                         {
                             //there are no more measurements to do.
                             MessageBox.Show("All measurements are complete, if you want to do more, then you need to add them");
-                            path = @"I:\MSL\Private\LENGTH\Edm\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
+                            path = @"I:\MSL\Private\LENGTH\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
                             running = false;
                             DUT.Disconnect();
                             writer.Close();  //close the next file 
@@ -487,13 +501,14 @@ namespace Trolley_Control
                             current_measurement_index = -1;
                             file_valid = false;
                             Measurement_list = new Measurement[1];
-                            Measurement_list[0] = new Measurement(ref mug, ref HP5519_Laser, ref tunnel_trolley, ref dutug, ref TH_logger1, ref TH_logger2,ref barometer);
+                            Measurement_list[0] = new Measurement(ref mug, ref HP5519_Laser, ref tunnel_trolley, ref dutug, ref TH_logger1, ref TH_logger2, ref barometer);
                             measurement_thread = new Thread(new ParameterizedThreadStart(Measurement.Measure));
+                            Measurement_list[0].setThread(ref measurement_thread);
                             measurement_thread.Start(Measurement_list[0]);
                             DUT.TCPConnectionPending = true; ;
                             DUT.HostName = DUTHostName.Text;
                         }
-                       
+
                         break;
                     case ProcNameMeasurement.IDLE:
                         break;
@@ -520,7 +535,7 @@ namespace Trolley_Control
                         Stdev_Textbox.Text = msg;
                         break;
                     default:                    //by default if the gui has been invoked it is because there is a new edm measurement to report in this case the message msg is the EDM value
-                        
+
                         break;
                 }
             }
@@ -542,7 +557,7 @@ namespace Trolley_Control
                     case ProcName.E1735A_READ_DEVICE_COUNT:
                         DialogResult dialog_result1 = MessageBox.Show(msg1, "ERROR", MessageBoxButtons.OK);
                         laserquerythread.Abort();  //stop the laser thread
-                        if(mode != Mode.Debug) Application.Exit();  //close the application, it needs to be restarted to reload the dlls
+                        if (mode != Mode.Debug) Application.Exit();  //close the application, it needs to be restarted to reload the dlls
 
                         break;
                     case ProcName.E1735A_SELECT_DEVICE:
@@ -565,7 +580,19 @@ namespace Trolley_Control
                     case ProcName.E1735A_READ_SAMPLE_COUNT:
                         break;
                     case ProcName.E1735A_READ_SAMPLE:
-                        Laser_Reading.Text = Convert.ToString(HP5519_Laser.R_Sample);
+                        if (HP5519_Laser.R_Sample == double.NaN) break;
+                        try
+                        {
+                            decimal s = Convert.ToDecimal(HP5519_Laser.R_Sample);
+                            s = Math.Round(s, 7, MidpointRounding.AwayFromZero);
+                            Laser_Reading.Text = Convert.ToString(s);
+                        }
+                        catch (Exception)
+                        {
+                            //bad reading ignore the reading
+                            break;
+
+                        }
 
                         break;
                     case ProcName.E1735A_READ_ALL_SAMPLES:
@@ -640,13 +667,13 @@ namespace Trolley_Control
                         {
                             return;
                         }
-                        
+
                         printerThread.Start();
                         redrawLaserEnviroTextbox(Measurement.PrintString);
-                        
+
                         break;
                     default: break;
-                        
+
 
 
 
@@ -675,6 +702,52 @@ namespace Trolley_Control
 
 
 
+        public static void Show(string text)
+        {
+            System.Threading.ParameterizedThreadStart pT = new System.Threading.ParameterizedThreadStart(InvokeShow);
+            pT.BeginInvoke(text, null, null);
+        }
+
+        private static void InvokeShow(object text)
+        {
+            bool found = false;
+            int found_index = 0;
+            int first_empty_index = 0;
+            for (int i = 0; i < showed_messages.Length; i++)
+            {
+                if (showed_messages[i].Equals(""))
+                {
+                    first_empty_index = i;
+                }
+                if (showed_messages[i].Equals(text))
+                {
+                    //this message is already displayed on the screen
+                    found = true;
+                    found_index = i;
+                    break;
+                }
+
+            }
+
+            if (found) return; //don't display the message box again.
+            else {
+                showed_messages[first_empty_index] = (string)text;
+                if (MessageBox.Show(text.ToString()) == DialogResult.OK)
+                {
+
+                    //ok has been pressed, so we need to remove the message from the showed messages array 
+                    for (int i = 0; i < showed_messages.Length; i++)
+                    {
+                        //find the index of the entry-another thread may have changed the entry while the dialog box sat there waiting to be cleared
+                        if (showed_messages[i].Equals(text))
+                        {
+                            showed_messages[i] = "";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         private void Go_Stop_Button_Click(object sender, EventArgs e)
         {
@@ -684,8 +757,8 @@ namespace Trolley_Control
                 //change the text on the button to stop
                 Go_Stop_Button.Text = "Stop";
                 tunnel_trolley.ProcToDo = ProcNameTrolley.GO;
-                
-                
+
+
                 //tunnel_trolley.Stop();
             }
             else if (Go_Stop_Button.Text.Equals("Stop"))
@@ -710,12 +783,12 @@ namespace Trolley_Control
         private void UpdateForward()
         {
             tunnel_trolley.ProcToDo = ProcNameTrolley.FORWARD;
-            Go_Stop_Button.Text = "Reverse";
+            Forward_Reverse_Button.Text = "Reverse";
         }
         private void UpdateReverse()
         {
             tunnel_trolley.ProcToDo = ProcNameTrolley.REVERSE;
-            Go_Stop_Button.Text = "Forward";
+            Forward_Reverse_Button.Text = "Forward";
         }
 
         private void Forward_Reverse_Button_Click(object sender, EventArgs e)
@@ -765,7 +838,7 @@ namespace Trolley_Control
         {
             //Thread to process opening the file
             file_opener_thread = new Thread(new ParameterizedThreadStart(ReadFile));
-            
+
 
             // Create an instance of the open file dialog box.
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
@@ -773,18 +846,21 @@ namespace Trolley_Control
             // Set filter options and filter index.
             openFileDialog1.Filter = "Text Files (.txt)|*.txt|All Files (*.*)|*.*";
             openFileDialog1.FilterIndex = 1;
-            openFileDialog1.InitialDirectory = @"I:\MSL\Private\LENGTH\Edm";
+            openFileDialog1.InitialDirectory = @"I:\MSL\Private\LENGTH\Edm\Tunnel Config";
 
             openFileDialog1.Multiselect = false;
 
             // Call the ShowDialog method to show the dialog box.
             DialogResult result = openFileDialog1.ShowDialog();
 
+
             // Process input if the user clicked OK.
             if (result == DialogResult.OK)
             {
+
                 // Open the selected file to read.
                 System.IO.Stream fileStream = openFileDialog1.OpenFile();
+                config_filename = openFileDialog1.FileName;
                 file_opener_thread.Start(fileStream);
 
             }
@@ -792,7 +868,7 @@ namespace Trolley_Control
 
         private void ReadFile(object parameters)
         {
-            System.IO.Stream fileStream = (System.IO.Stream) parameters;
+            System.IO.Stream fileStream = (System.IO.Stream)parameters;
             using (System.IO.StreamReader reader = new System.IO.StreamReader(fileStream))
             {
                 // Read the first line from the file and write it the textbox.
@@ -840,7 +916,7 @@ namespace Trolley_Control
                     {
 
                         FileLoaderOutput("", "Invalid File Format", true);
-                       
+
                         current_measurement_index--;
                         file_valid = false;
                     }
@@ -853,7 +929,7 @@ namespace Trolley_Control
                             case "START POSITION":
                                 Measurement_list[current_measurement_index].StartPosition = number;
                                 FileLoaderOutput(number.ToString(), "No Error", false);
-                                
+
                                 break;
                             case "INTERMEDIATE":
                                 try
@@ -861,7 +937,7 @@ namespace Trolley_Control
                                     Measurement_list[current_measurement_index].Intermediate[intermediate_index] = number;
                                     intermediate_index++;
                                     FileLoaderOutput(number.ToString(), "No Error", false);
-                                   
+
                                 }
                                 catch (IndexOutOfRangeException)
                                 {
@@ -929,7 +1005,7 @@ namespace Trolley_Control
         {
             if (this.InvokeRequired == false)
             {
-                if(report == true)
+                if (report == true)
                 {
                     MessageBox.Show(msg);
                 }
@@ -955,18 +1031,24 @@ namespace Trolley_Control
 
             short device = Device.EDM;
             // Alert the user which type of device under test is checked, give the option of cancelling
+            if (current_measurement_index == -1)
+            {
+                DialogResult dia_res = MessageBox.Show("You need to add a measurement", "Do you want to do this now?", MessageBoxButtons.YesNo);
+                if (dia_res == DialogResult.No) return;
+                else OpenFile();
+            }
             if (EDMRadioButton.Checked)
             {
                 DialogResult dia_res = MessageBox.Show("The device under test is set to EDM", "is the wavelength correct?", MessageBoxButtons.YesNo);
                 if (dia_res == DialogResult.No) return;
 
             }
-            else if (TotalStationRadioButton.Checked)
-            {
-                DialogResult dia_res = MessageBox.Show("The device under test is set to Total Station", "is the wavelength correct?", MessageBoxButtons.YesNo);
-                if (dia_res == DialogResult.No) return;
-                device = Device.TOTAL_STATION;
-            }
+            //else if (TotalStationRadioButton.Checked)
+            //{
+            //    DialogResult dia_res = MessageBox.Show("The device under test is set to Total Station", "is the wavelength correct?", MessageBoxButtons.YesNo);
+            //    if (dia_res == DialogResult.No) return;
+            //    device = Device.TOTAL_STATION;
+            //}
             else
             {
                 DialogResult dia_res = MessageBox.Show("The device under test is set to 2nd Laser", "is the wavelength correct?", MessageBoxButtons.YesNo);
@@ -991,7 +1073,8 @@ namespace Trolley_Control
                 }
                 else return;
             }
-            
+
+            Measurement_list[current_measurement_index].ConfigFileName = config_filename; //give the measurement it configuration name
 
             while (true)
             {
@@ -1013,7 +1096,10 @@ namespace Trolley_Control
                                     if (!measurement_thread.IsAlive)
                                     {
                                         measurement_thread = new Thread(new ParameterizedThreadStart(Measurement.Measure));
+                                        Measurement_list[current_measurement_index].setThread(ref measurement_thread);
+                                        measurement_thread.IsBackground = false;
                                         measurement_thread.Start(Measurement_list[0]);
+
                                     }
 
                                     Measurement.executionStatus = true;
@@ -1060,7 +1146,7 @@ namespace Trolley_Control
 
             foreach (Measurement m in Measurement_list)
             {
-                
+
                 m.AbortMeasurement = true;
             }
 
@@ -1070,7 +1156,7 @@ namespace Trolley_Control
             if (tunnel_trolley.isPortOpen)
             {
                 tunnel_trolley.ProcToDo = ProcNameTrolley.STOP;
-                
+
             }
             else
             {
@@ -1105,7 +1191,7 @@ namespace Trolley_Control
             TH_logger2.setHostName(Humidity_logger_2.Text);
         }
 
-        
+
         private void EDMRadioButton_CheckedChanged(object sender, EventArgs e)
         {
 
@@ -1118,11 +1204,8 @@ namespace Trolley_Control
         private void TotalStationRadioButton_CheckedChanged(object sender, EventArgs e)
         {
 
-            if (TotalStationRadioButton.Checked)
-            {
-                Measurement_list[active_measurment_index].SetDeviceType(Device.TOTAL_STATION);
-            }
-            
+
+
         }
 
         private void AuxLaserRadioButton_CheckedChanged(object sender, EventArgs e)
@@ -1151,8 +1234,19 @@ namespace Trolley_Control
 
             if (this.InvokeRequired == false)
             {
-                LaserParameters.Clear();
-                if(p!=null) LaserParameters.AppendText(p.ToString());
+
+                //only allow the gui to update this once every 800 ms otherwise the control may be asked to update the text by many different GUI invokes in quick time.
+                if (p != null)
+                {
+                    if (Environment.TickCount > (tick_count + 800))
+                    {
+                        //get the lastest tickcount
+                        tick_count = Environment.TickCount;
+
+                        //update the richtextbox control
+                        LaserParameters.Text = p.ToString();
+                    }
+                }
             }
             else
             {
@@ -1181,7 +1275,7 @@ namespace Trolley_Control
             else
             {
                 if (mode != Mode.Debug) LaserParameters.AppendText("Problem converting: file in use .... new version created\n...proceeding");
-               
+
             }
         }
 
@@ -1205,19 +1299,14 @@ namespace Trolley_Control
             string text;
             bool okay = true;
 
-            string location = "";
-            string channel = "";
-            string prt = "";
-            string labname = "";
-            string bridgename = "";
-            string muxtype = "";
 
-            
+
+
 
             a_plexor = new AgilentMUX(ref prts);
             multiplexor = a_plexor;
 
-            
+
 
 
             //Open a config file for reading
@@ -1235,7 +1324,7 @@ namespace Trolley_Control
                     @"I:\MSL\Private\LENGTH\Temperature Monitoring Data\Laboratory Configurations");
                 return;
             }
-           
+
             if (result == DialogResult.OK) // Test result.
             {
                 file = openConfigFile.FileName;
@@ -1255,68 +1344,82 @@ namespace Trolley_Control
             }
             if (okay)
             {
-                    // parse the file
-                    StreamReader file_reader = new StreamReader(file);
-                    while (true)
-                    {
+                // parse the file
+                StreamReader file_reader = new StreamReader(file);
+                Thread parser_thread = new Thread(new ParameterizedThreadStart(ParseConfig));
+                parser_thread.IsBackground = true;
+                parser_thread.Start(file_reader);
+            }
+        }
+        private void ParseConfig(object file_reader_)
+        {
+            StreamReader file_reader = (StreamReader)file_reader_;
+            string location = "";
+            string channel = "";
+            string prt = "";
+            string labname = "";
+            string bridgename = "";
+            string muxtype = "";
 
-                        string line_read = file_reader.ReadLine();
+            while (true)
+            {
+
+                string line_read = file_reader.ReadLine();
 
 
-                        if (line_read.Contains("MEASUREMENT "))
-                        {
-                            continue;
-                        }
-                        else if (line_read.Contains("LOCATION IN LAB:"))
-                        {
-                            line_read = line_read.Remove(0, 16);
-                            location = line_read;
-                            continue;
-                        }
-                        else if (line_read.Contains("CHANNEL:"))
-                        {
-                            line_read = line_read.Remove(0, 8);
-                            channel = line_read;
-                            continue;
-                        }
-                        else if (line_read.Contains("PRT:"))
-                        {
-                            line_read = line_read.Remove(0, 4);
-                            prt = line_read;
-                            continue;
-                        }
-                        else if (line_read.Contains("LAB NAME:"))
-                        {
-                            line_read = line_read.Remove(0, 9);
-                            labname = line_read;
-                            continue;
-                        }
-                        else if (line_read.Contains("BRIDGE NAME:"))
-                        {
-                            line_read = line_read.Remove(0, 12);
-                            bridgename = line_read;
-                            c_agilent = new AgilentBridge(3, "GPIB3::", ref multiplexor);
-                            getBridgeCorrections(line_read);
-                            bridge = c_agilent;
-                        continue;
-                        }
-                        else if (line_read.Contains("MUX_TYPE:"))
-                        {
-                            line_read = line_read.Remove(0, 9);
-                            muxtype = line_read;
-                            addTemperatureMeasurement(location,channel,prt,labname,bridgename,muxtype);
-                            continue;
-                        }
-                        else if (line_read.Contains("END"))
-                        {
-                            break;
-                        }
-                        else break;
-                    }
+                if (line_read.Contains("MEASUREMENT "))
+                {
+                    continue;
+                }
+                else if (line_read.Contains("LOCATION IN LAB:"))
+                {
+                    line_read = line_read.Remove(0, 16);
+                    location = line_read;
+                    continue;
+                }
+                else if (line_read.Contains("CHANNEL:"))
+                {
+                    line_read = line_read.Remove(0, 8);
+                    channel = line_read;
+                    continue;
+                }
+                else if (line_read.Contains("PRT:"))
+                {
+                    line_read = line_read.Remove(0, 4);
+                    prt = line_read;
+                    continue;
+                }
+                else if (line_read.Contains("LAB NAME:"))
+                {
+                    line_read = line_read.Remove(0, 9);
+                    labname = line_read;
+                    continue;
+                }
+                else if (line_read.Contains("BRIDGE NAME:"))
+                {
+                    line_read = line_read.Remove(0, 12);
+                    bridgename = line_read;
+                    c_agilent = new AgilentBridge(3, "GPIB3::", ref multiplexor);
+                    getBridgeCorrections(line_read);
+                    bridge = c_agilent;
+                    continue;
+                }
+                else if (line_read.Contains("MUX_TYPE:"))
+                {
+                    line_read = line_read.Remove(0, 9);
+                    muxtype = line_read;
+                    addTemperatureMeasurement(location, channel, prt, labname, bridgename, muxtype);
+                    continue;
+                }
+                else if (line_read.Contains("END"))
+                {
+                    break;
+                }
+                else break;
             }
         }
 
-        private void addTemperatureMeasurement(string location_n,string channel_n,string prt_n,string lab_n, string bridge_n, string mux_n)
+        private void addTemperatureMeasurement(string location_n, string channel_n, string prt_n, string lab_n, string bridge_n, string mux_n)
         {
             //Make a new PRT from the selected PRT drop down box based on the stuff in the xml file
             PRT got = findPRT(prt_n);
@@ -1327,20 +1430,25 @@ namespace Trolley_Control
             {
                 if (serverUpdate.IsAlive)
                 {
-
-                    serverUpdate.Abort();
+                    //We have a server update thread running! Stop the current server update thread and make a new one
+                    server_update_enabled = false;
+                    while (serverUpdate.IsAlive) Thread.Sleep(10);  //wait here until the current server updater thread is stopped
                     serverUpdate = new Thread(new ParameterizedThreadStart(serverUpdater));
+                    server_update_enabled = true;
                 }
 
                 else
                 {
+                    //if there's no thread running we need to start one
                     serverUpdate = new Thread(new ParameterizedThreadStart(serverUpdater));
+                    server_update_enabled = true;
 
                 }
             }
             catch (NullReferenceException)
             {
                 serverUpdate = new Thread(new ParameterizedThreadStart(serverUpdater));
+                server_update_enabled = true;
             }
 
 
@@ -1349,11 +1457,12 @@ namespace Trolley_Control
             got.PRTName = prt_n;
             multiplexor.setProbe(got, current_channel);      //associates a probe with a channel
 
-            //create a delegate to wait for the temperature data to come in
-            PrintTemperatureData msgDelegate = new PrintTemperatureData(showTemperatureData);
-            TemperatureMeasurement to_add = new TemperatureMeasurement(ref got, ref multiplexor, ref bridge, current_channel, ref msgDelegate, measurement_index);
 
-            //set this from the gui later
+
+            //create a temperature measurement object for this temperature measurement
+            TemperatureMeasurement to_add = new TemperatureMeasurement(ref got, ref multiplexor, ref bridge, current_channel, measurement_index);
+
+            //set the details of this measurement
             to_add.Inverval = interval;
             to_add.Date = getDT();
             to_add.LabLocation = lab_n;
@@ -1365,20 +1474,28 @@ namespace Trolley_Control
             Array.Resize(ref measurement_list, measurement_index + 1);
             measurement_list[measurement_index] = to_add;
 
-            //create a thread to run the measurement and log the data to C:
-            Thread newthread = new Thread(new ParameterizedThreadStart(TemperatureMeasurement.singleMeasurement));
-            newthread.Priority = ThreadPriority.Normal;
-            newthread.IsBackground = true;
-            Threads[measurement_index] = newthread;
-            Array.Resize(ref Threads, measurement_index + 2);
-            to_add.setThreads(Threads);
-            to_add.setDirectory();   //set the directories for this measurement
 
-            //start the new measurement
-            newthread.Start(to_add);  //start the new thread and give it the measurement object
+            //create a single thread to run the measurements and log the data to C: only do this once though
+            if (measurement_list.Length == 30)
+            {
+                Thread newthread = new Thread(new ThreadStart(TemperatureMeasurement.MeasureAll));
+                newthread.SetApartmentState(ApartmentState.STA); //set the appartment state for thread safety
+                newthread.Priority = ThreadPriority.Normal;
+                newthread.IsBackground = false;
+                //Threads[measurement_index] = newthread;
+                //Array.Resize(ref Threads, measurement_index + 2);
+                to_add.setThread(ref newthread);
+                //create a delegate to wait for the temperature data to come in...
+
+                to_add.MsgDel(ref msgDelegate);
+
+                //start the new measurement thread, giving it the first measurement object
+                newthread.Start();  //start the new thread and give it the measurement object
+
+            }
+            to_add.setDirectory();   //set the directories for this measurement
             measurement_index++;
             serverUpdate.Start(measurement_list);                //run the server updater with the latest measurement list
-
         }
 
         /// <summary>
@@ -1414,7 +1531,7 @@ namespace Trolley_Control
 
             if (this.InvokeRequired == false)
             {
-                
+
                 Measurement.AverageTemperature = TemperatureMeasurement.calculateAverageTemperature();   //this is the temperature from all prts in the tunnel
                 double r = measurement_list[index].Result;
                 Measurement.setTemperature(r, index);
@@ -1422,6 +1539,7 @@ namespace Trolley_Control
                 Thread printerThread;
                 try
                 {
+
                     printerThread = new Thread(new ThreadStart(Measurement_list[active_measurment_index].doDrawPrep));
                 }
                 catch (IndexOutOfRangeException)
@@ -1468,8 +1586,8 @@ namespace Trolley_Control
             c_agilent.A1Card3 = xmlreader.ReadElementContentAsDouble();
             c_agilent.A2Card3 = xmlreader.ReadElementContentAsDouble();
             c_agilent.A3Card3 = xmlreader.ReadElementContentAsDouble();
-           
-            
+
+
         }
 
         private void setBarometerConfig(string barometer_name_)
@@ -1496,7 +1614,7 @@ namespace Trolley_Control
             }
             barometer.ParseCorrectionStrings(corr_strings);
             barometer.setExecStage(BarometerExecutionStage.SETUP);
-           
+
 
         }
 
@@ -1525,7 +1643,8 @@ namespace Trolley_Control
             while (!(xmlreader.EOF || foundloggers))
             {
                 xmlreader.ReadToFollowing("reportnumber");
-                try {
+                try
+                {
                     r_num = xmlreader.ReadElementContentAsString();
                     r_date = xmlreader.ReadElementContentAsString();
                     e_id = xmlreader.ReadElementContentAsString();
@@ -1553,7 +1672,7 @@ namespace Trolley_Control
                         //remove invalid part of the raw correction string.
                         while (cor.Contains("^"))
                         {
-                            
+
                             int removal_index = cor.IndexOf('^');
                             string c = cor.Remove(removal_index);
                             cor = string.Concat(c, cor.Substring(removal_index + 1));
@@ -1576,12 +1695,12 @@ namespace Trolley_Control
                     return;
                 }
 
-                if (location.Equals("TUNNEL")) //we found a humidity location which is in the tunnel...good
+                if (location.Equals("TUNNEL")) //we found a humidity device which is in the tunnel...good
                 {
                     num_loggers_found++;
                     if (num_loggers_found == 1)
                     {
-                        
+
                         TH_logger1.devID = 0;
                         TH_logger1.ReportNumber = r_num;
                         TH_logger1.ReportDate = r_date;
@@ -1596,17 +1715,18 @@ namespace Trolley_Control
                         {
                             int removal_index = correction.IndexOf('^');
                             string c = correction.Remove(removal_index);
-                            correction = string.Concat(c,correction.Substring(removal_index+1));
+                            correction = string.Concat(c, correction.Substring(removal_index + 1));
                         }
                         Humidity_logger_1.Text = ip;
                         TH_logger1.HLoggerEq = correction;
                         TH_logger1.CalculateCorrection();
 
-                        
-                        
+
+
                     }
-                    else if(num_loggers_found == 2){
-                        
+                    else if (num_loggers_found == 2)
+                    {
+
                         TH_logger2.devID = 1;
                         TH_logger2.ReportNumber = r_num;
                         TH_logger2.ReportDate = r_date;
@@ -1628,7 +1748,7 @@ namespace Trolley_Control
                         TH_logger2.HLoggerEq = correction;
                         TH_logger2.CalculateCorrection();
 
-                        
+
                         foundloggers = true;
                     }
                     xmlreader.Read();
@@ -1666,7 +1786,7 @@ namespace Trolley_Control
             VacuumWavelenthTextbox.Text = Convert.ToString(HP5519_Laser.Wavelength);
         }
 
-     
+
 
         private void Laser_Picker_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1713,7 +1833,7 @@ namespace Trolley_Control
             int month;
 
 
-            while (true)
+            while (server_update_enabled)
             {
                 Thread.Sleep(2000);
                 current_time = System.DateTime.Now;  //the time stamp now
@@ -1812,14 +1932,14 @@ namespace Trolley_Control
         {
             try
             {
-                Measurement.CO2 = Convert.ToDouble(CO2_Level.Text)/1000000;
+                Measurement.CO2 = Convert.ToDouble(CO2_Level.Text) / 1000000;
             }
-            
+
             catch (FormatException)
             {
                 MessageBox.Show("Invalid entry! Please enter a numeric");
             }
-        
+
         }
 
         private void DUT_Reset_Button_Click(object sender, EventArgs e)
@@ -1836,7 +1956,7 @@ namespace Trolley_Control
                      + "IP: " + TH_logger1.IP.ToString() + "\n"
                      + "Raw Correction: " + TH_logger1.RawCorrection.ToString() + "\n";
             MessageBox.Show(i);
-           
+
         }
 
         private void H_Logger_2_Button_Click(object sender, EventArgs e)

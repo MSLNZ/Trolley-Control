@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Trolley_Control
 {
-    public class EDM:DUT
+    public class EDM : DUT
     {
         public EDM(ref DUTUpdateGui dutug_) : base(dutug_)
         {

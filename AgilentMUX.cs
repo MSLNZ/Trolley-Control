@@ -5,15 +5,15 @@ using System.Text;
 
 namespace Trolley_Control
 {
-    public class AgilentMUX:MUX
+    public class AgilentMUX : MUX
     {
         private string append_string;
-      
+
         private Object thislock = new Object();
 
         //Since the agilient MUX and bridge are actually one unit the constructor here only needs to take
         //one argument.  The address and the SICL are not required because they are contain in the agilent bridge.
-        public AgilentMUX(ref PRT[] prts_connected):base(ref prts_connected)
+        public AgilentMUX(ref PRT[] prts_connected) : base(ref prts_connected)
         {
             base.prts = prts_connected;      //The PRTs that are currently connected to the mux
             append_string = "(@101)\r\n";    //default append string
@@ -35,13 +35,13 @@ namespace Trolley_Control
                     {
                         append_string = string.Concat("(@10", channel_number.ToString(), ")\r\n");
                     }
-                    else append_string = "(@110)\r\n"; 
+                    else append_string = "(@110)\r\n";
                 }
                 else if ((channel_number > 10) && (channel_number <= 20))
                 {
                     if (channel_number < 20)
                     {
-                        append_string = string.Concat("(@20", (channel_number-10).ToString(), ")\r\n");
+                        append_string = string.Concat("(@20", (channel_number - 10).ToString(), ")\r\n");
                     }
                     else append_string = "(@210)\r\n";
                 }
@@ -49,12 +49,12 @@ namespace Trolley_Control
                 {
                     if (channel_number < 30)
                     {
-                        
-                        append_string = string.Concat("(@30", (channel_number-20).ToString(), ")\r\n");
-                        
+
+                        append_string = string.Concat("(@30", (channel_number - 20).ToString(), ")\r\n");
+
                     }
                     else append_string = "(@310)\r\n";
-                    
+
                 }
                 selected_channel = channel_number;
             }
@@ -170,22 +170,22 @@ namespace Trolley_Control
                 case "CH30":
                     probe_on_this_channel = prts[30];
                     break;
-                  
+
             }
             return probe_on_this_channel;
         }
-        public override void setProbe(PRT new_PRT,short channel_is_on)
+        public override void setProbe(PRT new_PRT, short channel_is_on)
         {
             try
             {
                 prts[channel_is_on - 1] = new_PRT;
-              
+
             }
             catch (IndexOutOfRangeException)
             {
                 channel_is_on = 1;
                 prts[channel_is_on - 1] = new_PRT;
-                
+
             }
         }
 
@@ -194,7 +194,7 @@ namespace Trolley_Control
         /// </summary>
         public string AppendString
         {
-            get {return append_string;}
+            get { return append_string; }
         }
 
 

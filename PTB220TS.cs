@@ -87,22 +87,22 @@ namespace Trolley_Control
     }
 
 
-   
 
-    
 
-    public class PTB220TS:Barometer
+
+
+    public class PTB220TS : Barometer
     {
 
         private Thread serialPortThread;
         private SerialPortWatcher watcher;
         public static SerialPort s_port;
         protected VaisalaUpdateGui update_gui;
-        
-        
+
+
         protected bool is_open = false;
         protected string last_error = "ERROR code not specified";
-        
+
 
 
 
@@ -118,12 +118,12 @@ namespace Trolley_Control
             //watcher = new SerialPortWatcher();
             current_exe_stage = BarometerExecutionStage.INIT;
             serialPortThread.Start();
-            
-            
+
+
 
         }
 
-       
+
         public bool CheckComPorts()
         {
             try
@@ -131,7 +131,7 @@ namespace Trolley_Control
                 if (!Init(CommunicationString)) throw new IOException();
             }
 
-            catch(IOException)
+            catch (IOException)
             {
                 //try to find a port that works!
                 //get the names of all the com ports.
@@ -163,7 +163,7 @@ namespace Trolley_Control
             return true;
         }
 
-        
+
         public bool Init(string portname)
         {
 
@@ -190,7 +190,7 @@ namespace Trolley_Control
                 s_port.Write("send\r");
 
                 string l = s_port.ReadLine();
-             
+
 
                 if (l.Contains("hPa"))
                 {
@@ -209,7 +209,7 @@ namespace Trolley_Control
             }
             catch (IOException)
             {
-                
+
                 s_port.Close();
                 is_open = false;
                 return false;
@@ -222,13 +222,13 @@ namespace Trolley_Control
             }
             catch (AccessViolationException)
             {
-                
+
                 //update_gui(BarometerExecutionStage.SETUP, "Barometer Error - Serial Port Already Open", !error_reported);
                 return false;
             }
             catch (UnauthorizedAccessException)
             {
-                
+
                 //update_gui(BarometerExecutionStage.SETUP, "Barometer Error - Serial Port Already Open", !error_reported);
                 return false;
             }
@@ -246,7 +246,7 @@ namespace Trolley_Control
                 {
                     string line = s_port.ReadLine();
                     ParseForResult(line);
-                
+
                     return true;
 
                 }
@@ -293,22 +293,22 @@ namespace Trolley_Control
             }
             else
             {
-       
+
                 s_port.Dispose();
                 is_open = false;
                 current_exe_stage = BarometerExecutionStage.SETUP;
                 return false;
             }
-                
-            
-            
-        
+
+
+
+
         }
         public void Write(string command)
         {
             s_port.Write(command);
         }
-        
+
         public bool ClearError()
         {
             //clear the error
@@ -337,7 +337,7 @@ namespace Trolley_Control
                 current_exe_stage = BarometerExecutionStage.SETUP;  //return to the init state
                 return false;
             }
-            
+
         }
 
 
@@ -345,7 +345,7 @@ namespace Trolley_Control
         {
             if (line.Contains("hPa"))
             {
-                 
+
                 string substring = line.Remove(line.IndexOf('h'));
                 if (line.Contains("-")) slope = false;
                 else slope = true;
@@ -384,9 +384,10 @@ namespace Trolley_Control
                         //We only execute if an error has not been reported to the gui
 
                         if (c > 100) c = 0; //check if something has been unplugged or plugged
-                        if (CheckComPorts()){
-                              //we have a com port assigned and valid communication so we can move on
-                              if(current_exe_stage!=BarometerExecutionStage.TERMINATE) current_exe_stage = BarometerExecutionStage.POLL;
+                        if (CheckComPorts())
+                        {
+                            //we have a com port assigned and valid communication so we can move on
+                            if (current_exe_stage != BarometerExecutionStage.TERMINATE) current_exe_stage = BarometerExecutionStage.POLL;
                         }
                         break;
                     case BarometerExecutionStage.POLL:
@@ -400,7 +401,7 @@ namespace Trolley_Control
                         }
                         break;
                     case BarometerExecutionStage.IDLE:
-                        Thread.Sleep(1000); 
+                        Thread.Sleep(1000);
                         break;
                     case BarometerExecutionStage.TERMINATE:
                         execute = false;   //let this thread happily finish its operation.
@@ -415,7 +416,7 @@ namespace Trolley_Control
         public override double getPressure()
         {
             CalculateCorrection(result);
-            return result + current_correction; 
+            return result + current_correction;
         }
         public double Correction
         {
@@ -423,11 +424,11 @@ namespace Trolley_Control
             get { return current_correction; }
         }
 
-        
+
 
         public override bool IsOpen()
         {
-             return is_open;
+            return is_open;
         }
 
 

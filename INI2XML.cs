@@ -7,30 +7,30 @@ using System.Runtime.InteropServices;
 
 namespace Trolley_Control
 {
-	/// <summary>
-	/// WIN32 API Wrapper class
-	/// </summary>
-	public class WIN32Wrapper
-	{
-		/// <summary>
-		/// Get all the section names from an INI file
-		/// </summary>
-		[ DllImport("kernel32.dll", EntryPoint="GetPrivateProfileSectionNamesA") ]
-		public extern static int GetPrivateProfileSectionNames(
-			[MarshalAs(UnmanagedType.LPArray)] byte[] lpReturnedString,
-			int nSize,
-			string lpFileName);
+    /// <summary>
+    /// WIN32 API Wrapper class
+    /// </summary>
+    public class WIN32Wrapper
+    {
+        /// <summary>
+        /// Get all the section names from an INI file
+        /// </summary>
+        [DllImport("kernel32.dll", EntryPoint = "GetPrivateProfileSectionNamesA")]
+        public extern static int GetPrivateProfileSectionNames(
+            [MarshalAs(UnmanagedType.LPArray)] byte[] lpReturnedString,
+            int nSize,
+            string lpFileName);
 
-		/// <summary>
-		/// Get all the settings from a section in a INI file
-		/// </summary>
-		[ DllImport("kernel32.dll", EntryPoint="GetPrivateProfileSectionA") ]
-		public extern static int GetPrivateProfileSection(
-			string lpAppName,
-			[MarshalAs(UnmanagedType.LPArray)] byte[] lpReturnedString,
-			int nSize,
-			string lpFileName);
-	}
+        /// <summary>
+        /// Get all the settings from a section in a INI file
+        /// </summary>
+        [DllImport("kernel32.dll", EntryPoint = "GetPrivateProfileSectionA")]
+        public extern static int GetPrivateProfileSection(
+            string lpAppName,
+            [MarshalAs(UnmanagedType.LPArray)] byte[] lpReturnedString,
+            int nSize,
+            string lpFileName);
+    }
 
     /// <summary>
     /// Convert an INI file into an XML file

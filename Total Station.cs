@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Trolley_Control
 {
-    public class Total_Station:DUT
+    public class Total_Station : DUT
     {
         public Total_Station(ref DUTUpdateGui dutug_) : base(dutug_)
         {

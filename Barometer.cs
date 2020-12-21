@@ -23,7 +23,7 @@ namespace Trolley_Control
         protected string communication_string = "COM1";  //could be a COM Port or an IP Address depending on Barometer type.
         protected string report_number;
         protected string report_date;
-        protected string equipment_reg_id; 
+        protected string equipment_reg_id;
         private double[] rising_pressures = new double[11];
         private double[] falling_pressures = new double[11];
         private double[] pressure_thresholds = { 950, 960, 970, 980, 990, 1000, 1010, 1020, 1030, 1040, 1050 };
@@ -31,7 +31,7 @@ namespace Trolley_Control
         protected bool slope; //rising or falling
         protected bool rising_falling_valid;
         protected double result = 0.00;
-        
+
 
         public string CommunicationString
         {
@@ -39,7 +39,7 @@ namespace Trolley_Control
             get { return communication_string; }
         }
 
-       
+
 
         public string ReportNum
         {
@@ -81,7 +81,7 @@ namespace Trolley_Control
         public void ParseCorrectionStrings(string[] correctionstrings)
         {
 
-            for(int i = 0;i < correctionstrings.Length; i++)
+            for (int i = 0; i < correctionstrings.Length; i++)
             {
                 int index_of_colon = correctionstrings[i].IndexOf(':');
 
@@ -93,7 +93,7 @@ namespace Trolley_Control
         protected void CalculateCorrection(double result)
         {
             int index_of_correction = 0;
-            for(int i = 0; i < 11; i++)
+            for (int i = 0; i < 11; i++)
             {
                 if (Math.Abs(result - pressure_thresholds[i]) <= 5)
                 {
@@ -103,17 +103,17 @@ namespace Trolley_Control
 
             if (slope && rising_falling_valid)
             {
-                current_correction =  rising_pressures[index_of_correction];
+                current_correction = rising_pressures[index_of_correction];
             }
-            else if(!slope && rising_falling_valid)
+            else if (!slope && rising_falling_valid)
             {
-                current_correction =  falling_pressures[index_of_correction];
+                current_correction = falling_pressures[index_of_correction];
             }
             else
             {
                 current_correction = ((rising_pressures[index_of_correction] + falling_pressures[index_of_correction]) / 2);
             }
-            
+
         }
     }
 }

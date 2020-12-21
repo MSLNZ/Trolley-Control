@@ -14,7 +14,7 @@ namespace Trolley_Control
         private double B;
         private double R0;
 
-        public PRT(string Report_number,double a, double b ,double r0)
+        public PRT(string Report_number, double a, double b, double r0)
         {
             REPORT_NUMBER = Report_number;
             A = a;
@@ -39,8 +39,8 @@ namespace Trolley_Control
         }
         public string PRTName
         {
-            set {prt_name = value;}
-            get {return prt_name;}
+            set { prt_name = value; }
+            get { return prt_name; }
         }
 
     }

@@ -14,15 +14,15 @@ namespace Trolley_Control
     {
 
         protected static Client TCPClient;
-      
+
         protected static bool connection_pending;
         protected static string host_name;
         protected static DUTUpdateGui dutug;
         protected int unit_timeout;
         protected static short beam_folds;
-        protected static string device_name="EDM";
+        protected static string device_name = "EDM";
         protected static readonly int port = 16;
-        
+
 
         public DUT(DUTUpdateGui dutug_)
         {
@@ -32,12 +32,13 @@ namespace Trolley_Control
             //host_name = "";
         }
 
-        
+
         public abstract bool Request(String request, ref string result);
 
         public abstract void setTimeOut(int num_samples);
 
-        public static string deviceType{
+        public static string deviceType
+        {
 
             get { return device_name; }
 
@@ -69,8 +70,8 @@ namespace Trolley_Control
             return TCPClient.isConnected();
         }
 
-        
-       
+
+
 
         public static bool TCPConnectionPending
         {
@@ -99,13 +100,13 @@ namespace Trolley_Control
 
         public static bool TryConnect()
         {
-  
+
             bool return_value = true;
 
             //if we need to connect then try
-            if (connection_pending)
+            if (connection_pending && !TCPClient.isConnected())
             {
-                if (!TCPClient.Connect(HostName,port))
+                if (!TCPClient.Connect(HostName, port))
                 {
                     //invoke the gui to say we can't get a Network connection
                     dutug(ProcNameMeasurement.ISCONNECTED, MeasurementError.CONNECTION_ERROR, true);
@@ -116,7 +117,7 @@ namespace Trolley_Control
             return return_value;
         }
 
-      
+
 
     }
 }
