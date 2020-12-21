@@ -133,7 +133,7 @@ namespace Trolley_Control
         private static bool run = true;
         private string config_filename = "";
         private static bool block = false;
-
+        private Thread measurement_thread = null;
       
 
 
@@ -200,7 +200,10 @@ namespace Trolley_Control
             temperatures = new double[30]; //There are 30 prts in the tunnel
 
         }
-
+        public void setThread(ref Thread m_thread)
+        {
+            measurement_thread = m_thread;
+        }
         public static int[] LaserPRTSUsed
         {
             get { return laser_prts; }
@@ -598,43 +601,51 @@ namespace Trolley_Control
             if (pos.Equals(double.NaN)) return -1;  //laser not returning a value
             int num_prts_involved = Convert.ToInt32(Math.Ceiling((Math.Abs(pos) + offset) / 4));
             laser_prts = new int[num_prts_involved];
-           
-            for (int i = 0; i < num_prts_involved; i++)
-            {
-                laser_prts[i] = prtmap_over_bench[i];
-                double r = temperatures[prtmap_over_bench[i]];
-                if (r > 0)                  //I assume this condition is a good enough check that we have a valid reading.
+            try {
+                for (int i = 0; i < num_prts_involved; i++)
                 {
-                    if (store)
+
+                    laser_prts[i] = prtmap_over_bench[i];
+
+                    double r = temperatures[prtmap_over_bench[i]];
+                    if (r > 0)                  //I assume this condition is a good enough check that we have a valid reading.
                     {
-                        if (i==0)
+                        if (store)
                         {
-                            //reset all the measurement point arrays to zero
-                            Array.Clear(MeasurementPoint.phase_temperatures, 0, 30);
-                            Array.Clear(MeasurementPoint.phase_pressures, 0, 30);
-                            Array.Clear(MeasurementPoint.phase_humidities, 0, 30);
+                            if (i == 0)
+                            {
+                                //reset all the measurement point arrays to zero
+                                Array.Clear(MeasurementPoint.phase_temperatures, 0, 30);
+                                Array.Clear(MeasurementPoint.phase_pressures, 0, 30);
+                                Array.Clear(MeasurementPoint.phase_humidities, 0, 30);
+                            }
+
+                            MeasurementPoint.phase_temperatures[prtmap_over_bench[i]] = r;  //store the temperature used for the RI calculation
+                            MeasurementPoint.phase_wavelength = wavelength;
+                            MeasurementPoint.phase_pressures[prtmap_over_bench[i]] = Pressure;
+                            MeasurementPoint.phase_humidities[prtmap_over_bench[i]] = AverageHumidity;
+                            sum = sum + CalculatePhaseRefractiveIndex(MeasurementPoint.phase_wavelength, MeasurementPoint.phase_temperatures[prtmap_over_bench[i]], MeasurementPoint.phase_pressures[prtmap_over_bench[i]], MeasurementPoint.phase_humidities[prtmap_over_bench[i]]);
                         }
-
-                        MeasurementPoint.phase_temperatures[prtmap_over_bench[i]] = r;  //store the temperature used for the RI calculation
-                        MeasurementPoint.phase_wavelength = wavelength;
-                        MeasurementPoint.phase_pressures[prtmap_over_bench[i]] = Pressure;
-                        MeasurementPoint.phase_humidities[prtmap_over_bench[i]] = AverageHumidity;
-                        sum = sum + CalculatePhaseRefractiveIndex(MeasurementPoint.phase_wavelength, MeasurementPoint.phase_temperatures[prtmap_over_bench[i]], MeasurementPoint.phase_pressures[prtmap_over_bench[i]], MeasurementPoint.phase_humidities[prtmap_over_bench[i]]);
+                        else
+                        {
+                            sum = sum + CalculatePhaseRefractiveIndex(wavelength, r, Pressure, AverageHumidity);
+                        }
+                        valid_results++;
                     }
-                    else
-                    {
-                        sum = sum + CalculatePhaseRefractiveIndex(wavelength, r, Pressure, AverageHumidity);
-                    }
-                    valid_results++;
                 }
+                if (store) MeasurementPoint.RI_averaging_point = valid_results;
+
+                if (valid_results != 0) RI = sum / valid_results;
+                else RI = 1;
+
+                average_Laser_RI = RI;
+                return RI;
             }
-            if(store) MeasurementPoint.RI_averaging_point = valid_results;
-
-            if (valid_results != 0) RI = sum / valid_results;
-            else RI = 1;
-
-            average_Laser_RI = RI;
-            return RI;
+            catch (IndexOutOfRangeException)
+            {
+                RI = 1;
+                return RI;
+            }
         }
 
         /// <summary>
@@ -1619,7 +1630,8 @@ namespace Trolley_Control
             int i = 0;
             while (MeasurementLoopEnabled)
             {
-                Thread.Sleep(10);  //Don't thrash the thread!
+                asyc_meas.measurement_thread.Join(100);
+                //Thread.Sleep(10);  //Don't thrash the thread!
                 //if we need a one off measurement
                 if (Measurement.do_one_off)
                 {
@@ -1743,248 +1755,6 @@ namespace Trolley_Control
             }
         }
 
-        public static bool MoveToTarget(Measurement current_meas,double target)
-        {
-            Measurement asyc_meas = current_meas;
-
-            switch (asyc_meas.Direction) { 
-
-                case "REVERSE":
-                    //read the target and the laser to detemine if we need to move
-                    if ((asyc_meas.reflaser.R_Sample < target) && MeasurementLoopEnabled)
-                    {
-                        //move the trolley forward at 50% of full speed
-                        asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.STOP;
-                        Thread.Sleep(100);
-                        byte[] sb = new byte[1];
-                        sb[0] = 160;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                        Thread.Sleep(100);
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, asyc_meas.Direction, false);
-                        Thread.Sleep(100);
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
-                        Thread.Sleep(1000);
-
-                        if ((asyc_meas.reflaser.R_Sample) > target - 0.5)
-                        {
-                            sb[0] = 80;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        }
-                        else
-                        {
-                            sb[0] = 150;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 110;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 80;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 70;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 50;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 40;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 30;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                        }
-
-                        bool done1 = false;
-                        bool done2 = false;
-                        bool done3 = false;
-
-                        //wait until we reach the target. or until we are told to stop
-                        while ((asyc_meas.reflaser.R_Sample < target) && MeasurementLoopEnabled)
-                        {
-                            if (((asyc_meas.reflaser.R_Sample) > target - 0.025) & !done1)
-                            {
-                                sb[0] = 155;
-                                asyc_meas.reftrolley.SpeedByte = sb;
-                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                                done1 = true;
-                                done2 = true;
-                                done3 = true;
-                            }
-
-                            if (((asyc_meas.reflaser.R_Sample) > target - 0.05) & !done2)
-                            {
-                                sb[0] = 130;
-                                asyc_meas.reftrolley.SpeedByte = sb;
-                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                                done2 = true;
-                                done3 = true;
-                            }
-
-                            if (((asyc_meas.reflaser.R_Sample) > target - 0.2) & !done3)
-                            {
-                                sb[0] = 100;
-                                asyc_meas.reftrolley.SpeedByte = sb;
-                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                                done3 = true;
-                            }
-
-                            if (asyc_meas.AbortMeasurement == true)
-                            {
-                                break;
-                            }
-                        }
-
-                        //stop the trolley
-                        asyc_meas.reftrolley.Stop();
-
-                        //dwell for the given dwell time
-                        Thread.Sleep((int) asyc_meas.DTime * 1000);
-                    }
-                    break;
-                case "FORWARD":
-
-                    //read the target and the laser to detemine if we need to move
-                    if ((asyc_meas.reflaser.R_Sample > target) && MeasurementLoopEnabled)
-                    {
-                        //asyc_meas.speed[0] = 127;  //set the trolley speed 50%
-
-                        //move the trolley forward at 50% of full speed
-                        asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.STOP;
-                        Thread.Sleep(100);
-
-
-                        byte[] sb = new byte[1];
-                        sb[0] = 160;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-
-                        //asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-
-
-                        Thread.Sleep(100);
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, asyc_meas.Direction, false);
-                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.REVERSE;
-                        Thread.Sleep(100);
-
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
-                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.GO;
-                        Thread.Sleep(1000);
-
-                        
-
-                        if ((asyc_meas.reflaser.R_Sample) < target + 0.50)
-                        {
-                            sb[0] = 80;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        }
-                        else
-                        {
-                            sb[0] = 150;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 110;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 80;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 50;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 40;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 30;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                            sb[0] = 20;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                            Thread.Sleep(300);
-                        }
-
-                        bool done1 = false;
-                        bool done2 = false;
-                        bool done3 = false;
-
-                        //wait until we reach the target. or until we are told to stop
-                        while ((asyc_meas.reflaser.R_Sample > target) && MeasurementLoopEnabled)
-                        {
-                            if (((asyc_meas.reflaser.R_Sample) < target + 0.025) & !done1)
-                            {
-                                sb[0] = 155;
-                                asyc_meas.reftrolley.SpeedByte = sb;
-                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                                done1 = true;
-                                done2 = true;
-                                done3 = true;
-                            }
-
-                            if (((asyc_meas.reflaser.R_Sample) < target + 0.05) & !done2)
-                            {
-                                sb[0] = 130;
-                                asyc_meas.reftrolley.SpeedByte = sb;
-                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                                done2 = true;
-                                done3 = true;
-                            }
-
-                            if (((asyc_meas.reflaser.R_Sample) < target + 0.2) & !done3)
-                            {
-                                sb[0] = 100;
-                                asyc_meas.reftrolley.SpeedByte = sb;
-                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                                done3 = true;
-                            }
-
-                            if (asyc_meas.AbortMeasurement == true)
-                            {
-                                break;
-                            }
-                        }
-
-                        //stop the trolley
-                        asyc_meas.reftrolley.Stop();
-
-                        //dwell for the given dwell time
-                        Thread.Sleep((int)asyc_meas.DTime * 1000);
-                    }
-                    break;
-            }
-            return true;
-        }
-
         public static bool MoveToTargetWindow(Measurement current_meas, double target)
         {
             Measurement asyc_meas = current_meas;
@@ -1993,208 +1763,250 @@ namespace Trolley_Control
             //read the target and the laser to detemine which way we need to move
             while (not_in_target_window)
             {
-                if ((asyc_meas.reflaser.R_Sample < (target - 0.05)) && MeasurementLoopEnabled)
+                if ((asyc_meas.reflaser.R_Sample < (target - 0.075)) && MeasurementLoopEnabled)
                 {
-                   
-                    //we need to move the trolley in reverse
-                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
-                    Thread.Sleep(100);
-                    byte[] sb = new byte[1];
-                    sb[0] = 160;
-                    asyc_meas.reftrolley.SpeedByte = sb;
-                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                    Thread.Sleep(100);
-                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "REVERSE", false);
-                    Thread.Sleep(100);
-                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
-                    Thread.Sleep(1000);
-
-                    //we're too close to ramp the speed up so just move slowly to target
-                    if ((asyc_meas.reflaser.R_Sample) > target - 0.5)
+                    //no point is executing move command if we can't talk to the trolley!
+                    if (asyc_meas.reftrolley.isPortOpen)
                     {
-                        sb[0] = 80;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                    }
-                    else
-                    {
-                        //we're far enough away to ramp the speed up.
-                        sb[0] = 150;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 110;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 80;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 70;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 50;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 40;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 30;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                    }
 
-                    bool done1 = false;
-                    bool done2 = false;
-                    bool done3 = false;
-
-                    //wait until we reach the target. or until we are told to stop
-                    while ((asyc_meas.reflaser.R_Sample < target) && MeasurementLoopEnabled)
-                    {
-                        Thread.Sleep(10);
-                        //make sure we are moving in the correct direction
+                        //we need to move the trolley in reverse
+                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.STOP;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
+                        asyc_meas.measurement_thread.Join(100);
+                        //byte[] sb = new byte[1];
+                        //sb[0] = 160;
+                        //asyc_meas.reftrolley.SpeedByte = sb;
+                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED160", false);
+                        asyc_meas.measurement_thread.Join(100);
+                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.REVERSE;
                         asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "REVERSE", false);
-                        Thread.Sleep(10);
+                        asyc_meas.measurement_thread.Join(100);
+                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.GO;
                         asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
-                        
-                      
-                        if (((asyc_meas.reflaser.R_Sample) > target - 0.025) & !done1)
+                        asyc_meas.measurement_thread.Join(100);
+
+                        //we're too close to ramp the speed up so just move slowly to target
+                        if ((asyc_meas.reflaser.R_Sample) > target - 0.5)
                         {
-                            sb[0] = 155;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            done1 = true;
-                            done2 = true;
-                            done3 = true;
+                            //sb[0] = 160;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED100", false);
+                        }
+                        else
+                        {
+                            //we're far enough away to ramp the speed up.
+                            //sb[0] = 150;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED150", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 110;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED110", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 80;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED80", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 70;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED70", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 50;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED50", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 40;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED40", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 30;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED30", false);
+                            asyc_meas.measurement_thread.Join(300);
                         }
 
-                        if (((asyc_meas.reflaser.R_Sample) > target - 0.05) & !done2)
-                        {
-                            sb[0] = 130;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            done2 = true;
-                            done3 = true;
-                        }
+                        bool done1 = false;
+                        bool done2 = false;
+                        bool done3 = false;
 
-                        if (((asyc_meas.reflaser.R_Sample) > target - 0.2) & !done3)
+                        //wait until we reach the target. or until we are told to stop
+                        while ((asyc_meas.reflaser.R_Sample < target) && MeasurementLoopEnabled && asyc_meas.reftrolley.isPortOpen)
                         {
-                            sb[0] = 100;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            done3 = true;
-                        }
+                            asyc_meas.measurement_thread.Join(10);
+                            //make sure we are moving in the correct direction
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.REVERSE;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "REVERSE", false);
+                            asyc_meas.measurement_thread.Join(10);
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.GO;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
 
-                        if (asyc_meas.AbortMeasurement == true)
-                        {
-                            break;
+
+                            if (((asyc_meas.reflaser.R_Sample) > target - 0.025) & !done1)
+                            {
+                                //sb[0] = 155;
+                                //asyc_meas.reftrolley.SpeedByte = sb;
+                                //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED200", false);
+                                done1 = true;
+                                done2 = true;
+                                done3 = true;
+                            }
+
+                            if (((asyc_meas.reflaser.R_Sample) > target - 0.05) & !done2)
+                            {
+                                //sb[0] = 130;
+                                //asyc_meas.reftrolley.SpeedByte = sb;
+                                //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED130", false);
+                                done2 = true;
+                                done3 = true;
+                            }
+
+                            if (((asyc_meas.reflaser.R_Sample) > target - 0.2) & !done3)
+                            {
+                                //sb[0] = 100;
+                                //asyc_meas.reftrolley.SpeedByte = sb;
+                                //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED100", false);
+                                done3 = true;
+                            }
+
+                            if (asyc_meas.AbortMeasurement == true)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
-                else if ((asyc_meas.reflaser.R_Sample > (target + 0.05)) && MeasurementLoopEnabled) {
+                else if ((asyc_meas.reflaser.R_Sample > (target + 0.075)) && MeasurementLoopEnabled) {
 
-
-                    //we need to move the trolley forward
-                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
-                    Thread.Sleep(100);
-                    byte[] sb = new byte[1];
-                    sb[0] = 160;
-                    asyc_meas.reftrolley.SpeedByte = sb;
-                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                    Thread.Sleep(100);
-                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "FORWARD", false);
-                    Thread.Sleep(100);
-                    asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
-                    Thread.Sleep(1000);
-
-
-
-                    if ((asyc_meas.reflaser.R_Sample) < target + 0.50)
+                    //no point is executing move command if we can't talk to the trolley!
+                    if (asyc_meas.reftrolley.isPortOpen)
                     {
-                        sb[0] = 80;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                    }
-                    else
-                    {
-                        sb[0] = 150;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 110;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 80;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 50;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 40;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 30;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                        sb[0] = 20;
-                        asyc_meas.reftrolley.SpeedByte = sb;
-                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                        Thread.Sleep(300);
-                    }
-
-                    bool done1 = false;
-                    bool done2 = false;
-                    bool done3 = false;
-
-                    //wait until we reach the target. or until we are told to stop
-                    while ((asyc_meas.reflaser.R_Sample > target) && MeasurementLoopEnabled)
-                    {
-                        Thread.Sleep(10);
-                        //make sure we are moving in the correct direction
+                        //we need to move the trolley forward
+                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.STOP;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
+                        asyc_meas.measurement_thread.Join(100);
+                        //byte[] sb = new byte[1];
+                        //sb[0] = 160;
+                        //asyc_meas.reftrolley.SpeedByte = sb;
+                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                        asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED160", false);
+                        asyc_meas.measurement_thread.Join(100);
+                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.FORWARD;
                         asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "FORWARD", false);
-                        Thread.Sleep(10);
+                        asyc_meas.measurement_thread.Join(100);
+                        //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.GO;
                         asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
+                        asyc_meas.measurement_thread.Join(100);
 
-                        if (((asyc_meas.reflaser.R_Sample) < target + 0.025) & !done1)
+
+
+                        if ((asyc_meas.reflaser.R_Sample) < target + 0.50)
                         {
-                            sb[0] = 155;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            done1 = true;
-                            done2 = true;
-                            done3 = true;
+                            //sb[0] = 160;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED100", false);
+                        }
+                        else
+                        {
+                            //sb[0] = 150;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED150", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 110;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED110", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 80;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED80", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 50;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED50", false);
+                            asyc_meas.measurement_thread.Join(300); ;
+                            //sb[0] = 40;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED40", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 30;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED30", false);
+                            asyc_meas.measurement_thread.Join(300);
+                            //sb[0] = 20;
+                            //asyc_meas.reftrolley.SpeedByte = sb;
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED20", false);
+                            asyc_meas.measurement_thread.Join(300);
                         }
 
-                        if (((asyc_meas.reflaser.R_Sample) < target + 0.05) & !done2)
-                        {
-                            sb[0] = 130;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            done2 = true;
-                            done3 = true;
-                        }
 
-                        if (((asyc_meas.reflaser.R_Sample) < target + 0.2) & !done3)
-                        {
-                            sb[0] = 100;
-                            asyc_meas.reftrolley.SpeedByte = sb;
-                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED", false);
-                            done3 = true;
-                        }
+                        bool done1 = false;
+                        bool done2 = false;
+                        bool done3 = false;
 
-                        if (asyc_meas.AbortMeasurement == true)
+                        //wait until we reach the target. or until we are told to stop
+                        while ((asyc_meas.reflaser.R_Sample > target) && MeasurementLoopEnabled)
                         {
-                            break;
+                            asyc_meas.measurement_thread.Join(10);
+                            //make sure we are moving in the correct direction
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.FORWARD;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "FORWARD", false);
+                            asyc_meas.measurement_thread.Join(10);
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.GO;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
+
+                            if (((asyc_meas.reflaser.R_Sample) < target + 0.025) & !done1)
+                            {
+                                //sb[0] = 155;
+                                //asyc_meas.reftrolley.SpeedByte = sb;
+                                //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED200", false);
+                                done1 = true;
+                                done2 = true;
+                                done3 = true;
+                            }
+
+                            if (((asyc_meas.reflaser.R_Sample) < target + 0.05) & !done2)
+                            {
+                                //sb[0] = 130;
+                               // asyc_meas.reftrolley.SpeedByte = sb;
+                                //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED130", false);
+                                done2 = true;
+                                done3 = true;
+                            }
+
+                            if (((asyc_meas.reflaser.R_Sample) < target + 0.2) & !done3)
+                            {
+                                //sb[0] = 100;
+                                //asyc_meas.reftrolley.SpeedByte = sb;
+                                //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
+                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED100", false);
+                                done3 = true;
+                            }
+
+                            if (asyc_meas.AbortMeasurement == true)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
@@ -2204,6 +2016,7 @@ namespace Trolley_Control
                     //if we get to here we are in the target window.  But we still need to account for a possible runaway trolley situation.
 
                     //stop the trolley immediately
+                    //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.STOP;
                     asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
 
                     bool trolley_stationary = false;
@@ -2211,26 +2024,29 @@ namespace Trolley_Control
                     {
                         //stop the trolley
                         double reading1 = asyc_meas.reflaser.R_Sample;
-                        Thread.Sleep(100);
+                        asyc_meas.measurement_thread.Join(100);
                         double reading2 = asyc_meas.reflaser.R_Sample;
 
-                        if (Math.Abs(reading1 - reading2) > 0.00001)
+                        if (reading1 == reading2) continue; //if readings are identical we assume the laser hasn't got an updated reading
+                        else if (Math.Abs(reading1 - reading2) > 0.00001)
                         {
+                            //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.STOP;
+                            asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED255", false);
                             asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "STOP", false);
                         }
                         else trolley_stationary = true;
                     }
 
                     //check if we are still in the target window.
-                    if((asyc_meas.reflaser.R_Sample <= (target+0.05)) && (asyc_meas.reflaser.R_Sample >= (target - 0.05)))
+                    if((asyc_meas.reflaser.R_Sample <= (target+0.075)) && (asyc_meas.reflaser.R_Sample >= (target - 0.075)))
                     {
                         //we're in the target window and the trolley is stationary, so we're done
                         not_in_target_window = false;        
                     }
                 }
-            }   
+            }
             //dwell for the given dwell time
-            Thread.Sleep((int)asyc_meas.DTime * 1000);
+            asyc_meas.measurement_thread.Join((int)asyc_meas.DTime * 1000);
             return true;
         }
         public static bool DUT_Request(Measurement current_meas, int array_index, bool reset)
@@ -2274,7 +2090,8 @@ namespace Trolley_Control
                     //      
 
                     //wait here for the dwell time
-                    Thread.Sleep((int) asyc_meas.dwell_time*1000);                              
+                    asyc_meas.measurement_thread.Join((int) asyc_meas.dwell_time * 1000);
+                    //Thread.Sleep((int) asyc_meas.dwell_time*1000);                              
 
                     double[] vals = new double[18];
                     //Record a reading of the laser.
@@ -2532,7 +2349,7 @@ namespace Trolley_Control
                         case ExecutionStage.START:
                             asyc_meas.start_pos_value = vals;
 
-                            string version = "Software Version 1.0";
+                            string version = "Software Version 1.1";
                             string config_file = "Configuration File Name: " + asyc_meas.ConfigFileName;
 
                             string line_title = "Position,Laser Raw,RI Correction Laser,Laser with Phase RI Correction,DUT Raw Reading,DUT with Default Correction Removed,DUT with group RI applied,DUT Group RI Correction,DUT Standard Deviation,DUT averaging,Laser Beam Temperature,Average DUT beam Temperature,Average Pressure,Average Humidity,Barometer Correction, Humidity Logger 1 Correction, Humidity Logger 2 Correction, CO2 Concentration, DateTime,Laser PRTS Used, EDM PRTS Used,"+phase_prt_names + fold0_EDM_prt_names + fold1_EDM_prt_names + fold2_EDM_prt_names + fold3_EDM_prt_names + phase_pressure_names + fold0_pressure_names + fold1_pressure_names + fold2_pressure_names + fold3_pressure_names + phase_humidity_names + fold0_humidity_names+fold1_humidity_names+fold2_humidity_names+fold3_humidity_names;

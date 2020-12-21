@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Ivi.Visa.Interop;
 using System.Windows.Forms;
+using System.Threading;
 
 
 namespace Trolley_Control
@@ -13,14 +14,25 @@ namespace Trolley_Control
     /// </summary>
     public abstract class GPIBOverLANCommands
     {
-        private FormattedIO488 ioDmm;
+        private static FormattedIO488 ioDmm;
         //private ITcpipInstr iodss;
-        private string error_status;
-        protected int GPIB_adr = 0;
-        protected string SICL_interface_id = "";
+        private static string error_status;
+        protected static int GPIB_adr = 0;
+        protected static string SICL_interface_id = "";
         protected string ss;
 
         public GPIBOverLANCommands()
+        {
+            
+        }
+        public int GPIBAddr{
+            get { return GPIB_adr; }
+        }
+        public string GPIBSICL
+        {
+            get { return SICL_interface_id; }
+        }
+        public static void createInteropObject()
         {
             try
             {
@@ -34,12 +46,13 @@ namespace Trolley_Control
                 goto END;
             }
 
-            
+
             error_status = "No Error";
-        END: ;
+        END:;
         }
 
-        protected void InitIO(string sendstring)
+
+        public void InitIO(string sendstring)
         {
             ss = sendstring;
             try
@@ -49,7 +62,7 @@ namespace Trolley_Control
                 ResourceManager grm = new ResourceManager();
 
                 
-                ioDmm.IO = (IMessage)grm.Open(sendstring, AccessMode.SHARED_LOCK, 2000, "");
+                ioDmm.IO = (IMessage)grm.Open(sendstring, AccessMode.NO_LOCK, 2000, "");
                 
                 
             }
@@ -94,9 +107,12 @@ namespace Trolley_Control
             //Gets the instrument model number
             while (true)
             {
+                //there can be a fairly serious bug here if this thread hangs during the execution of the following command
                 try
                 {
+                    
                     ioDmm.WriteString(command, true);
+                
                     break;
                 }
                 catch (System.Runtime.InteropServices.COMException)
@@ -112,7 +128,7 @@ namespace Trolley_Control
                         ioDmm = new FormattedIO488();
                         //create the resource manager and open a session with the instrument specified on txtAddress     
                         ResourceManager grm = new ResourceManager();
-                        ioDmm.IO = (IMessage)grm.Open(ss, AccessMode.SHARED_LOCK, 2000, "");         //this is set to null if io is down and it triggers a com exception
+                        ioDmm.IO = (IMessage)grm.Open(ss, AccessMode.NO_LOCK, 2000, "");         //this is set to null if io is down and it triggers a com exception
                     }
 
                     catch (System.Runtime.InteropServices.COMException)
@@ -120,6 +136,10 @@ namespace Trolley_Control
                         System.Threading.Thread.Sleep(5000);
                         continue;
                     }
+                }
+                catch (Exception e)
+                {
+                    return;
                 }
             }
         }
@@ -186,7 +206,9 @@ namespace Trolley_Control
         {
             try
             {
+           
                 val = ioDmm.ReadString();
+          
             }
             catch (System.Runtime.InteropServices.COMException)
             {

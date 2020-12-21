@@ -27,8 +27,8 @@ namespace Trolley_Control
 
         public ResistanceBridge(int GPIB_Address_, string SICL_,ref MUX multi_)
         {
-            base.GPIB_adr = GPIB_Address_;
-            base.SICL_interface_id = SICL_;
+            GPIB_adr = GPIB_Address_;
+            SICL_interface_id = SICL_;
             multi = multi_;
         }
 

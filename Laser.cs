@@ -842,65 +842,60 @@ namespace Trolley_Control
 
 
             Laser asyc_functions = (Laser)stateInfo;
-            long tick_count1 = 0;
-            long tick_count2 = 0;
-            long tick_count3 = 0;
-            long tick_count4 = 0;
+            
+            int tick_count1 = 0;
+            int tick_count2 = 0;
+            int tick_count3 = 0;
+            int tick_count4 = 0;
+            int current_tick_count = 0;
+            bool overflow = false;
             int init = 0;
             
 
             while(true){
 
+                Thread.Sleep(5);
+                //check for an overflow in the environment tickcount (happens every 24.9 days)
+                if (current_tick_count > (Environment.TickCount&Int32.MaxValue))
+                {
+                    overflow = true;
+                }
+                current_tick_count = Environment.TickCount&Int32.MaxValue;
+
+                //every 100 ms we get the beam strength
+                if (current_tick_count > (tick_count1+100)||overflow)
+                {
+                    tick_count1 = current_tick_count;
+                    overflow = false;
+                    asyc_functions.procToDo = ProcName.E1735A_READ_BEAM_STRENGTH;
                 
-                //every 500000 ticks we get the beam strength
-                if (tick_count1++ == 500000)
-                {
-                    Thread.Sleep(1);
-                    if (asyc_functions.procToDo == ProcName.IDLE)
-                    {
-                        asyc_functions.procToDo = ProcName.E1735A_READ_BEAM_STRENGTH;
-                        tick_count1 = 0;
-                    }
-                    else tick_count1 = 499999;  //busy wait for a free moment
                 }
-                //every 1001 ticks we get the laser position
-                if (tick_count2++ == 1000000)
+                //every 50 ms we get the laser position
+                if (current_tick_count > (tick_count2 + 50) || overflow)
                 {
-                    Thread.Sleep(1);
-                    if (asyc_functions.procToDo == ProcName.IDLE)
-                    {
-                        asyc_functions.procToDo = ProcName.E1735A_READ_SAMPLE;
-                        tick_count2 = 0;
-                    }
-                    else tick_count2 = 999999;  //busy wait for a free moment
+                    overflow = false;
+                    tick_count2 = current_tick_count;
+                    asyc_functions.procToDo = ProcName.E1735A_READ_SAMPLE;
                 }
 
-                //every 10000001 ticks we get the laser parameters
-                if (tick_count3++ == 10000002)
+                //every 1000 ms we get the laser parameters
+                if (current_tick_count > (tick_count3 + 1000) || overflow)
                 {
-                    Thread.Sleep(1);
-                    if (asyc_functions.procToDo == ProcName.IDLE)
-                    {
-                        asyc_functions.procToDo = ProcName.E1735A_GET_PARAMETER;
-                        tick_count3 = 0;
-                    }
-                    else tick_count3 = 10000000;  //busy wait for a free moment
+                    overflow = false;
+                    tick_count3 = current_tick_count;
+                    asyc_functions.procToDo = ProcName.E1735A_GET_PARAMETER;
                 }
 
-                //every 10000002 ticks we set the laser parameters
-                if (tick_count4++ == 10000001)
+                //every 1000 ms we set the laser parameters
+                if (current_tick_count > (tick_count4 + 1000) || overflow)
                 {
-                    Thread.Sleep(1);
-                    if (asyc_functions.procToDo == ProcName.IDLE)
-                    {
-                        asyc_functions.procToDo = ProcName.E1735A_SET_PARAMETER;
-                        tick_count4 = 0;
-                    }
-                    else tick_count4 = 10000001;  //busy wait for a free moment
+                    overflow = false;
+                    tick_count4 = current_tick_count;
+                    asyc_functions.procToDo = ProcName.E1735A_SET_PARAMETER;
                 }
 
                 if (asyc_functions.query == true)
-            {
+                {
                 asyc_functions.InitDLL();
 
                 if (init==0)

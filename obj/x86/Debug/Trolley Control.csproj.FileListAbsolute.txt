@@ -1,4 +1,3 @@
-C:\Users\Public\Documents\Github\Trolley-Control\obj\x86\Debug\Trolley Control.csprojResolveAssemblyReference.cache
 C:\Users\Public\Documents\Github\Trolley-Control\obj\x86\Debug\Interop.BASICFORMATTEDIOLib.dll
 C:\Users\Public\Documents\Github\Trolley-Control\obj\x86\Debug\Trolley Control.csproj.ResolveComReference.cache
 C:\Users\Public\Documents\Github\Trolley-Control\obj\x86\Debug\Trolley_Control.Tunnel_Control_Form.resources

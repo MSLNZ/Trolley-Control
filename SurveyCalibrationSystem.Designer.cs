@@ -90,6 +90,8 @@
             this.BarometerTypeComboBox = new System.Windows.Forms.ComboBox();
             this.H_Logger_1_Button = new System.Windows.Forms.Button();
             this.H_Logger_2_Button = new System.Windows.Forms.Button();
+            this.bt_data_received_label = new System.Windows.Forms.Label();
+            this.BTData_TextBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.Motor_Speed)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.FileMenu.SuspendLayout();
@@ -244,7 +246,6 @@
             this.Laser_Reading.Size = new System.Drawing.Size(121, 20);
             this.Laser_Reading.TabIndex = 14;
             this.Laser_Reading.Text = "0.000000";
-            this.Laser_Reading.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // Reset_Laser
             // 
@@ -469,6 +470,8 @@
             // 
             // Bluetooth_Groupbox
             // 
+            this.Bluetooth_Groupbox.Controls.Add(this.BTData_TextBox);
+            this.Bluetooth_Groupbox.Controls.Add(this.bt_data_received_label);
             this.Bluetooth_Groupbox.Controls.Add(this.Connections_Label);
             this.Bluetooth_Groupbox.Controls.Add(this.Status_Label);
             this.Bluetooth_Groupbox.Controls.Add(this.Status_Textbox);
@@ -509,9 +512,9 @@
             // Bluetooth_Listbox
             // 
             this.Bluetooth_Listbox.FormattingEnabled = true;
-            this.Bluetooth_Listbox.Location = new System.Drawing.Point(16, 81);
+            this.Bluetooth_Listbox.Location = new System.Drawing.Point(16, 82);
             this.Bluetooth_Listbox.Name = "Bluetooth_Listbox";
-            this.Bluetooth_Listbox.Size = new System.Drawing.Size(348, 69);
+            this.Bluetooth_Listbox.Size = new System.Drawing.Size(348, 43);
             this.Bluetooth_Listbox.TabIndex = 0;
             // 
             // Targets_RichTextbox
@@ -691,6 +694,22 @@
             this.H_Logger_2_Button.UseVisualStyleBackColor = true;
             this.H_Logger_2_Button.Click += new System.EventHandler(this.H_Logger_2_Button_Click);
             // 
+            // bt_data_received_label
+            // 
+            this.bt_data_received_label.AutoSize = true;
+            this.bt_data_received_label.Location = new System.Drawing.Point(15, 138);
+            this.bt_data_received_label.Name = "bt_data_received_label";
+            this.bt_data_received_label.Size = new System.Drawing.Size(127, 13);
+            this.bt_data_received_label.TabIndex = 4;
+            this.bt_data_received_label.Text = "Bluetooth Data Received";
+            // 
+            // BTData_TextBox
+            // 
+            this.BTData_TextBox.Location = new System.Drawing.Point(148, 135);
+            this.BTData_TextBox.Name = "BTData_TextBox";
+            this.BTData_TextBox.Size = new System.Drawing.Size(216, 20);
+            this.BTData_TextBox.TabIndex = 5;
+            // 
             // Tunnel_Control_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -803,6 +822,8 @@
         private System.Windows.Forms.Button LaserInfoButton;
         private System.Windows.Forms.Button H_Logger_1_Button;
         private System.Windows.Forms.Button H_Logger_2_Button;
+        private System.Windows.Forms.TextBox BTData_TextBox;
+        private System.Windows.Forms.Label bt_data_received_label;
     }
 }
 

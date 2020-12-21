@@ -30,6 +30,11 @@ namespace Trolley_Control
         private List<string> items;
         private bool monitor = true;
         private bool make_bt_thread = true;
+        private bool no_monitor_threads = true;
+        private int num_scans = 0;
+        byte[] bytes;
+        byte[] bytes1;
+        byte[] bytes2;
 
         private const string address = "00126F2082F4";
 
@@ -47,8 +52,8 @@ namespace Trolley_Control
 
         public bool Connected
         {
-            get { return connected; }
-            set { connected = value; }
+            get { return client.Connected; }
+            
         }
 
         public void ConnectAsServer()
@@ -69,17 +74,25 @@ namespace Trolley_Control
         {
             
             BlueToothScanThread = new Thread(new ThreadStart(scan));
+            BlueToothScanThread.IsBackground = true;
             BlueToothScanThread.Start();
         }
 
         private void scan()
         {
-            while (true)
+            bool found_trolley = false;
+            num_scans++;
+            while (!found_trolley)
             {
                 items.Clear();
                 try
                 {
-                    if (client != null) client.Close();
+                    if (client != null)
+                    {
+                        
+                        client.Close();
+                        client.Dispose();
+                    }
                     client = new BluetoothClient();
                
                 }
@@ -96,7 +109,7 @@ namespace Trolley_Control
                     Thread.Sleep(1000);
                     invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Starting scan for bluetooth devices", false);
                     devices = client.DiscoverDevicesInRange();
-                    bool found_trolley = false;
+                    
                     int index = 0;
 
                     foreach (BluetoothDeviceInfo d in devices)
@@ -104,7 +117,6 @@ namespace Trolley_Control
                         items.Add(d.DeviceName);
                         if (d.DeviceAddress.ToString() == address)
                         {
-                            
                             found_trolley = true;
                             tunnel_device_index = index;
                         }
@@ -156,7 +168,7 @@ namespace Trolley_Control
             try
             {
                 invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Attempting to pair with trolley", false);
-                Thread.Sleep(1000);
+                Thread.Sleep(100);
                 client.Connect(ep);
             }
             catch(Exception e)
@@ -168,94 +180,102 @@ namespace Trolley_Control
             try
             {
                 //if (serialstream != null) serialstream.Close();
-                if(client.Connected) serialstream = client.GetStream();
-                
-                
+                if (client.Connected) serialstream = client.GetStream();
+                else scan();
             }
             catch (InvalidOperationException)
             {
                 scan();
             }
 
+            num_scans--;
 
-            if (client.Connected)
+            if (client.Connected && (num_scans==0))
             {
-                make_bt_thread = true;
-                BluetoothMonitorThread = new Thread(new ThreadStart(MonitorConnection));
+                make_bt_thread = true;  //this thread will exit because we have a successfull connection and serial stream,  allow for a new connect serial thread if connection is lost
+                monitor = true;         //allow for the connection to be monitored
+                while (!no_monitor_threads) ;  //wait here until any previous monitor threads have exited
+                BluetoothMonitorThread = new Thread(new ThreadStart(MonitorConnection));  //create a new thread to monitor the connection
+                BluetoothMonitorThread.IsBackground = true;
                 BluetoothMonitorThread.Start();
                 invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connected", false);
             }
-            //BluetoothClientThread is now finished
+            //BluetoothClientThread is now finishing, the only thread running from this point is monitor connection
         }
 
         public void MonitorConnection()
         {
-            byte[] bytes = new byte[1];
-            bytes[0] = (byte) 'z';
+            no_monitor_threads = false;
+            bytes1 = new byte[1];
+            bytes1[0] = (byte) 'z';
 
-            byte[] bytes1 = new byte[1];
-            bytes1[0]= (byte) '1';
             
-            while (true)
-            {
-                if (monitor)
-                {
-                    serialstream.ReadTimeout = 100;
-                    try
-                    {
-                        Thread.Sleep(3000);
-                        serialstream.Write(bytes, 0, 1);
-                        serialstream.Read(bytes1, 0, 1);
-                    }
-                    catch (IOException)
-                    {
-                        invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
-                        connected = false;
-                        StartScan();
-                        break;
-                    }
+            
 
-                    catch (TimeoutException)
-                    {
-                        invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
-                        connected = false;
-                        StartScan();
-                        break;
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
-                        connected = false;
-                        StartScan();
-                        break;
-                    }
+            while (monitor)
+            {
+
+                serialstream.ReadTimeout = 1000;
+                try
+                {
+                    Thread.Sleep(3000);
+                    serialstream.BeginWrite(bytes1, 0, bytes1.Length, new AsyncCallback(MonitorWriteComplete), serialstream);
+                    serialstream.Write(bytes1, 0, bytes1.Length);
+                    
                 }
+                catch (IOException)
+                {
+                    invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
+                    connected = false;
+                    monitor = false;
+                    StartScan();
+                    break;
+                }
+
+                catch (TimeoutException)
+                {
+                    invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
+                    connected = false;
+                    monitor = false;
+                    StartScan();
+                    break;
+                }
+                catch (ObjectDisposedException)
+                {
+                    invoke_gui(ProcNameTrolley.BLUETOOTH_CONNECTION, "Connection lost attempting to reestablish./n Try power cycling the trolley", true);
+                    connected = false;
+                    monitor = false;
+                    StartScan();
+                    break;
+                }
+
             }
+            no_monitor_threads = true;
         }
 
         public bool sendData(byte[] command, int offset, int count)
         {
-            byte[] bytes = new byte[1];
+            bytes = new byte[count];
+           
             
                 if (client.Connected)
                 {
-                    monitor = false;
 
                     try
                     {
                         while (!serialstream.CanWrite) ;
                         serialstream.Flush();
+                        //serialstream.BeginWrite(command, offset, count, new AsyncCallback(WriteComplete), serialstream);
                         serialstream.Write(command, offset, count);
-                        serialstream.ReadTimeout = 1000;
-                        //Thread.Sleep(50);
-                        serialstream.Read(bytes, 0, 1);
+                        //serialstream.ReadTimeout = 1000;
+                        //Thread.Sleep(10);
+                        
 
-                        monitor = true;
-                        return true;
+                    return true;
                     }
                     catch (IOException)
                     {
-                        monitor = true;
+                        
                         return false;
                     }
                     catch (TimeoutException)
@@ -265,6 +285,28 @@ namespace Trolley_Control
                 }
             
             return false;
+        }
+        public void WriteComplete(IAsyncResult t)
+        {
+            //serialstream.Read(bytes, 0, count);
+            invoke_gui(ProcNameTrolley.BLUETOOTH_DATA, Encoding.Default.GetString(bytes), true);
+            bytes = new byte[10];
+            serialstream.BeginRead(bytes, 0, bytes.Length, new AsyncCallback(ReadComplete), serialstream);
+        }
+        public void ReadComplete(IAsyncResult t)
+        {
+            invoke_gui(ProcNameTrolley.BLUETOOTH_DATA, Encoding.Default.GetString(bytes), true);
+        }
+        public void MonitorWriteComplete(IAsyncResult t)
+        {
+            invoke_gui(ProcNameTrolley.BLUETOOTH_DATA, "WRITE: " + Encoding.Default.GetString(bytes1), true);
+
+            bytes2 = new byte[1];
+            serialstream.BeginRead(bytes2, 0, bytes2.Length, new AsyncCallback(MonitorReadComplete), serialstream);
+        }
+        public void MonitorReadComplete(IAsyncResult t)
+        {
+            invoke_gui(ProcNameTrolley.BLUETOOTH_DATA, "READ: " + Encoding.Default.GetString(bytes2), true);
         }
         public bool Writebyte(byte command)
         {

@@ -10,7 +10,7 @@ namespace Trolley_Control
     {
         
         
-        private AgilentMUX agilent_bridge_mux;
+        private static AgilentMUX agilent_bridge_mux;
       
         /// <summary>
         /// Creates a new Agilent Bridge
@@ -21,8 +21,8 @@ namespace Trolley_Control
         public AgilentBridge(short address, string gatewaystring,ref MUX multi):base(address,gatewaystring,ref multi)
         {
             agilent_bridge_mux = (AgilentMUX) multi;
-            string init_string = String.Concat(SICL_interface_id, Convert.ToString(GPIB_adr));
-            InitIO(init_string);
+            
+            
         }
 
         public double A1Card1
@@ -96,15 +96,15 @@ namespace Trolley_Control
         {
             //string init_string = String.Concat(SICL_interface_id, Convert.ToString(GPIB_adr));
             //InitIO(init_string);
-
+            //Thread.Sleep(500);
             sendcommand("FORM:READ:TIME:TYPE ABS\r\n");
-            Thread.Sleep(50);
+            //Thread.Sleep(500);
             sendcommand("FORM:READ:TIME ON\r\n");
-            Thread.Sleep(50);
+            //Thread.Sleep(500);
             sendcommand("FORM:READ:CHAN OFF\r\n");
-            Thread.Sleep(50);
+            //Thread.Sleep(500);
             sendcommand("FORM:READ:ALAR OFF\r\n");
-            Thread.Sleep(100);
+            //Thread.Sleep(500);
         }
 
         /// <summary>

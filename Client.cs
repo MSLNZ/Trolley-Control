@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Net;
+using System.Net.NetworkInformation;
 //using System.Net.Http;
 //using System.Net.Http.Headers;
 
@@ -54,14 +55,13 @@ namespace Trolley_Control
                 IPAddress ip4;
 
                 IPAddress[] IPAddresses = Dns.GetHostAddresses(server);
+
+              
                 if (IPAddresses.Length == 2)
                 {
                     ip4 = IPAddresses[1];
                 }
                 else ip4 = IPAddresses[0];
-
-
-                
 
                 client.Connect(ip4, port);
 

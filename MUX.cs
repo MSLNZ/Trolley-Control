@@ -16,8 +16,8 @@ namespace Trolley_Control
 
         public MUX(int GPIB_Address_, string SICL_, ref PRT[] prts_connected)
         {
-            base.GPIB_adr = GPIB_Address_;
-            base.SICL_interface_id = SICL_;
+            GPIB_adr = GPIB_Address_;
+            SICL_interface_id = SICL_;
             prts = prts_connected;
             selected_channel = 1;
         }
