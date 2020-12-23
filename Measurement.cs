@@ -1845,11 +1845,11 @@ namespace Trolley_Control
                         //wait until we reach the target. or until we are told to stop
                         while ((asyc_meas.reflaser.R_Sample < target) && MeasurementLoopEnabled && asyc_meas.reftrolley.isPortOpen)
                         {
-                            asyc_meas.measurement_thread.Join(10);
+                            asyc_meas.measurement_thread.Join(30);
                             //make sure we are moving in the correct direction
                             //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.REVERSE;
                             asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "REVERSE", false);
-                            asyc_meas.measurement_thread.Join(10);
+                            asyc_meas.measurement_thread.Join(30);
                             //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.GO;
                             asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
 
@@ -1859,7 +1859,7 @@ namespace Trolley_Control
                                 //sb[0] = 155;
                                 //asyc_meas.reftrolley.SpeedByte = sb;
                                 //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED200", false);
+                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED180", false);
                                 done1 = true;
                                 done2 = true;
                                 done3 = true;
@@ -1970,11 +1970,11 @@ namespace Trolley_Control
                         //wait until we reach the target. or until we are told to stop
                         while ((asyc_meas.reflaser.R_Sample > target) && MeasurementLoopEnabled)
                         {
-                            asyc_meas.measurement_thread.Join(10);
+                            asyc_meas.measurement_thread.Join(30);
                             //make sure we are moving in the correct direction
                             //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.FORWARD;
                             asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "FORWARD", false);
-                            asyc_meas.measurement_thread.Join(10);
+                            asyc_meas.measurement_thread.Join(30);
                             //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.GO;
                             asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "GO", false);
 
@@ -1983,7 +1983,7 @@ namespace Trolley_Control
                                 //sb[0] = 155;
                                 //asyc_meas.reftrolley.SpeedByte = sb;
                                 //asyc_meas.reftrolley.ProcToDo = ProcNameTrolley.SETSPEED;
-                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED200", false);
+                                asyc_meas.mug(ProcNameMeasurement.TROLLEY_SET, "SPEED180", false);
                                 done1 = true;
                                 done2 = true;
                                 done3 = true;
