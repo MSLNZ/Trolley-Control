@@ -1235,10 +1235,10 @@ namespace Trolley_Control
             if (this.InvokeRequired == false)
             {
 
-                //only allow the gui to update this once every 800 ms otherwise the control may be asked to update the text by many different GUI invokes in quick time.
+                //only allow the gui to update this once every 1000 ms otherwise the control may be asked to update the text by many different GUI invokes in quick time.
                 if (p != null)
                 {
-                    if (Environment.TickCount > (tick_count + 800))
+                    if (Environment.TickCount > (tick_count + 1000))
                     {
                         //get the lastest tickcount
                         tick_count = Environment.TickCount;
