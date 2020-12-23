@@ -856,7 +856,7 @@ namespace Trolley_Control
 
             while(true){
 
-                Thread.Sleep(10);
+                Thread.Sleep(50);
                 if ((init != 0) && (init != 1))
                 {
                     //if there's nothing to do then idle
