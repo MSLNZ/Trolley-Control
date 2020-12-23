@@ -147,7 +147,7 @@ namespace Trolley_Control
         private static Object lockthis;
         private static Object lockthis_1;
         private static Object lockthis_2;
-        private volatile short next_exec = 0;
+        //private volatile short next_exec = 0;
         private double laser_pos = 0.0;
         private bool dll_needs_loading;
         private int device_count = 0;
@@ -208,7 +208,7 @@ namespace Trolley_Control
         public IntPtr FuncAddr_E1735A_GetOptics;
         public IntPtr FuncAddr_E1735A_SetParameter;
         public IntPtr FuncAddr_E1735A_GetParameter;
-
+        private List<short> execution_commands = new List<short>();
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate int E1735A_ReadDeviceCount(); //Get number of available E1735A devices
@@ -483,13 +483,15 @@ namespace Trolley_Control
 
             get
             {
-
-                return next_exec;
+                if (execution_commands.Count != 0) return execution_commands.First();  //return the oldest command in the list
+                else return ProcName.IDLE;
             }
             set
             {
-
-                next_exec = value;
+                if (execution_commands.Count < 1000)
+                {
+                    execution_commands.Add(value);
+                }
 
             }
 
@@ -854,248 +856,273 @@ namespace Trolley_Control
 
             while(true){
 
-                Thread.Sleep(5);
-                //check for an overflow in the environment tickcount (happens every 24.9 days)
-                if (current_tick_count > (Environment.TickCount&Int32.MaxValue))
+                Thread.Sleep(10);
+                if ((init != 0) && (init != 1))
                 {
-                    overflow = true;
-                }
-                current_tick_count = Environment.TickCount&Int32.MaxValue;
+                    //if there's nothing to do then idle
+                    if (asyc_functions.execution_commands.Count == 0) asyc_functions.execution_commands.Add(ProcName.IDLE);
 
-                //every 100 ms we get the beam strength
-                if (current_tick_count > (tick_count1+100)||overflow)
-                {
-                    tick_count1 = current_tick_count;
-                    overflow = false;
-                    asyc_functions.procToDo = ProcName.E1735A_READ_BEAM_STRENGTH;
-                
-                }
-                //every 50 ms we get the laser position
-                if (current_tick_count > (tick_count2 + 50) || overflow)
-                {
-                    overflow = false;
-                    tick_count2 = current_tick_count;
-                    asyc_functions.procToDo = ProcName.E1735A_READ_SAMPLE;
-                }
+                    //check for an overflow in the environment tickcount (happens every 24.9 days)
+                    if (current_tick_count > (Environment.TickCount & Int32.MaxValue))
+                    {
+                        overflow = true;
+                    }
+                    current_tick_count = Environment.TickCount & Int32.MaxValue;
 
-                //every 1000 ms we get the laser parameters
-                if (current_tick_count > (tick_count3 + 1000) || overflow)
-                {
-                    overflow = false;
-                    tick_count3 = current_tick_count;
-                    asyc_functions.procToDo = ProcName.E1735A_GET_PARAMETER;
-                }
 
-                //every 1000 ms we set the laser parameters
-                if (current_tick_count > (tick_count4 + 1000) || overflow)
-                {
-                    overflow = false;
-                    tick_count4 = current_tick_count;
-                    asyc_functions.procToDo = ProcName.E1735A_SET_PARAMETER;
-                }
+                    //every 200 ms we get the beam strength
+                    if (current_tick_count > (tick_count1 + 200) || overflow)
+                    {
+                        tick_count1 = current_tick_count;
+                        overflow = false;
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_READ_BEAM_STRENGTH);
 
+                    }
+                    //every 250 ms we get the laser position
+                    if (current_tick_count > (tick_count2 + 250) || overflow)
+                    {
+                        overflow = false;
+                        tick_count2 = current_tick_count;
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_READ_SAMPLE);
+                    }
+
+                    //every 2000 ms we get the laser parameters
+                    if (current_tick_count > (tick_count3 + 2000) || overflow)
+                    {
+                        overflow = false;
+                        tick_count3 = current_tick_count;
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_GET_PARAMETER);
+                    }
+
+                    //every 1000 ms we set the laser parameters
+                    if (current_tick_count > (tick_count4 + 2000) || overflow)
+                    {
+                        overflow = false;
+                        tick_count4 = current_tick_count;
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_SET_PARAMETER);
+                    }
+                }
                 if (asyc_functions.query == true)
                 {
-                asyc_functions.InitDLL();
-
-                if (init==0)
-                {
-                    asyc_functions.procToDo = ProcName.E1735A_READ_DEVICE_COUNT;
                     
-                }
-                if (init == 1)
-                {
-                    asyc_functions.procToDo = ProcName.E1735A_SELECT_DEVICE;
-                    init++;
-                }
 
-                lock (lockthis)                                                                                   //only one thread accessing the laser at once  block the others
-                {
-                    switch (asyc_functions.procToDo)
+                    if (init == 0)
                     {
-                        case ProcName.E1735A_READ_DEVICE_COUNT:
-                            if (init == 0) init = 1;
-                            try                                                                                   //try for a connection
-                            {
+                        asyc_functions.InitDLL();
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_READ_DEVICE_COUNT);
+                    }
+                    if (init == 1)
+                    {
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_SELECT_DEVICE);
+                        init++;
+                    }
 
-                                asyc_functions.deviceCount = asyc_functions.readDeviceCnt();
-                                if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
-
-                                //Something good happened so we can reset the error state
-                                asyc_functions.error_state = true;
-                                asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
-                            }
-
-                            catch (NoDevicesConnectedException)
-                            {
-                                
-                                NativeMethods.FreeLibrary(asyc_functions.Handle);
-                                asyc_functions.Handle = IntPtr.Zero;
-
-                                if (asyc_functions.error_state)
+                    lock (lockthis)                                                                                   //only one thread accessing the laser at once  block the others
+                    {
+                        switch (asyc_functions.execution_commands.ElementAt(0))
+                        {
+                            case ProcName.E1735A_READ_DEVICE_COUNT:
+                                if (init == 0) init = 1;
+                                try                                                                                   //try for a connection
                                 {
-                                    //We have now reported an error and we don't need to see it again.
-                                    asyc_functions.error_state = false;
-                                    asyc_functions.invoke_gui(ProcName.E1735A_READ_DEVICE_COUNT, LaserErrorMessage.NoDevicesConnected, asyc_functions.error_state);
-                                        Thread.Sleep(5000);
-                                }
-                            }
+                                    asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
 
-                            break;
-                        case ProcName.E1735A_SELECT_DEVICE:
-                            try
-                            {
-                                if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
-                                asyc_functions.setDevice();
-                                //Something good happened so we can reset the error state
-                                asyc_functions.error_state = true;
-                                asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
-                            }
-                            catch (NoDevicesConnectedException)
-                            {
-                                if (asyc_functions.error_state)
-                                {
-                                    //We have now reported an error and we don't need to see it again.
-                                    asyc_functions.error_state = false;
-                                    asyc_functions.invoke_gui(ProcName.E1735A_SELECT_DEVICE, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
-                                        Thread.Sleep(5000);
-                                }
-                                
-                            }
-                            break;
-                        case ProcName.E1735A_GET_ALL_REVISIONS:
-                            break;
-                        case ProcName.E1735A_BLINK_LED:
-                            break;
-                        case ProcName.E1735A_RESET_DEVICE:
-                            asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
-                            asyc_functions.Reset();
-                            break;
-                        case ProcName.E1735A_READ_LAST_ERROR:
-                            break;
-                        case ProcName.E1735A_READ_SAMPLE_COUNT:
-                            break;
-                        case ProcName.E1735A_READ_SAMPLE:
-                            asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
-                            try
-                            {
-                                if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
-                                asyc_functions.R_Sample = asyc_functions.ReadSample();
-                                asyc_functions.invoke_gui(ProcName.E1735A_READ_SAMPLE, LaserErrorMessage.NoError, asyc_functions.error_state);
-
-                                //Something good happened so we can reset the error state to wait for the next error
-                                asyc_functions.error_state = true;
-
-                                //we can read a sample 
-                                asyc_functions.laser_operation_normal = true;
-                                
-                                
-                            }
-                            catch (NoDevicesConnectedException)
-                            {
-                                if (asyc_functions.error_state)
-                                {
-                                    asyc_functions.error_state = false;
-                                    asyc_functions.laser_operation_normal = false;
-                                    asyc_functions.invoke_gui(ProcName.E1735A_READ_SAMPLE, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
-                                    Thread.Sleep(5000);
-                                }
-
-                            }
-                            break;
-                        case ProcName.E1735A_READ_ALL_SAMPLES:
-                            break;
-                        case ProcName.E1735A_READ_LAST_TRIGGER:
-                            break;
-                        case ProcName.E1735A_READ_LAST_TIMESTAMP:
-                            break;
-                        case ProcName.E1735A_SET_SAMPLE_TRIGGERS:
-                            break;
-                        case ProcName.E1735A_GET_SAMPLE_TRIGGERS:
-                            break;
-                        case ProcName.E1735A_SET_UP_TIMER:
-                            break;
-                        case ProcName.E1735A_START_TIMER:
-                            break;
-                        case ProcName.E1735A_STOP_TIMER:
-                            break;
-                        case ProcName.E1735A_READ_TIMER_SAMPLES:
-                            break;
-                        case ProcName.E1735A_SET_UP_AQB:
-                            break;
-                        case ProcName.E1735A_READ_AQB:
-                            break;
-                        case ProcName.E1735A_READ_SAMPLE_AND_AQB:
-                            break;
-                        case ProcName.E1735A_START_EXTERNAL_SAMPLING:
-                            break;
-                        case ProcName.E1735A_STOP_EXTERNAL_SAMPLING:
-                            break;
-                        case ProcName.E1735A_READ_BUTTON_CLICKED:
-                            break;
-                        case ProcName.E1735A_READ_BEAM_STRENGTH:
-                            asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
-                            try
-                            {
-                                if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
-                                asyc_functions.B_Strength = asyc_functions.ReadBeamStrength();
-
-                                if (asyc_functions.B_Strength < 0.5)
-                                {
-                                    throw new BeamStrengthLow();
-                                }
-                                else
-                                {
-                                   
-                                    asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.NoError, asyc_functions.error_state);
-                                    
-                                    //Something good happened so we can reset the error state to wait for the next error
-                                    asyc_functions.error_state = true;
-                                }
-                            }
-                            catch (NoDevicesConnectedException)
-                            {
-                                if (asyc_functions.error_state)
-                                {
-                                    asyc_functions.error_state = false;
-                                    asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
-                                    Thread.Sleep(5000);
-                                }
-                             
-                            }
-                            catch (BeamStrengthLow)
-                            {
-                                if (asyc_functions.error_state)
-                                {
-                                    asyc_functions.error_state = false;
-                                    asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.BeamStrengthLow, asyc_functions.error_state);
-                                }
-                        
-                            }
-                            break;
-                        case ProcName.E1735A_SET_OPTICS:
-                            break;
-                        case ProcName.E1735A_GET_OPTICS:
-                            break;
-                        case ProcName.E1735A_SET_PARAMETER:
-                                try
-                                {
-                                    asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                    asyc_functions.deviceCount = asyc_functions.readDeviceCnt();
                                     if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
 
-                                    asyc_functions.setParameter(LaserParameters.OP_WAVELENGTH,Convert.ToDouble(asyc_functions.Wavelength));
-                                    asyc_functions.setParameter(LaserParameters.OP_AIRTEMP,20.00);
-                                    asyc_functions.setParameter(LaserParameters.OP_AIRPRES,0);
-                                    asyc_functions.setParameter(LaserParameters.OP_RELHUMI,0);
-                                    asyc_functions.setParameter(LaserParameters.OP_AIRCOMP,1.00);
-                                    asyc_functions.setParameter(LaserParameters.OP_MATTEMP,20);
-                                    asyc_functions.setParameter(LaserParameters.OP_MATEXPN,11.5);
-                                    asyc_functions.setParameter(LaserParameters.OP_MATCOMP,1.00);
-                                    asyc_functions.setParameter(LaserParameters.OP_ALLCOMP,1.00);
-                                    asyc_functions.setParameter(LaserParameters.OP_LASERSENSE,1);
-                                    asyc_functions.setParameter(LaserParameters.OP_SCALEFACTOR,1);
+                                    //Something good happened so we can reset the error state
+                                    asyc_functions.error_state = true;
+                               
+                                }
+
+                                catch (NoDevicesConnectedException)
+                                {
+
+                                    NativeMethods.FreeLibrary(asyc_functions.Handle);
+                                    asyc_functions.Handle = IntPtr.Zero;
+                                    
+
+                                    if (asyc_functions.error_state)
+                                    {
+                                        //We have now reported an error and we don't need to see it again.
+                                        asyc_functions.error_state = false;
+                                        asyc_functions.invoke_gui(ProcName.E1735A_READ_DEVICE_COUNT, LaserErrorMessage.NoDevicesConnected, asyc_functions.error_state);
+                                        
+                                        Thread.Sleep(5000);
+                                    }
+                                }
+
+                                break;
+                            case ProcName.E1735A_SELECT_DEVICE:
+                                try
+                                {
+                                    asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                    if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
+                                    asyc_functions.setDevice();
+                                    //Something good happened so we can reset the error state
+                                    asyc_functions.error_state = true;
+                                    
+                                }
+                                catch (NoDevicesConnectedException)
+                                {
+                                    
+
+                                    if (asyc_functions.error_state)
+                                    {
+                                        //We have now reported an error and we don't need to see it again.
+                                        asyc_functions.error_state = false;
+                                        asyc_functions.invoke_gui(ProcName.E1735A_SELECT_DEVICE, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
+                                      
+                                        Thread.Sleep(5000);
+                                    }
+
+                                }
+                                break;
+                            case ProcName.E1735A_GET_ALL_REVISIONS:
+                                break;
+                            case ProcName.E1735A_BLINK_LED:
+                                break;
+                            case ProcName.E1735A_RESET_DEVICE:
+                                asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                asyc_functions.Reset();
+                                break;
+                            case ProcName.E1735A_READ_LAST_ERROR:
+                                break;
+                            case ProcName.E1735A_READ_SAMPLE_COUNT:
+                                break;
+                            case ProcName.E1735A_READ_SAMPLE:
+                                asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                try
+                                {
+                                    if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
+                                    asyc_functions.R_Sample = asyc_functions.ReadSample();
+                                    asyc_functions.invoke_gui(ProcName.E1735A_READ_SAMPLE, LaserErrorMessage.NoError, asyc_functions.error_state);
+
+                                    //Something good happened so we can reset the error state to wait for the next error
+                                    asyc_functions.error_state = true;
+
+                                    //we can read a sample 
+                                    asyc_functions.laser_operation_normal = true;
+                                    
+
+
+                                }
+                                catch (NoDevicesConnectedException)
+                                {
+                                    
+                                    if (asyc_functions.error_state)
+                                    {
+                                        asyc_functions.error_state = false;
+                                        asyc_functions.laser_operation_normal = false;
+                                        asyc_functions.invoke_gui(ProcName.E1735A_READ_SAMPLE, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
+                                        Thread.Sleep(5000);
+                                    }
+
+                                }
+                                break;
+                            case ProcName.E1735A_READ_ALL_SAMPLES:
+                                break;
+                            case ProcName.E1735A_READ_LAST_TRIGGER:
+                                break;
+                            case ProcName.E1735A_READ_LAST_TIMESTAMP:
+                                break;
+                            case ProcName.E1735A_SET_SAMPLE_TRIGGERS:
+                                break;
+                            case ProcName.E1735A_GET_SAMPLE_TRIGGERS:
+                                break;
+                            case ProcName.E1735A_SET_UP_TIMER:
+                                break;
+                            case ProcName.E1735A_START_TIMER:
+                                break;
+                            case ProcName.E1735A_STOP_TIMER:
+                                break;
+                            case ProcName.E1735A_READ_TIMER_SAMPLES:
+                                break;
+                            case ProcName.E1735A_SET_UP_AQB:
+                                break;
+                            case ProcName.E1735A_READ_AQB:
+                                break;
+                            case ProcName.E1735A_READ_SAMPLE_AND_AQB:
+                                break;
+                            case ProcName.E1735A_START_EXTERNAL_SAMPLING:
+                                break;
+                            case ProcName.E1735A_STOP_EXTERNAL_SAMPLING:
+                                break;
+                            case ProcName.E1735A_READ_BUTTON_CLICKED:
+                                break;
+                            case ProcName.E1735A_READ_BEAM_STRENGTH:
+                                asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                try
+                                {
+                                    if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
+                                    asyc_functions.B_Strength = asyc_functions.ReadBeamStrength();
+
+                                    if (asyc_functions.B_Strength < 0.5)
+                                    {
+                                        throw new BeamStrengthLow();
+                                    }
+                                    else
+                                    {
+
+                                        asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.NoError, asyc_functions.error_state);
+
+                                        //Something good happened so we can reset the error state to wait for the next error
+                                        asyc_functions.error_state = true;
+                                    }
+                                  
+                                }
+                                catch (NoDevicesConnectedException)
+                                {
                                    
-                              
+                                    if (asyc_functions.error_state)
+                                    {
+                                        asyc_functions.error_state = false;
+                                        asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
+                                        
+                                        Thread.Sleep(5000);
+                                    }
+
+                                }
+                                catch (BeamStrengthLow)
+                                {
+                                    
+                                    if (asyc_functions.error_state)
+                                    {
+                                        asyc_functions.error_state = false;
+                                        asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.BeamStrengthLow, asyc_functions.error_state);
+                                        
+                                    }
+
+                                }
+                                break;
+                            case ProcName.E1735A_SET_OPTICS:
+                                break;
+                            case ProcName.E1735A_GET_OPTICS:
+                                break;
+                            case ProcName.E1735A_SET_PARAMETER:
+                                try
+                                {
+                                    //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                    asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                  
+                                    if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
+
+                                    asyc_functions.setParameter(LaserParameters.OP_WAVELENGTH, Convert.ToDouble(asyc_functions.Wavelength));
+                                    asyc_functions.setParameter(LaserParameters.OP_AIRTEMP, 20.00);
+                                    asyc_functions.setParameter(LaserParameters.OP_AIRPRES, 0);
+                                    asyc_functions.setParameter(LaserParameters.OP_RELHUMI, 0);
+                                    asyc_functions.setParameter(LaserParameters.OP_AIRCOMP, 1.00);
+                                    asyc_functions.setParameter(LaserParameters.OP_MATTEMP, 20);
+                                    asyc_functions.setParameter(LaserParameters.OP_MATEXPN, 11.5);
+                                    asyc_functions.setParameter(LaserParameters.OP_MATCOMP, 1.00);
+                                    asyc_functions.setParameter(LaserParameters.OP_ALLCOMP, 1.00);
+                                    asyc_functions.setParameter(LaserParameters.OP_LASERSENSE, 1);
+                                    asyc_functions.setParameter(LaserParameters.OP_SCALEFACTOR, 1);
+
+
 
                                     asyc_functions.invoke_gui(ProcName.E1735A_GET_PARAMETER, LaserErrorMessage.NoError, asyc_functions.error_state);
 
@@ -1110,55 +1137,59 @@ namespace Trolley_Control
                                     }
                                 }
                                 break;
-                        case ProcName.E1735A_GET_PARAMETER:
+                            case ProcName.E1735A_GET_PARAMETER:
 
-                            try
-                            {
-                                asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
-                                if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
-
-                                asyc_functions.Wavelength = asyc_functions.getParameter(LaserParameters.OP_WAVELENGTH);
-                                asyc_functions.AirTemp = asyc_functions.getParameter(LaserParameters.OP_AIRTEMP);
-                                asyc_functions.AirPres = asyc_functions.getParameter(LaserParameters.OP_AIRPRES);
-                                asyc_functions.RelativeHumidity = asyc_functions.getParameter(LaserParameters.OP_RELHUMI);
-                                asyc_functions.AirCompensation = asyc_functions.getParameter(LaserParameters.OP_AIRCOMP);
-                                asyc_functions.MaterialTemperature = asyc_functions.getParameter(LaserParameters.OP_MATTEMP);
-                                asyc_functions.MaterialExpansion = asyc_functions.getParameter(LaserParameters.OP_MATEXPN);
-                                asyc_functions.MaterialCompensation = asyc_functions.getParameter(LaserParameters.OP_MATCOMP);
-                                asyc_functions.TotalCompensation = asyc_functions.getParameter(LaserParameters.OP_ALLCOMP);
-                                asyc_functions.LaserDirectionSense = asyc_functions.getParameter(LaserParameters.OP_LASERSENSE);
-                                asyc_functions.LaserScaleFactor = asyc_functions.getParameter(LaserParameters.OP_SCALEFACTOR);
-                                asyc_functions.LaserEquivalent = asyc_functions.getParameter(LaserParameters.OP_EQUIVALENT);
-                                asyc_functions.LaserUnitScale = asyc_functions.getParameter(LaserParameters.OP_UNITSCALE);
-                                asyc_functions.LaserArmLength = asyc_functions.getParameter(LaserParameters.OP_LASERSENSE);
-                                asyc_functions.LaserFootSpace = asyc_functions.getParameter(LaserParameters.OP_FOOTSPACE);
-                                asyc_functions.LaserSplitAngle = asyc_functions.getParameter(LaserParameters.OP_SPLITANGLE);
-                                asyc_functions.LaserDeadPath = asyc_functions.getParameter(LaserParameters.OP_DEADPATH);
-
-                                asyc_functions.invoke_gui(ProcName.E1735A_GET_PARAMETER, LaserErrorMessage.NoError, asyc_functions.error_state);
-
-                                
-                            }
-                            catch (NoDevicesConnectedException)
-                            {
-                                if (asyc_functions.error_state)
+                                try
                                 {
-                                    asyc_functions.error_state = false;
-                                    asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
+                                    asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                    //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+
+                                    if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
+
+                                    asyc_functions.Wavelength = asyc_functions.getParameter(LaserParameters.OP_WAVELENGTH);
+                                    asyc_functions.AirTemp = asyc_functions.getParameter(LaserParameters.OP_AIRTEMP);
+                                    asyc_functions.AirPres = asyc_functions.getParameter(LaserParameters.OP_AIRPRES);
+                                    asyc_functions.RelativeHumidity = asyc_functions.getParameter(LaserParameters.OP_RELHUMI);
+                                    asyc_functions.AirCompensation = asyc_functions.getParameter(LaserParameters.OP_AIRCOMP);
+                                    asyc_functions.MaterialTemperature = asyc_functions.getParameter(LaserParameters.OP_MATTEMP);
+                                    asyc_functions.MaterialExpansion = asyc_functions.getParameter(LaserParameters.OP_MATEXPN);
+                                    asyc_functions.MaterialCompensation = asyc_functions.getParameter(LaserParameters.OP_MATCOMP);
+                                    asyc_functions.TotalCompensation = asyc_functions.getParameter(LaserParameters.OP_ALLCOMP);
+                                    asyc_functions.LaserDirectionSense = asyc_functions.getParameter(LaserParameters.OP_LASERSENSE);
+                                    asyc_functions.LaserScaleFactor = asyc_functions.getParameter(LaserParameters.OP_SCALEFACTOR);
+                                    asyc_functions.LaserEquivalent = asyc_functions.getParameter(LaserParameters.OP_EQUIVALENT);
+                                    asyc_functions.LaserUnitScale = asyc_functions.getParameter(LaserParameters.OP_UNITSCALE);
+                                    asyc_functions.LaserArmLength = asyc_functions.getParameter(LaserParameters.OP_LASERSENSE);
+                                    asyc_functions.LaserFootSpace = asyc_functions.getParameter(LaserParameters.OP_FOOTSPACE);
+                                    asyc_functions.LaserSplitAngle = asyc_functions.getParameter(LaserParameters.OP_SPLITANGLE);
+                                    asyc_functions.LaserDeadPath = asyc_functions.getParameter(LaserParameters.OP_DEADPATH);
+
+                                    asyc_functions.invoke_gui(ProcName.E1735A_GET_PARAMETER, LaserErrorMessage.NoError, asyc_functions.error_state);
+
+
                                 }
-                            }
-                            break;
-                        case ProcName.IDLE:
+                                catch (NoDevicesConnectedException)
+                                {
+                                    if (asyc_functions.error_state)
+                                    {
+                                        asyc_functions.error_state = false;
+                                        asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
+                                    }
+                                }
+                                break;
+                            case ProcName.IDLE:
+                                asyc_functions.execution_commands.RemoveAt(0);
+                                break;
                             //Do nothing
-                        default: break;
+                            default: break;
 
 
 
 
+                        }
                     }
-                }
 
-            }
+                }
         }
     }
   }
