@@ -11,3 +11,4 @@ C:\Users\Public\Documents\Github\Trolley-Control\bin\Debug\Trolley Control.exe
 C:\Users\Public\Documents\Github\Trolley-Control\bin\Debug\Trolley Control.pdb
 C:\Users\Public\Documents\Github\Trolley-Control\obj\x86\Debug\Trolley Control.exe.manifest
 C:\Users\Public\Documents\Github\Trolley-Control\obj\x86\Debug\Trolley Control.application
+C:\Users\Public\Documents\Github\Trolley-Control\obj\x86\Debug\Trolley Control.csprojResolveAssemblyReference.cache
