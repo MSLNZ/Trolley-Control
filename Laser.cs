@@ -148,7 +148,7 @@ namespace Trolley_Control
         private static Object lockthis;
         private static Object lockthis_1;
         private static Object lockthis_2;
-        private volatile short next_exec = 0;
+        //private volatile short next_exec = 0;
         private double laser_pos = 0.0;
         private bool dll_needs_loading;
         private int device_count = 0;
@@ -209,7 +209,7 @@ namespace Trolley_Control
         public IntPtr FuncAddr_E1735A_GetOptics;
         public IntPtr FuncAddr_E1735A_SetParameter;
         public IntPtr FuncAddr_E1735A_GetParameter;
-
+        private List<short> execution_commands = new List<short>();
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate int E1735A_ReadDeviceCount(); //Get number of available E1735A devices
@@ -485,13 +485,15 @@ namespace Trolley_Control
 
             get
             {
-
-                return next_exec;
+                if (execution_commands.Count != 0) return execution_commands.First();  //return the oldest command in the list
+                else return ProcName.IDLE;
             }
             set
             {
-
-                next_exec = value;
+                if (execution_commands.Count < 1000)
+                {
+                    execution_commands.Add(value);
+                }
 
             }
 
@@ -858,76 +860,83 @@ namespace Trolley_Control
             while (true)
             {
 
-                Thread.Sleep(5);
-                //check for an overflow in the environment tickcount (happens every 24.9 days)
-                if (current_tick_count > (Environment.TickCount & Int32.MaxValue))
+                Thread.Sleep(50);
+                if ((init != 0) && (init != 1))
                 {
-                    overflow = true;
-                }
-                current_tick_count = Environment.TickCount & Int32.MaxValue;
+                    //if there's nothing to do then idle
+                    if (asyc_functions.execution_commands.Count == 0) asyc_functions.execution_commands.Add(ProcName.IDLE);
 
-                //every 100 ms we get the beam strength
-                if (current_tick_count > (tick_count1 + 100) || overflow)
-                {
-                    tick_count1 = current_tick_count;
-                    overflow = false;
-                    asyc_functions.procToDo = ProcName.E1735A_READ_BEAM_STRENGTH;
+                    //check for an overflow in the environment tickcount (happens every 24.9 days)
+                    if (current_tick_count > (Environment.TickCount & Int32.MaxValue))
+                    {
+                        overflow = true;
+                    }
+                    current_tick_count = Environment.TickCount & Int32.MaxValue;
 
-                }
-                //every 50 ms we get the laser position
-                if (current_tick_count > (tick_count2 + 50) || overflow)
-                {
-                    overflow = false;
-                    tick_count2 = current_tick_count;
-                    asyc_functions.procToDo = ProcName.E1735A_READ_SAMPLE;
-                }
 
-                //every 1000 ms we get the laser parameters
-                if (current_tick_count > (tick_count3 + 1000) || overflow)
-                {
-                    overflow = false;
-                    tick_count3 = current_tick_count;
-                    asyc_functions.procToDo = ProcName.E1735A_GET_PARAMETER;
-                }
+                    //every 200 ms we get the beam strength
+                    if (current_tick_count > (tick_count1 + 200) || overflow)
+                    {
+                        tick_count1 = current_tick_count;
+                        overflow = false;
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_READ_BEAM_STRENGTH);
 
-                //every 1000 ms we set the laser parameters
-                if (current_tick_count > (tick_count4 + 1000) || overflow)
-                {
-                    overflow = false;
-                    tick_count4 = current_tick_count;
-                    asyc_functions.procToDo = ProcName.E1735A_SET_PARAMETER;
-                }
+                    }
+                    //every 250 ms we get the laser position
+                    if (current_tick_count > (tick_count2 + 250) || overflow)
+                    {
+                        overflow = false;
+                        tick_count2 = current_tick_count;
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_READ_SAMPLE);
+                    }
 
+                    //every 2000 ms we get the laser parameters
+                    if (current_tick_count > (tick_count3 + 2000) || overflow)
+                    {
+                        overflow = false;
+                        tick_count3 = current_tick_count;
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_GET_PARAMETER);
+                    }
+
+                    //every 1000 ms we set the laser parameters
+                    if (current_tick_count > (tick_count4 + 2000) || overflow)
+                    {
+                        overflow = false;
+                        tick_count4 = current_tick_count;
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_SET_PARAMETER);
+                    }
+                }
                 if (asyc_functions.query == true)
                 {
-                    asyc_functions.InitDLL();
+
 
                     if (init == 0)
                     {
-                        asyc_functions.procToDo = ProcName.E1735A_READ_DEVICE_COUNT;
-
+                        asyc_functions.InitDLL();
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_READ_DEVICE_COUNT);
                     }
                     if (init == 1)
                     {
-                        asyc_functions.procToDo = ProcName.E1735A_SELECT_DEVICE;
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_SELECT_DEVICE);
                         init++;
                     }
 
                     lock (lockthis)                                                                                   //only one thread accessing the laser at once  block the others
                     {
-                        switch (asyc_functions.procToDo)
+                        switch (asyc_functions.execution_commands.ElementAt(0))
                         {
                             case ProcName.E1735A_READ_DEVICE_COUNT:
                                 if (init == 0) init = 1;
                                 try                                                                                   //try for a connection
                                 {
+                                    asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
 
                                     asyc_functions.deviceCount = asyc_functions.readDeviceCnt();
                                     if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
 
                                     //Something good happened so we can reset the error state
                                     asyc_functions.error_state = true;
-                                    asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+
                                 }
 
                                 catch (NoDevicesConnectedException)
@@ -936,11 +945,13 @@ namespace Trolley_Control
                                     NativeMethods.FreeLibrary(asyc_functions.Handle);
                                     asyc_functions.Handle = IntPtr.Zero;
 
+
                                     if (asyc_functions.error_state)
                                     {
                                         //We have now reported an error and we don't need to see it again.
                                         asyc_functions.error_state = false;
                                         asyc_functions.invoke_gui(ProcName.E1735A_READ_DEVICE_COUNT, LaserErrorMessage.NoDevicesConnected, asyc_functions.error_state);
+
                                         Thread.Sleep(5000);
                                     }
                                 }
@@ -949,19 +960,23 @@ namespace Trolley_Control
                             case ProcName.E1735A_SELECT_DEVICE:
                                 try
                                 {
+                                    asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
                                     if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
                                     asyc_functions.setDevice();
                                     //Something good happened so we can reset the error state
                                     asyc_functions.error_state = true;
-                                    asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+
                                 }
                                 catch (NoDevicesConnectedException)
                                 {
+
+
                                     if (asyc_functions.error_state)
                                     {
                                         //We have now reported an error and we don't need to see it again.
                                         asyc_functions.error_state = false;
                                         asyc_functions.invoke_gui(ProcName.E1735A_SELECT_DEVICE, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
+
                                         Thread.Sleep(5000);
                                     }
 
@@ -972,7 +987,8 @@ namespace Trolley_Control
                             case ProcName.E1735A_BLINK_LED:
                                 break;
                             case ProcName.E1735A_RESET_DEVICE:
-                                asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
                                 asyc_functions.Reset();
                                 break;
                             case ProcName.E1735A_READ_LAST_ERROR:
@@ -980,7 +996,8 @@ namespace Trolley_Control
                             case ProcName.E1735A_READ_SAMPLE_COUNT:
                                 break;
                             case ProcName.E1735A_READ_SAMPLE:
-                                asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
                                 try
                                 {
                                     if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
@@ -994,9 +1011,11 @@ namespace Trolley_Control
                                     asyc_functions.laser_operation_normal = true;
 
 
+
                                 }
                                 catch (NoDevicesConnectedException)
                                 {
+
                                     if (asyc_functions.error_state)
                                     {
                                         asyc_functions.error_state = false;
@@ -1038,7 +1057,8 @@ namespace Trolley_Control
                             case ProcName.E1735A_READ_BUTTON_CLICKED:
                                 break;
                             case ProcName.E1735A_READ_BEAM_STRENGTH:
-                                asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
                                 try
                                 {
                                     if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
@@ -1056,23 +1076,28 @@ namespace Trolley_Control
                                         //Something good happened so we can reset the error state to wait for the next error
                                         asyc_functions.error_state = true;
                                     }
+
                                 }
                                 catch (NoDevicesConnectedException)
                                 {
+
                                     if (asyc_functions.error_state)
                                     {
                                         asyc_functions.error_state = false;
                                         asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.LostEstablishedConnection, asyc_functions.error_state);
+
                                         Thread.Sleep(5000);
                                     }
 
                                 }
                                 catch (BeamStrengthLow)
                                 {
+
                                     if (asyc_functions.error_state)
                                     {
                                         asyc_functions.error_state = false;
                                         asyc_functions.invoke_gui(ProcName.E1735A_READ_BEAM_STRENGTH, LaserErrorMessage.BeamStrengthLow, asyc_functions.error_state);
+
                                     }
 
                                 }
@@ -1084,7 +1109,9 @@ namespace Trolley_Control
                             case ProcName.E1735A_SET_PARAMETER:
                                 try
                                 {
-                                    asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                    //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                    asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+
                                     if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
 
                                     asyc_functions.setParameter(LaserParameters.OP_WAVELENGTH, Convert.ToDouble(asyc_functions.Wavelength));
@@ -1118,7 +1145,9 @@ namespace Trolley_Control
 
                                 try
                                 {
-                                    asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+                                    asyc_functions.execution_commands.RemoveAt(0); //purge command from the list now it has been dealt with
+                                    //asyc_functions.procToDo = ProcName.IDLE;   //no execution pending
+
                                     if (asyc_functions.deviceCount == 0) throw new NoDevicesConnectedException();
 
                                     asyc_functions.Wavelength = asyc_functions.getParameter(LaserParameters.OP_WAVELENGTH);
@@ -1153,6 +1182,8 @@ namespace Trolley_Control
                                 }
                                 break;
                             case ProcName.IDLE:
+                                asyc_functions.execution_commands.RemoveAt(0);
+                                break;
                             //Do nothing
                             default: break;
 
