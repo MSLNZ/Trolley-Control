@@ -95,7 +95,17 @@ namespace Trolley_Control
             }
             set
             {
-                execution_commands.Add(value);
+                //limit the execution command list to 50 commands.  
+                if (execution_commands.Count < 50)
+                {
+                    execution_commands.Add(value);
+                }
+                else
+                {
+                    //remove the oldest command before adding more commands
+                    execution_commands.RemoveAt(0);
+                    execution_commands.Add(value);
+                }
             }
         }
 
@@ -196,18 +206,20 @@ namespace Trolley_Control
         public static void Query(object stateinfo)
         {
             Trolley asyc_trolley = (Trolley)stateinfo;
-          
+            int max_list_size = 0;
 
             while (true)
             {
-                asyc_trolley.trolleythread.Join(2);
+                asyc_trolley.trolleythread.Join(5);
                 if (asyc_trolley.execution_commands.Count != 0)
                 {
+                    if (asyc_trolley.execution_commands.Count > max_list_size) max_list_size = asyc_trolley.execution_commands.Count;
                     asyc_trolley.proc_to_do = asyc_trolley.execution_commands.First();
                 }
                 else asyc_trolley.proc_to_do = ProcNameTrolley.IDLE;
 
                 int count = Environment.TickCount & Int32.MaxValue;
+                
                 switch (asyc_trolley.proc_to_do)
                 {
                     case ProcNameTrolley.FORWARD:
@@ -231,7 +243,11 @@ namespace Trolley_Control
                         asyc_trolley.execution_commands.RemoveAt(0);
                         continue;
                     case ProcNameTrolley.IDLE:
-                        asyc_trolley.trolleythread.Join(2);
+                        //asyc_trolley.execution_commands.RemoveAt(0);
+                        asyc_trolley.trolleythread.Join(3);
+                        break;
+                    case 0:
+                        asyc_trolley.execution_commands.RemoveAt(0);
                         break;
 
                 }
