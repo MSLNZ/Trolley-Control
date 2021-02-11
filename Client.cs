@@ -17,7 +17,7 @@ namespace Trolley_Control
     {
         private TcpClient client;
         private NetworkStream stream;
-        private int timeout = 1000; //The default timeout
+        private int timeout = 2000; //The default timeout
 
         public Client()
         {
@@ -52,6 +52,8 @@ namespace Trolley_Control
 
                 //get IP addresses. 1st address is ip6, 2nd is ip4
                 //if there is only one address returned then it is ip4
+
+
                 IPAddress ip4;
 
                 IPAddress[] IPAddresses = Dns.GetHostAddresses(server);
@@ -59,7 +61,7 @@ namespace Trolley_Control
 
                 if (IPAddresses.Length == 2)
                 {
-                    ip4 = IPAddresses[1];
+                    ip4 = IPAddresses[0];
                 }
                 else ip4 = IPAddresses[0];
 
@@ -79,6 +81,7 @@ namespace Trolley_Control
 
         public bool isConnected()
         {
+            if (client == null) return false;
             try
             {
                 return client.Connected;
@@ -87,10 +90,8 @@ namespace Trolley_Control
             {
                 return false;
             }
-            catch (NullReferenceException)
-            {
-                return false;
-            }
+
+
         }
 
         public bool sendReceiveData(String request, ref string result)
@@ -118,7 +119,7 @@ namespace Trolley_Control
 
 
                 stream.ReadTimeout = timeout;
-                //  stream.BeginRead(
+                //stream.BeginRead(data,0,data.Length,)
                 // Read the first batch of the TcpServer response bytes.
                 Int32 bytes = stream.Read(data, 0, data.Length);
                 result = System.Text.Encoding.ASCII.GetString(data, 0, bytes);

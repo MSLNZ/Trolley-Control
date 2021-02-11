@@ -68,6 +68,8 @@
             this.DUT_Reading_Label = new System.Windows.Forms.Label();
             this.EDM_Reading = new System.Windows.Forms.TextBox();
             this.Bluetooth_Groupbox = new System.Windows.Forms.GroupBox();
+            this.BTData_TextBox = new System.Windows.Forms.TextBox();
+            this.bt_data_received_label = new System.Windows.Forms.Label();
             this.Connections_Label = new System.Windows.Forms.Label();
             this.Status_Label = new System.Windows.Forms.Label();
             this.Status_Textbox = new System.Windows.Forms.TextBox();
@@ -90,8 +92,6 @@
             this.BarometerTypeComboBox = new System.Windows.Forms.ComboBox();
             this.H_Logger_1_Button = new System.Windows.Forms.Button();
             this.H_Logger_2_Button = new System.Windows.Forms.Button();
-            this.bt_data_received_label = new System.Windows.Forms.Label();
-            this.BTData_TextBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.Motor_Speed)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.FileMenu.SuspendLayout();
@@ -214,28 +214,28 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.openToolStripMenuItem.Text = "Open Measurement Config";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // startMeasurementToolStripMenuItem
             // 
             this.startMeasurementToolStripMenuItem.Name = "startMeasurementToolStripMenuItem";
-            this.startMeasurementToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.startMeasurementToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.startMeasurementToolStripMenuItem.Text = "Start Measurement";
             this.startMeasurementToolStripMenuItem.Click += new System.EventHandler(this.startMeasurementToolStripMenuItem_Click);
             // 
             // abortMeasurementToolStripMenuItem
             // 
             this.abortMeasurementToolStripMenuItem.Name = "abortMeasurementToolStripMenuItem";
-            this.abortMeasurementToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.abortMeasurementToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.abortMeasurementToolStripMenuItem.Text = "Abort Measurement";
             this.abortMeasurementToolStripMenuItem.Click += new System.EventHandler(this.abortMeasurementToolStripMenuItem_Click);
             // 
             // loadTemperatureConfigFileToolStripMenuItem
             // 
             this.loadTemperatureConfigFileToolStripMenuItem.Name = "loadTemperatureConfigFileToolStripMenuItem";
-            this.loadTemperatureConfigFileToolStripMenuItem.Size = new System.Drawing.Size(231, 22);
+            this.loadTemperatureConfigFileToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.loadTemperatureConfigFileToolStripMenuItem.Text = "Load Temperature Config File";
             this.loadTemperatureConfigFileToolStripMenuItem.Click += new System.EventHandler(this.loadTemperatureConfigFileToolStripMenuItem_Click);
             // 
@@ -263,7 +263,7 @@
             this.DUTHostName.Name = "DUTHostName";
             this.DUTHostName.Size = new System.Drawing.Size(158, 20);
             this.DUTHostName.TabIndex = 17;
-            this.DUTHostName.Text = "CISS29758";
+            this.DUTHostName.Text = "172.16.20.79";
             this.DUTHostName.TextChanged += new System.EventHandler(this.EDMHostName_TextChanged);
             // 
             // DUT_Server_label
@@ -483,6 +483,22 @@
             this.Bluetooth_Groupbox.TabStop = false;
             this.Bluetooth_Groupbox.Text = "Bluetooth Connection Information";
             // 
+            // BTData_TextBox
+            // 
+            this.BTData_TextBox.Location = new System.Drawing.Point(148, 135);
+            this.BTData_TextBox.Name = "BTData_TextBox";
+            this.BTData_TextBox.Size = new System.Drawing.Size(216, 20);
+            this.BTData_TextBox.TabIndex = 5;
+            // 
+            // bt_data_received_label
+            // 
+            this.bt_data_received_label.AutoSize = true;
+            this.bt_data_received_label.Location = new System.Drawing.Point(15, 138);
+            this.bt_data_received_label.Name = "bt_data_received_label";
+            this.bt_data_received_label.Size = new System.Drawing.Size(127, 13);
+            this.bt_data_received_label.TabIndex = 4;
+            this.bt_data_received_label.Text = "Bluetooth Data Received";
+            // 
             // Connections_Label
             // 
             this.Connections_Label.AutoSize = true;
@@ -693,22 +709,6 @@
             this.H_Logger_2_Button.Text = "Info";
             this.H_Logger_2_Button.UseVisualStyleBackColor = true;
             this.H_Logger_2_Button.Click += new System.EventHandler(this.H_Logger_2_Button_Click);
-            // 
-            // bt_data_received_label
-            // 
-            this.bt_data_received_label.AutoSize = true;
-            this.bt_data_received_label.Location = new System.Drawing.Point(15, 138);
-            this.bt_data_received_label.Name = "bt_data_received_label";
-            this.bt_data_received_label.Size = new System.Drawing.Size(127, 13);
-            this.bt_data_received_label.TabIndex = 4;
-            this.bt_data_received_label.Text = "Bluetooth Data Received";
-            // 
-            // BTData_TextBox
-            // 
-            this.BTData_TextBox.Location = new System.Drawing.Point(148, 135);
-            this.BTData_TextBox.Name = "BTData_TextBox";
-            this.BTData_TextBox.Size = new System.Drawing.Size(216, 20);
-            this.BTData_TextBox.TabIndex = 5;
             // 
             // Tunnel_Control_Form
             // 

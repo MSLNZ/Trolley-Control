@@ -164,7 +164,7 @@ namespace Trolley_Control
 
             //get the date component of the directory string.  Use the current time and date for this
             DateTime date = System.DateTime.Now;
-            int year = date.Year;     //the year i.e 2013
+            int year = date.Year;     //the year i.e 2013I:
             int month = date.Month;   //1-12 for which month we are in
             string lb;
             switch (lab_location)
@@ -191,9 +191,10 @@ namespace Trolley_Control
 
 
 
-            //The default directory is on C & I:  Each measurement in written to C when it arrives 
+            //The default directory is on C & G:  Each measurement in written to C when it arrives 
             directory = @"C:\Temperature Monitoring Data\" + lb + @"\" + year.ToString() + @"\" + year.ToString() + "-" + month.ToString() + @"\";
-            directory2 = @"I:\MSL\Private\LENGTH\Temperature Monitoring Data\" + lb + @"\" + year.ToString() + @"\" + year.ToString() + "-" + month.ToString() + @"\";
+            directory2 = @"G:\Shared drives\MSL - Length\Length\Temperature Monitoring Data\" + lb + @"\" + year.ToString() + @"\" + year.ToString() + "-" + month.ToString() + @"\";
+            //directory2 = @"I:\MSL\Private\LENGTH\Temperature Monitoring Data\" + lb + @"\" + year.ToString() + @"\" + year.ToString() + "-" + month.ToString() + @"\";
 
             //create the directories if they don't exist already
             if (!System.IO.Directory.Exists(directory))
@@ -319,19 +320,18 @@ namespace Trolley_Control
 
             //record the month we are in
             int month_ = System.DateTime.Now.Month;
-            Thread.Sleep(3000);
-            while (true)//DateTime.Now < measuring.Date)
+            thread_running.Join(3000);
+            while (true)
             {
 
                 int i = 0;
                 foreach (TemperatureMeasurement current_m in TemperatureMeasurement.MeasurementList)
                 {
-                    TemperatureMeasurement.thread_running.Join(1000);
+                    TemperatureMeasurement.thread_running.Join(500);
                     bool appenditure = false;
 
                     path = TemperatureMeasurement.MeasurementList[i].directory + TemperatureMeasurement.MeasurementList[i].Filename + ".txt";
-                    // string path3 = @"I:\MSL\Private\LENGTH\Temperature Monitoring Data\" + measuring.Filename + ".txt";
-                    path2 = @"I:\MSL\Private\LENGTH\Temperature Monitoring Data\" + TemperatureMeasurement.MeasurementList[i].Filename + "_" + System.DateTime.Now.Ticks.ToString() + ".txt";
+                    path2 = @"G:\Shared drives\MSL - Length\Length\Temperature Monitoring Data\" + TemperatureMeasurement.MeasurementList[i].Filename + "_" + System.DateTime.Now.Ticks.ToString() + ".txt";
 
 
                     try
@@ -340,126 +340,124 @@ namespace Trolley_Control
                         if (System.IO.File.Exists(path))
                         {
                             appenditure = true;
-
                             writer = System.IO.File.AppendText(path);
                         }
                         else writer = System.IO.File.CreateText(path);
 
                     }
-                    catch (System.IO.IOException)
+                    catch (System.IO.IOException e)
                     {
 
                         //Caused because a file is already open for editing, solve by creating a new file and appending the date onto the filename
                         writer = System.IO.File.CreateText(path2);
                     }
-
-                    //if appending we don't need this again
-                    if (!appenditure)
+                    using (writer)
                     {
-                        writer.WriteLine("Automatically Generated File!\n");
-                    }
-
-
-
-
-
-                    //set the current (incoming) measurements priority to be the lowest (biggest number)
-                    //measuring.AssignedThreadPriority = thread_count;
-
-
-                    //make the current thread wait until its priority reaches 1
-                    //lock (lockthis) while (measuring.AssignedThreadPriority != 1) Monitor.Wait(lockthis);
-
-                    //---------------------------------------------------------------------START OF CRITICAL SECTION-------------------------------------------------------------
-                    //lock(lockthis)
-                    //{
-
-
-                    //make sure the channel is correct (it may have been changed by another thread)
-                    TemperatureMeasurement.MeasurementList[i].setMUXChannel();
-
-                    //sleep the thread for the specified dead time
-                    //Thread.Sleep((int)(measuring.Inverval * 1000));
-
-                    //take the measurement
-                    double measurement_result = TemperatureMeasurement.MeasurementList[i].Measure();
-                    TemperatureMeasurement.MeasurementList[i].Result = measurement_result;
-                    TemperatureMeasurement.MeasurementList[i].y_data.Append(measurement_result.ToString() + ",");
-
-                    //record the time of the measurement
-                    TemperatureMeasurement.MeasurementList[i].date_time = System.DateTime.Now;
-                    double ole_date = TemperatureMeasurement.MeasurementList[i].date_time.ToOADate();
-                    TemperatureMeasurement.MeasurementList[i].x_data.Append(ole_date.ToString() + ",");
-
-                    //invoke the GUI to print the temperature data
-                    data(measurement_result
-                         , TemperatureMeasurement.MeasurementList[i].filename + " on CH" + TemperatureMeasurement.MeasurementList[i].channel_for_measurement.ToString() + " in " + TemperatureMeasurement.MeasurementList[i].lab_location + "\n"
-                         , i);
-
-                    TemperatureMeasurement.MeasurementList[i].Result = measurement_result;
-
-                    try
-                    {
-                        if ((measurement_result < 25.0) || (measurement_result > 15.0))
+                        //if appending we don't need this again
+                        if (!appenditure)
                         {
-                            measurement_anomalies++;
+                            writer.WriteLine("Automatically Generated File!\n");
                         }
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
 
 
-                    try
-                    {
-                        //write the measurement to file
-                        writer.WriteLine(string.Concat(measurement_result.ToString() + ", " + TemperatureMeasurement.MeasurementList[i].MUX.getCurrentChannel().ToString()
-                            , "," + TemperatureMeasurement.MeasurementList[i].date_time.ToString() + ", " + TemperatureMeasurement.MeasurementList[i].lab_location
-                            , ", " + TemperatureMeasurement.MeasurementList[i].Filename));
-                        writer.Flush();
-                    }
-                    catch (System.IO.IOException)
-                    {
-                        MessageBox.Show("Issue writing to file - Check Drive - in the mean time the remaining data will be written to C:");
+
+
+
+                        //set the current (incoming) measurements priority to be the lowest (biggest number)
+                        //measuring.AssignedThreadPriority = thread_count;
+
+
+                        //make the current thread wait until its priority reaches 1
+                        //lock (lockthis) while (measuring.AssignedThreadPriority != 1) Monitor.Wait(lockthis);
+
+                        //---------------------------------------------------------------------START OF CRITICAL SECTION-------------------------------------------------------------
+                        //lock(lockthis)
+                        //{
+
+
+                        //make sure the channel is correct (it may have been changed by another thread)
+                        TemperatureMeasurement.MeasurementList[i].setMUXChannel();
+
+                        //sleep the thread for the specified dead time
+                        //Thread.Sleep((int)(measuring.Inverval * 1000));
+
+                        //take the measurement
+                        double measurement_result = TemperatureMeasurement.MeasurementList[i].Measure();
+                        TemperatureMeasurement.MeasurementList[i].Result = measurement_result;
+                        TemperatureMeasurement.MeasurementList[i].y_data.Append(measurement_result.ToString() + ",");
+
+                        //record the time of the measurement
+                        TemperatureMeasurement.MeasurementList[i].date_time = System.DateTime.Now;
+                        double ole_date = TemperatureMeasurement.MeasurementList[i].date_time.ToOADate();
+                        TemperatureMeasurement.MeasurementList[i].x_data.Append(ole_date.ToString() + ",");
+
+                        //invoke the GUI to print the temperature data
+                        data(measurement_result
+                             , TemperatureMeasurement.MeasurementList[i].filename + " on CH" + TemperatureMeasurement.MeasurementList[i].channel_for_measurement.ToString() + " in " + TemperatureMeasurement.MeasurementList[i].lab_location + "\n"
+                             , i);
+
+                        TemperatureMeasurement.MeasurementList[i].Result = measurement_result;
+
+                        try
+                        {
+                            if ((measurement_result < 25.0) || (measurement_result > 15.0))
+                            {
+                                measurement_anomalies++;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            continue;
+                        }
+
+
+                        try
+                        {
+                            //write the measurement to file
+                            writer.WriteLine(string.Concat(measurement_result.ToString() + ", " + TemperatureMeasurement.MeasurementList[i].MUX.getCurrentChannel().ToString()
+                                , "," + TemperatureMeasurement.MeasurementList[i].date_time.ToString() + ", " + TemperatureMeasurement.MeasurementList[i].lab_location
+                                , ", " + TemperatureMeasurement.MeasurementList[i].Filename));
+                            writer.Flush();
+                        }
+                        catch (System.IO.IOException)
+                        {
+                            MessageBox.Show("Issue writing to file - Check Drive");
+                            writer.Close();
+                            //writer = System.IO.File.CreateText("c:" + TemperatureMeasurement.MeasurementList[i].Filename);
+
+                        }
+
+
+
+                        //now that the critical section has finished let the exiting thread decrement all the measurement priorities 
+                        //for (int i = 0; i < TemperatureMeasurement.ThreadCount; i++)
+                        //{
+
+
+                        //    current_measurements[i].AssignedThreadPriority--;
+                        //    Monitor.PulseAll(lockthis);
+
+                        //}
+
+                        //if we have removed an item then we need to reorder the priorities
+                        //if (measuring.measurementRemoved)
+                        //{
+                        //    measuring.measurementRemoved = false;
+                        //    for (long i = measuring.measurementRemovalIndex; i < TemperatureMeasurement.ThreadCount; i++)
+                        //    {
+
+
+                        //        current_measurements[i].AssignedThreadPriority--;
+                        //        Monitor.PulseAll(lockthis);
+
+                        //    }
+                        //}
                         writer.Close();
-                        writer = System.IO.File.CreateText("c:" + TemperatureMeasurement.MeasurementList[i].Filename);
-
                     }
-
-
-
-                    //now that the critical section has finished let the exiting thread decrement all the measurement priorities 
-                    //for (int i = 0; i < TemperatureMeasurement.ThreadCount; i++)
-                    //{
-
-
-                    //    current_measurements[i].AssignedThreadPriority--;
-                    //    Monitor.PulseAll(lockthis);
-
-                    //}
-
-                    //if we have removed an item then we need to reorder the priorities
-                    //if (measuring.measurementRemoved)
-                    //{
-                    //    measuring.measurementRemoved = false;
-                    //    for (long i = measuring.measurementRemovalIndex; i < TemperatureMeasurement.ThreadCount; i++)
-                    //    {
-
-
-                    //        current_measurements[i].AssignedThreadPriority--;
-                    //        Monitor.PulseAll(lockthis);
-
-                    //    }
-                    //}
-
-
-
-
 
                     i++;
                 }
-                writer.Close();
+
             }
             //thread_count--;
 

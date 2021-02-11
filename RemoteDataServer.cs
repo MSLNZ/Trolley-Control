@@ -20,6 +20,7 @@ namespace Trolley_Control
         protected static int GPIB_adr = 0;
         protected static string SICL_interface_id = "";
         protected string ss;
+        protected string init_string;
 
         public GPIBOverLANCommands()
         {
@@ -56,6 +57,7 @@ namespace Trolley_Control
         public void InitIO(string sendstring)
         {
             ss = sendstring;
+            init_string = ss;
             try
             {
 
@@ -125,16 +127,17 @@ namespace Trolley_Control
                         if (ioDmm.IO != null)
                         {
                             ioDmm.IO.Close();
+                            Thread.CurrentThread.Join(5000);
                         }
                         ioDmm = new FormattedIO488();
                         //create the resource manager and open a session with the instrument specified on txtAddress     
                         ResourceManager grm = new ResourceManager();
-                        ioDmm.IO = (IMessage)grm.Open(ss, AccessMode.NO_LOCK, 2000, "");         //this is set to null if io is down and it triggers a com exception
+                        ioDmm.IO = (IMessage)grm.Open("GPIB3::3", AccessMode.NO_LOCK, 2000, "");         //this is set to null if io is down and it triggers a com exception
                     }
 
                     catch (System.Runtime.InteropServices.COMException)
                     {
-                        System.Threading.Thread.Sleep(5000);
+                        Thread.CurrentThread.Join(5000);
                         continue;
                     }
                 }
