@@ -160,15 +160,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="BASICFORMATTEDIOLib">
-      <Guid>{709F7EC2-AB81-11D4-98E6-00108301CB39}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
     <COMReference Include="VisaComLib">
       <Guid>{DB8CBF00-D6D3-11D4-AA51-00A024EE30BD}</Guid>
       <VersionMajor>5</VersionMajor>

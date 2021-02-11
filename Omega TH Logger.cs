@@ -281,7 +281,7 @@ namespace Trolley_Control
                         timer_zero1 = Environment.TickCount;
                     }
                 }
-                Thread.Sleep(20000);  //we only sample the logger every 20 seconds
+                Thread.CurrentThread.Join(20000); //we only sample the logger every 20 seconds 
             }
 
         }

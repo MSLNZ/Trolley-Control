@@ -33,6 +33,7 @@ namespace Trolley_Control
     public partial class Tunnel_Control_Form : Form
     {
         private XmlTextReader xmlreader;
+        private static Thread thread_running;
         private XmlReaderSettings settings;
         private TemperatureMeasurement[] measurement_list;   //the current temperature measurement list
         private TemperatureMeasurement[] pending_list;       // a list of pending measurements to be added
@@ -135,7 +136,7 @@ namespace Trolley_Control
             active_measurment_index = 0;
             writer = null;
             Measurement_list = new Measurement[1];
-            path = @"I:\MSL\Private\LENGTH\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
+            path = @"G:\Shared drives\MSL - Length\Length\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
 
             
 
@@ -490,7 +491,7 @@ namespace Trolley_Control
                         {
                             //there are no more measurements to do.
                             MessageBox.Show("All measurements are complete, if you want to do more, then you need to add them");
-                            path = @"I:\MSL\Private\LENGTH\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
+                            path = @"G:\Shared drives\MSL - Length\Length\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
                             running = false;
                             DUT.Disconnect();
                             writer.Close();  //close the next file 
@@ -844,7 +845,7 @@ namespace Trolley_Control
             // Set filter options and filter index.
             openFileDialog1.Filter = "Text Files (.txt)|*.txt|All Files (*.*)|*.*";
             openFileDialog1.FilterIndex = 1;
-            openFileDialog1.InitialDirectory = @"I:\MSL\Private\LENGTH\Edm\Tunnel Config";
+            openFileDialog1.InitialDirectory = @"G:\Shared drives\MSL - Length\Length\Edm\Tunnel Config\";
 
             openFileDialog1.Multiselect = false;
 
@@ -1260,8 +1261,8 @@ namespace Trolley_Control
 
             //calibration data file is better accessed off the C drive, so parse .ini file
             //is saved to the C drive.
-            xmlfilename = @"I:\MSL\Private\LENGTH\EQUIPREG\cal_data.xml";
-            string inifilename = @"I:\MSL\Private\LENGTH\EQUIPREG\cal_data.ini";
+            xmlfilename = @"G:\Shared drives\MSL - Length\Length\EQUIPREG\XML files\cal_data.xml";
+            string inifilename = @"G:\Shared drives\MSL - Length\Length\EQUIPREG\cal_data.ini";
 
             if (INI2XML.Convert(inifilename, ref xmlfilename))
             {
@@ -1308,7 +1309,7 @@ namespace Trolley_Control
 
 
             //Open a config file for reading
-            openConfigFile.InitialDirectory = @"I:\MSL\Private\LENGTH\Temperature Monitoring Data\Laboratory Configurations";
+            openConfigFile.InitialDirectory = @"G:\Shared drives\MSL - Length\Length\Temperature Monitoring Data\Laboratory Configurations\";
             openConfigFile.FileName = "Tunnel";
             DialogResult result;
             try
@@ -1319,7 +1320,7 @@ namespace Trolley_Control
             catch (DirectoryNotFoundException)
             {
                 MessageBox.Show("The directory the configurations are normally kept in no longer exists - please recreate:\n" +
-                    @"I:\MSL\Private\LENGTH\Temperature Monitoring Data\Laboratory Configurations");
+                     @"G:\Shared drives\MSL - Length\Length\Temperature Monitoring Data\Laboratory Configurations");
                 return;
             }
            
@@ -1423,14 +1424,15 @@ namespace Trolley_Control
             PRT got = findPRT(prt_n);
             current_channel = System.Convert.ToInt16(channel_n);
 
-            //if the server updater thread is running stop its execution and restart is so that it has the full measurent list to work on.
-            try
-            {
+            //if the server updater thread is running stop its execution and restart it so that it has the full measurent list to work on.
+            /*
+            if (serverUpdate != null) { 
                 if (serverUpdate.IsAlive)
                 {
                     //We have a server update thread running! Stop the current server update thread and make a new one
                     server_update_enabled=false;
-                    while (serverUpdate.IsAlive) Thread.Sleep(10);  //wait here until the current server updater thread is stopped
+                    //while (serverUpdate.IsAlive) Thread.Sleep(10); 
+                    serverUpdate.Join();  //wait here until the current server updater thread is stopped
                     serverUpdate = new Thread(new ParameterizedThreadStart(serverUpdater));
                     server_update_enabled = true;
                 }
@@ -1443,13 +1445,13 @@ namespace Trolley_Control
 
                 }
             }
-            catch (NullReferenceException)
+            else
             {
                 serverUpdate = new Thread(new ParameterizedThreadStart(serverUpdater));
                 server_update_enabled = true;
             }
 
-
+            */
             //remember to store the name of the PRT associated with this measurement
             //this is so that we can easily load a prt from the config file
             got.PRTName = prt_n;
@@ -1489,11 +1491,107 @@ namespace Trolley_Control
 
                 //start the new measurement thread, giving it the first measurement object
                 newthread.Start();  //start the new thread and give it the measurement object
-                
+
+                serverUpdate = new Thread(new ParameterizedThreadStart(serverUpdater));
+                server_update_enabled = true;
+
             }
             to_add.setDirectory();   //set the directories for this measurement
             measurement_index++;
-            serverUpdate.Start(measurement_list);                //run the server updater with the latest measurement list
+
+            if(measurement_list.Length==30) serverUpdate.Start(measurement_list);                //run the server updater with the latest measurement list
+        }
+
+        private void serverUpdater(object stateInfo)
+        {
+
+            TemperatureMeasurement[] measurement_list_copy = ((TemperatureMeasurement[])stateInfo);
+
+
+
+            //update the server every hour
+            DateTime current_time;
+            int stored_hour = (System.DateTime.Now).Hour;   //store this hour
+            int stored_month = (System.DateTime.Now).Month;  //store this month
+            int stored_minute = (System.DateTime.Now).Minute;  //store this month
+            int hour;
+            int month;
+            int minute;
+
+
+            while (server_update_enabled)
+            {
+                Thread.CurrentThread.Join(2000);
+                //Thread.Sleep(2000);
+                current_time = System.DateTime.Now;  //the time stamp now
+                hour = current_time.Hour;  //the hour now
+                month = current_time.Month;   //The month now
+                minute = current_time.Minute;
+
+                if (stored_hour != hour || force_update_server)
+                {
+                    //turn off force update server
+                    force_update_server = false;
+
+                    //do server update
+                    stored_hour = (System.DateTime.Now).Hour;   //get the new hour we are in
+                    int i = 0;
+                    string di = "";
+                    string dc = "";
+                    while (i < measurement_index)
+                    {
+                        measurement_list_copy[i].getDirectories(ref di, ref dc);
+
+                        //try and do a file copy until we find a way that works
+                        while (true)
+                        {
+                            try
+                            {
+                                File.Copy(dc + measurement_list_copy[i].Filename + ".txt", di + measurement_list_copy[i].Filename + ".txt", true);
+                                break;
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                                //this has probably occured because someone has opened the file on the server and is looking at it, allow them to
+                                //do so.  When they finally close it we can do the copy
+                                continue;
+                            }
+                            catch (DirectoryNotFoundException)
+                            {
+                                //This will have occured because someone deleted the directory laid down originally by the measurement thread
+                                //To overcome this we will rebuild the directory
+                                System.IO.Directory.CreateDirectory(di);
+                            }
+                            catch (FileNotFoundException)
+                            {
+
+                                //this means the file does not exist on c:  we can't write a file that doesn't exist
+                                break;
+                            }
+                            catch (IOException)
+                            {
+                                //This means we can't talk to the server, not much we can do but keep trying
+                                continue;
+                            }
+                        }
+                        Thread.CurrentThread.Join(10000);  //sleep for 10 seconds and try again.
+                        i++;
+                    }
+
+                }
+
+                //if we have changed month we need to reset the directory folder
+                if (stored_month != month)
+                {
+                    stored_month = (System.DateTime.Now).Month;   //store the new month we are in
+
+                    for (int i = 0; i < measurement_index; i++)
+                    {
+                        measurement_list[i].setDirectory();
+                    }
+
+                }
+            }
         }
 
         /// <summary>
@@ -1655,7 +1753,6 @@ namespace Trolley_Control
                     if (num_loggers_found == 1)
                     {
                         MessageBox.Show("Only one humidity logger was found; Non fatal, check configuration file matches real devices and their locations");
-                        //TH_logger2 = new OmegaTHLogger("1.1.1.1", ref thgui);
                         TH_logger2.devID = 1;
                         TH_logger2.ReportNumber = TH_logger1.ReportNumber;
                         TH_logger2.ReportDate = TH_logger1.ReportDate;
@@ -1816,91 +1913,7 @@ namespace Trolley_Control
             }
         }
 
-        private void serverUpdater(object stateInfo)
-        {
-
-            TemperatureMeasurement[] measurement_list_copy = ((TemperatureMeasurement[])stateInfo);
-
-            //update the server every hour
-            DateTime current_time;
-            int stored_hour = (System.DateTime.Now).Hour;   //store this hour
-            int stored_month = (System.DateTime.Now).Month;  //store this month
-            int hour;
-            int month;
-
-
-            while (server_update_enabled)
-            {
-                Thread.Sleep(2000);
-                current_time = System.DateTime.Now;  //the time stamp now
-                hour = current_time.Hour;  //the hour now
-                month = current_time.Month;   //The month now
-
-                if (stored_hour != hour || force_update_server)
-                {
-                    //turn off force update server
-                    force_update_server = false;
-
-                    //do server update
-                    stored_hour = (System.DateTime.Now).Hour;   //get the new hour we are in
-                    int i = 0;
-                    string di = "";
-                    string dc = "";
-                    while (i < measurement_index)
-                    {
-                        measurement_list_copy[i].getDirectories(ref di, ref dc);
-
-                        //try and do a file copy until we find a way that works
-                        while (true)
-                        {
-                            try
-                            {
-                                File.Copy(dc + measurement_list_copy[i].Filename + ".txt", di + measurement_list_copy[i].Filename + ".txt", true);
-                                break;
-                            }
-                            catch (UnauthorizedAccessException)
-                            {
-                                //this has probably occured because someone has opened the file on the server and is looking at it, allow them to
-                                //do so.  When they finally close it we can do the copy
-                                continue;
-                            }
-                            catch (DirectoryNotFoundException)
-                            {
-                                //This will have occured because someone deleted the directory laid down originally by the measurement thread
-                                //To overcome this we will rebuild the directory
-                                System.IO.Directory.CreateDirectory(di);
-                            }
-                            catch (FileNotFoundException)
-                            {
-
-                                //this means the file does not exist on c:  we can't write a file that doesn't exist
-                                break;
-                            }
-                            catch (IOException)
-                            {
-                                //This means we can't talk to the server, not much we can do but keep trying
-                                continue;
-                            }
-                        }
-                        Thread.Sleep(10000);  //sleep for 10 seconds and try again.
-                        i++;
-                    }
-
-                }
-
-                //if we have changed month we need to reset the directory folder
-                if (stored_month != month)
-                {
-                    stored_month = (System.DateTime.Now).Month;   //store the new month we are in
-
-                    for (int i = 0; i < measurement_index; i++)
-                    {
-                        measurement_list[i].setDirectory();
-                    }
-
-                }
-            }
-        }
+        
 
 
         public void Application_ApplicationExit(object sender, EventArgs e)
