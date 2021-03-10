@@ -103,7 +103,7 @@ namespace Trolley_Control
         bool running = false;
         private FileStream stream;
         private StreamWriter writer;
-        private string path = "";
+        
         private string config_filename="";
 
         public Tunnel_Control_Form()
@@ -136,10 +136,6 @@ namespace Trolley_Control
             active_measurment_index = 0;
             writer = null;
             Measurement_list = new Measurement[1];
-            path = @"G:\Shared drives\MSL - Length\Length\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
-
-            
-
             HP5519_Laser = new Laser(ref dlg);
             tunnel_trolley = new Trolley(ref tug, ref Bluetooth_Virtual_Serial_Port);
             TH_logger1 = new OmegaTHLogger(Humidity_logger_1.Text, ref thgui);
@@ -456,26 +452,51 @@ namespace Trolley_Control
                             MessageBox.Show(msg);
                         }
                         else
-                        {
-
-                           
-                             if(writer==null) 
-                             {
-                                stream = new FileStream(path,FileMode.Append,System.Security.AccessControl.FileSystemRights.Write,FileShare.Write,1024,FileOptions.None);
-                                writer = new System.IO.StreamWriter(stream,Encoding.UTF8,1024,true);
-                            }
-                            using (writer)
+                        { 
+                            try
                             {
-                                writer.WriteLine(msg);
+                                if (writer == null)
+                                {
+                                    stream = new FileStream(Measurement_list[active_measurment_index].LocalDrivePath, FileMode.Append, System.Security.AccessControl.FileSystemRights.Write, FileShare.Write, 1024, FileOptions.None);
+                                    writer = new System.IO.StreamWriter(stream, Encoding.UTF8, 1024, true);
+                                }
+                                using (writer)
+                                {
+                                    writer.WriteLine(msg);
+                                }
                             }
-                            
+                            catch (IOException e)
+                            {
+
+                            }
                         }
                         break;
                     case ProcNameMeasurement.EXECUTION_COMPLETE:
 
+
+                        //write copy the file from the c drive to the secure back up path
+                        bool copy_succeeded = false;
+                        bool copy_error = false;
+                        while (!copy_succeeded)
+                        {
+                            try
+                            {
+                                File.Copy(Measurement_list[active_measurment_index].LocalDrivePath, Measurement_list[active_measurment_index].SecureBackupDrivePath);
+                                copy_succeeded = true;
+                                if (copy_error) MessageBox.Show("Successfull copy to secure backup");
+                            }
+                            catch (IOException e)
+                            {
+                                if(!copy_error) MessageBox.Show("Unable to copy results from C: to secure backup, check for drive connectivity. " +
+                                    "In the meantime the program will continue attempting copy until connectivity is restored.  " +
+                                    "You will be notified when a successfull copy occurs");
+                                copy_error = true;  //true if one or more copy attempts fails.
+                                
+                            }
+                        }
                         //kill the run thread of the measurement
                         measurement_thread.Abort();
-                        
+                       
                         active_measurment_index++;
                         Measurement current_meas;
                         try
@@ -491,7 +512,6 @@ namespace Trolley_Control
                         {
                             //there are no more measurements to do.
                             MessageBox.Show("All measurements are complete, if you want to do more, then you need to add them");
-                            path = @"G:\Shared drives\MSL - Length\Length\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
                             running = false;
                             DUT.Disconnect();
                             writer.Close();  //close the next file 
