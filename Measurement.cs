@@ -134,7 +134,8 @@ namespace Trolley_Control
         private string config_filename = "";
         private static bool block = false;
         private Thread measurement_thread = null;
-      
+        private string path1 = "";
+        private string path2 = "";
 
 
 
@@ -198,7 +199,8 @@ namespace Trolley_Control
             ref_barometer = barometer;
             Measurement.CurrentExecutionStage = ExecutionStage.IDLE;
             temperatures = new double[30]; //There are 30 prts in the tunnel
-
+            path1 = @"G:\Shared drives\MSL - Length\Length\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
+            path2 = @"C:\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
         }
         public void setThread(ref Thread m_thread)
         {
@@ -209,6 +211,14 @@ namespace Trolley_Control
             get { return laser_prts; }
         }
 
+        public string SecureBackupDrivePath
+        {
+            get { return path1; }
+        }
+        public string LocalDrivePath
+        {
+            get { return path2; }
+        }
         public static int[] Row1PRTSUsed
         {
             get { return no_folds_prts; }
@@ -2349,7 +2359,7 @@ namespace Trolley_Control
                         case ExecutionStage.START:
                             asyc_meas.start_pos_value = vals;
 
-                            string version = "Software Version 1.1";
+                            string version = "Software Version 1.2";
                             string config_file = "Configuration File Name: " + asyc_meas.ConfigFileName;
 
                             string line_title = "Position,Laser Raw,RI Correction Laser,Laser with Phase RI Correction,DUT Raw Reading,DUT with Default Correction Removed,DUT with group RI applied,DUT Group RI Correction,DUT Standard Deviation,DUT averaging,Laser Beam Temperature,Average DUT beam Temperature,Average Pressure,Average Humidity,Barometer Correction, Humidity Logger 1 Correction, Humidity Logger 2 Correction, CO2 Concentration, DateTime,Laser PRTS Used, EDM PRTS Used,"+phase_prt_names + fold0_EDM_prt_names + fold1_EDM_prt_names + fold2_EDM_prt_names + fold3_EDM_prt_names + phase_pressure_names + fold0_pressure_names + fold1_pressure_names + fold2_pressure_names + fold3_pressure_names + phase_humidity_names + fold0_humidity_names+fold1_humidity_names+fold2_humidity_names+fold3_humidity_names;
