@@ -473,6 +473,10 @@ namespace Trolley_Control
                         break;
                     case ProcNameMeasurement.EXECUTION_COMPLETE:
 
+                        //Close the c: file
+                        writer.Close();  //close the next file 
+                        stream.Close();
+                        writer = null;
 
                         //write copy the file from the c drive to the secure back up path
                         bool copy_succeeded = false;
@@ -514,9 +518,6 @@ namespace Trolley_Control
                             MessageBox.Show("All measurements are complete, if you want to do more, then you need to add them");
                             running = false;
                             DUT.Disconnect();
-                            writer.Close();  //close the next file 
-                            stream.Close();
-                            writer = null;
                             active_measurment_index = 0;
                             current_measurement_index = -1;
                             file_valid = false;
