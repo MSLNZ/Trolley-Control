@@ -252,7 +252,7 @@ namespace Trolley_Control
             else
             {
                 object[] textobj = { procNum, msg, report };
-                this.BeginInvoke(new VaisalaUpdateGui(Update_Pressure_Logger), textobj);
+                this.BeginInvoke(pbarug, textobj);
             }
         }
 
@@ -320,7 +320,7 @@ namespace Trolley_Control
             else
             {
                 object[] textobj = { procNum, msg, report };
-                this.BeginInvoke(new THLoggerUpdateGUI(Update_THlogger), textobj);
+                this.BeginInvoke(thgui, textobj);
             }
         }
 
@@ -368,7 +368,7 @@ namespace Trolley_Control
             else
             {
                 object[] textobj = { procNum, msg, report };
-                this.BeginInvoke(new TrolleyUpdateGUI(Update_trolley), textobj);
+                this.BeginInvoke(tug, textobj);
             }
         }
 
@@ -563,8 +563,9 @@ namespace Trolley_Control
             }
             else
             {
+               
                 object[] textobj = { procNum, msg, report };
-                this.BeginInvoke(new MeasurementUpdateGui(Update_measurement), textobj);
+                this.BeginInvoke(mug, textobj);
             }
         }
 
@@ -705,7 +706,7 @@ namespace Trolley_Control
             else
             {
                 object[] textobj = { procNum, msg1, report };
-                this.BeginInvoke(new LaserUpdateGUI(Update_lsr), textobj);
+                this.BeginInvoke(dlg, textobj);
             }
         }
 
@@ -718,7 +719,7 @@ namespace Trolley_Control
             else
             {
                 object[] textobj = { procNum, msg1, report };
-                this.BeginInvoke(new LaserUpdateGUI(Update_lsr), textobj);
+                this.BeginInvoke(dlg, textobj);
             }
         }
 
@@ -1274,7 +1275,7 @@ namespace Trolley_Control
             else
             {
                 object[] textobj = { p };
-                this.BeginInvoke(new GUIUpdater(redrawLaserEnviroTextbox), textobj);
+                this.BeginInvoke(gupdate, textobj);
             }
         }
 
@@ -1671,7 +1672,7 @@ namespace Trolley_Control
                 Measurement.calculateRegionalTemperatureLaserBeam(ref HP5519_Laser);
                 Measurement.calculateRegionalTemperatureEDMBeam(DUT.Beamfolds, ref HP5519_Laser, ref mug);
                 object[] textobj = { temperature, msg, index };
-                this.BeginInvoke(new PrintTemperatureData(showTemperatureData), textobj);
+                this.BeginInvoke(msgDelegate, textobj);
             }
         }
 
