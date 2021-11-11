@@ -1669,8 +1669,8 @@ namespace Trolley_Control
             }
             else
             {
-                Measurement.calculateRegionalTemperatureLaserBeam(ref HP5519_Laser);
-                Measurement.calculateRegionalTemperatureEDMBeam(DUT.Beamfolds, ref HP5519_Laser, ref mug);
+               Measurement.calculateRegionalTemperatureLaserBeam(ref HP5519_Laser);
+               Measurement.calculateRegionalTemperatureEDMBeam(DUT.Beamfolds, ref HP5519_Laser, ref mug);
                 object[] textobj = { temperature, msg, index };
                 this.BeginInvoke(msgDelegate, textobj);
             }
