@@ -708,12 +708,12 @@ namespace Trolley_Control
                 first_row_avg = firstBeamAverage(num_prts_involved, ref ug);
 
                 //The partial second fold of the beam uses prts in row 1 (row over bench) and row 2 (row over walkway).  The average of these rows is used
-                //there are 12 prts in each row that are used for this part of the beam.  
+                //there are 12 prts in each row that are used for this part of the beam.  (This is the special mod that this version refers to).
                 //Range for bench row is 1 to 12.  Range for walkway row is 16 to 28. -->> should correspond to number written on the prts e.g 001 002 003 etc
                 //for this part of the beam we are average the two rows of prts
-               
+
                 int valid_results = 0;
-                double second_row_avg = secondBeamAverage(ref valid_results, 12, ref ug);
+                double second_row_avg = secondBeamAverage(ref valid_results, 5, ref ug);
 
                 //compute the weighted average of the first and second rows
                 double second_row_sum = second_row_avg * valid_results;
@@ -887,12 +887,12 @@ namespace Trolley_Control
         {
             double sum = 0.0;
 
-            no_folds_prts = new int[num_prts];
+            //no_folds_prts = new int[num_prts];
             int valid_results = 0;
             for (int i = 0; i < num_prts; i++)
             {
                 double r = temperatures[prtmap_over_bench[14 - i]];
-                no_folds_prts[i] = prtmap_over_bench[14 - i];
+                //no_folds_prts[i] = prtmap_over_bench[14 - i];
                 if (r > 15.0 && r < 25.0)                  // I assume this condition is a good enough check that we have a valid reading.
                 {
                     sum = sum + r;
@@ -963,7 +963,7 @@ namespace Trolley_Control
         {
             double sum1 = 0.0;
             double sum2 = 0.0;
-            fold_two_prts = new int[total_prts_per_row * 2];
+            //fold_two_prts = new int[total_prts_per_row * 2];
             for (int i = 0; i < total_prts_per_row; i++)
             {
                 double row1 = temperatures[prtmap_over_bench[14 - i]];
@@ -971,8 +971,8 @@ namespace Trolley_Control
 
 
 
-                fold_two_prts[i] = prtmap_over_bench[14 - i];
-                fold_two_prts[i + total_prts_per_row] = prtmap_over_walkway[i];
+                //fold_two_prts[i] = prtmap_over_bench[14 - i];
+                //fold_two_prts[i + total_prts_per_row] = prtmap_over_walkway[i];
 
                 if ((row1 > 15.0) && (row2 > 15.0) && (row1 < 25.0) && (row2 < 25.0))
                 {
@@ -1076,11 +1076,11 @@ namespace Trolley_Control
         private static double thirdBeamAverage(ref int valid_results, int total_prts_in_row, ref MeasurementUpdateGui ug)
         {
             double sum1 = 0.0;
-            fold_three_prts = new int[total_prts_in_row];
+            //fold_three_prts = new int[total_prts_in_row];
             for (int i = 0; i < total_prts_in_row; i++)
             {
                 double row2 = temperatures[prtmap_over_walkway[14 - i]];
-                fold_three_prts[i] = prtmap_over_walkway[14-i];
+                //fold_three_prts[i] = prtmap_over_walkway[14-i];
 
                 if (row2 > 15.0 && row2 < 25.0)
                 {
@@ -1156,11 +1156,11 @@ namespace Trolley_Control
         private static double fourthBeamAverage(ref int valid_results, int total_prts_in_row, ref MeasurementUpdateGui ug)
         {
             double sum1 = 0.0;
-            fold_four_prts = new int[total_prts_in_row];
+            //fold_four_prts = new int[total_prts_in_row];
             for (int i = 0; i < total_prts_in_row; i++)
             {
                 double row2 = temperatures[prtmap_over_walkway[i]];
-                fold_four_prts[i] = prtmap_over_walkway[i];
+                //fold_four_prts[i] = prtmap_over_walkway[i];
                 if (row2 > 15.0 && row2 < 25.0)
                 {
                     sum1 = sum1 + row2;
@@ -2252,6 +2252,9 @@ namespace Trolley_Control
                         }
 
                         int[] b = Measurement.Row1PRTSUsed;
+                        int[] c = Measurement.Row2PRTSUsed;
+                        int[] d = Measurement.Row3PRTSUsed;
+                        int[] e = Measurement.Row4PRTSUsed;
                         switch (DUT.Beamfolds)
                         {
                             case 0:
@@ -2268,10 +2271,42 @@ namespace Trolley_Control
                                 {
                                     EDM_prts_ = string.Concat(EDM_prts_, (b[i] + 1).ToString() + ":");
                                 }
+                                for (int i = 0; i < c.Length; i++)
+                                {
+                                    EDM_prts_ = string.Concat(EDM_prts_, (c[i] + 1).ToString() + ":");
+                                }
                                 break;
                             case 2:
+                                for (int i = 0; i < b.Length; i++)
+                                {
+                                    EDM_prts_ = string.Concat(EDM_prts_, (b[i] + 1).ToString() + ":");
+                                }
+                                for (int i = 0; i < c.Length; i++)
+                                {
+                                    EDM_prts_ = string.Concat(EDM_prts_, (c[i] + 1).ToString() + ":");
+                                }
+                                for (int i = 0; i < d.Length; i++)
+                                {
+                                    EDM_prts_ = string.Concat(EDM_prts_, (d[i] + 1).ToString() + ":");
+                                }
                                 break;
                             case 3:
+                                for (int i = 0; i < b.Length; i++)
+                                {
+                                    EDM_prts_ = string.Concat(EDM_prts_, (b[i] + 1).ToString() + ":");
+                                }
+                                for (int i = 0; i < c.Length; i++)
+                                {
+                                    EDM_prts_ = string.Concat(EDM_prts_, (c[i] + 1).ToString() + ":");
+                                }
+                                for (int i = 0; i < d.Length; i++)
+                                {
+                                    EDM_prts_ = string.Concat(EDM_prts_, (d[i] + 1).ToString() + ":");
+                                }
+                                for (int i = 0; i < e.Length; i++)
+                                {
+                                    EDM_prts_ = string.Concat(EDM_prts_, (e[i] + 1).ToString() + ":");
+                                }
                                 break;
 
                         }
@@ -2359,7 +2394,7 @@ namespace Trolley_Control
                         case ExecutionStage.START:
                             asyc_meas.start_pos_value = vals;
 
-                            string version = "Software Version 1.2";
+                            string version = "Software Version 1.3";
                             string config_file = "Configuration File Name: " + asyc_meas.ConfigFileName;
 
                             string line_title = "Position,Laser Raw,RI Correction Laser,Laser with Phase RI Correction,DUT Raw Reading,DUT with Default Correction Removed,DUT with group RI applied,DUT Group RI Correction,DUT Standard Deviation,DUT averaging,Laser Beam Temperature,Average DUT beam Temperature,Average Pressure,Average Humidity,Barometer Correction, Humidity Logger 1 Correction, Humidity Logger 2 Correction, CO2 Concentration, DateTime,Laser PRTS Used, EDM PRTS Used,"+phase_prt_names + fold0_EDM_prt_names + fold1_EDM_prt_names + fold2_EDM_prt_names + fold3_EDM_prt_names + phase_pressure_names + fold0_pressure_names + fold1_pressure_names + fold2_pressure_names + fold3_pressure_names + phase_humidity_names + fold0_humidity_names+fold1_humidity_names+fold2_humidity_names+fold3_humidity_names;
