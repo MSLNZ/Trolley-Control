@@ -890,12 +890,12 @@ namespace Trolley_Control
         {
             double sum = 0.0;
 
-            no_folds_prts = new int[num_prts];
+            //no_folds_prts = new int[num_prts];
             int valid_results = 0;
             for (int i = 0; i < num_prts; i++)
             {
                 double r = temperatures[prtmap_over_bench[14 - i]];
-                no_folds_prts[i] = prtmap_over_bench[14 - i];
+                //no_folds_prts[i] = prtmap_over_bench[14 - i];
                 if (r > 15.0 && r < 25.0)                  // I assume this condition is a good enough check that we have a valid reading.
                 {
                     sum = sum + r;
@@ -966,7 +966,7 @@ namespace Trolley_Control
         {
             double sum1 = 0.0;
             double sum2 = 0.0;
-            fold_two_prts = new int[total_prts_per_row * 2];
+            //fold_two_prts = new int[total_prts_per_row * 2];
             for (int i = 0; i < total_prts_per_row; i++)
             {
                 double row1 = temperatures[prtmap_over_bench[14 - i]];
@@ -974,8 +974,8 @@ namespace Trolley_Control
 
 
 
-                fold_two_prts[i] = prtmap_over_bench[14 - i];
-                fold_two_prts[i + total_prts_per_row] = prtmap_over_walkway[i];
+                //fold_two_prts[i] = prtmap_over_bench[14 - i];
+                //fold_two_prts[i + total_prts_per_row] = prtmap_over_walkway[i];
 
                 if ((row1 > 15.0) && (row2 > 15.0) && (row1 < 25.0) && (row2 < 25.0))
                 {
@@ -1079,11 +1079,11 @@ namespace Trolley_Control
         private static double thirdBeamAverage(ref int valid_results, int total_prts_in_row, ref MeasurementUpdateGui ug)
         {
             double sum1 = 0.0;
-            fold_three_prts = new int[total_prts_in_row];
+            //fold_three_prts = new int[total_prts_in_row];
             for (int i = 0; i < total_prts_in_row; i++)
             {
                 double row2 = temperatures[prtmap_over_walkway[14 - i]];
-                fold_three_prts[i] = prtmap_over_walkway[14 - i];
+                //fold_three_prts[i] = prtmap_over_walkway[14 - i];
 
                 if (row2 > 15.0 && row2 < 25.0)
                 {
@@ -1159,11 +1159,11 @@ namespace Trolley_Control
         private static double fourthBeamAverage(ref int valid_results, int total_prts_in_row, ref MeasurementUpdateGui ug)
         {
             double sum1 = 0.0;
-            fold_four_prts = new int[total_prts_in_row];
+            //fold_four_prts = new int[total_prts_in_row];
             for (int i = 0; i < total_prts_in_row; i++)
             {
                 double row2 = temperatures[prtmap_over_walkway[i]];
-                fold_four_prts[i] = prtmap_over_walkway[i];
+                //fold_four_prts[i] = prtmap_over_walkway[i];
                 if (row2 > 15.0 && row2 < 25.0)
                 {
                     sum1 = sum1 + row2;
@@ -2364,7 +2364,7 @@ namespace Trolley_Control
                         case ExecutionStage.START:
                             asyc_meas.start_pos_value = vals;
 
-                            string version = "Software Version 1.2";
+                            string version = "Software Version 1.3";
                             string config_file = "Configuration File Name: " + asyc_meas.ConfigFileName;
 
                             string line_title = "Position,Laser Raw,RI Correction Laser,Laser with Phase RI Correction,DUT Raw Reading,DUT with Default Correction Removed,DUT with group RI applied,DUT Group RI Correction,DUT Standard Deviation,DUT averaging,Laser Beam Temperature,Average DUT beam Temperature,Average Pressure,Average Humidity,Barometer Correction, Humidity Logger 1 Correction, Humidity Logger 2 Correction, CO2 Concentration, DateTime,Laser PRTS Used, EDM PRTS Used," + phase_prt_names + fold0_EDM_prt_names + fold1_EDM_prt_names + fold2_EDM_prt_names + fold3_EDM_prt_names + phase_pressure_names + fold0_pressure_names + fold1_pressure_names + fold2_pressure_names + fold3_pressure_names + phase_humidity_names + fold0_humidity_names + fold1_humidity_names + fold2_humidity_names + fold3_humidity_names;
