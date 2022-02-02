@@ -10,7 +10,7 @@ namespace Trolley_Control
     {
         public EDM(ref DUTUpdateGui dutug_) : base(dutug_)
         {
-            unit_timeout = 10000;
+            unit_timeout = 60000;
             device_name = "EDM";
         }
 
