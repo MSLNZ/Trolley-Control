@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Media;
+
 
 namespace Trolley_Control
 {
@@ -1702,6 +1704,7 @@ namespace Trolley_Control
                                 Measurement.CurrentExecutionStage = ExecutionStage.IDLE;
                                 break;
                             }
+                            SystemSounds.Beep.Play();
                             //read the laser and reset and read the edm.
                             DUT_Request(asyc_meas, -1, true);
                         }
@@ -1719,6 +1722,8 @@ namespace Trolley_Control
                                 Measurement.Target = target;
                                 //read the target and the laser to detemine if we need to move
                                 MoveToTargetWindow(asyc_meas, target);
+                                SystemSounds.Beep.Play();
+                                
 
                                 if (asyc_meas.AbortMeasurement == true)
                                 {
@@ -1746,7 +1751,7 @@ namespace Trolley_Control
                             Measurement.Target = target_end;
 
                             MoveToTargetWindow(asyc_meas, target_end);
-                            
+                            SystemSounds.Beep.Play();
 
                             if (asyc_meas.AbortMeasurement == true)
                             {
@@ -2394,7 +2399,7 @@ namespace Trolley_Control
                         case ExecutionStage.START:
                             asyc_meas.start_pos_value = vals;
 
-                            string version = "Software Version 1.3";
+                            string version = "Software Version 1.4";
                             string config_file = "Configuration File Name: " + asyc_meas.ConfigFileName;
 
                             string line_title = "Position,Laser Raw,RI Correction Laser,Laser with Phase RI Correction,DUT Raw Reading,DUT with Default Correction Removed,DUT with group RI applied,DUT Group RI Correction,DUT Standard Deviation,DUT averaging,Laser Beam Temperature,Average DUT beam Temperature,Average Pressure,Average Humidity,Barometer Correction, Humidity Logger 1 Correction, Humidity Logger 2 Correction, CO2 Concentration, DateTime,Laser PRTS Used, EDM PRTS Used,"+phase_prt_names + fold0_EDM_prt_names + fold1_EDM_prt_names + fold2_EDM_prt_names + fold3_EDM_prt_names + phase_pressure_names + fold0_pressure_names + fold1_pressure_names + fold2_pressure_names + fold3_pressure_names + phase_humidity_names + fold0_humidity_names+fold1_humidity_names+fold2_humidity_names+fold3_humidity_names;
