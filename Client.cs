@@ -1,164 +1,311 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
+using System.IO;
 using System.Net;
-using System.Net.NetworkInformation;
-//using System.Net.Http;
-//using System.Net.Http.Headers;
-
-
-
+using System.Net.Sockets;
+using System.Text;
 
 namespace Trolley_Control
 {
-    public class Client
+    public sealed class Client : IDisposable
     {
         private TcpClient client;
         private NetworkStream stream;
-        private int timeout = 2000; //The default timeout
 
-        public Client()
+        private int timeout = 5000;
+        private int port = 1000;
+        private string ipAddress = string.Empty;
+
+        private readonly object ioLock = new object();
+
+        public string IP
         {
+            get => ipAddress;
+            set => ipAddress = value ?? string.Empty;
+        }
 
+        public int Port
+        {
+            get => port;
+            set
+            {
+                if (value < 1 || value > 65535)
+                    throw new ArgumentOutOfRangeException(
+                        nameof(value),
+                        "Port must be between 1 and 65535.");
+
+                port = value;
+            }
         }
 
         public int Timeout
         {
-            get { return timeout; }
-            set { timeout = value; }
+            get => timeout;
+            set
+            {
+                if (value <= 0)
+                    throw new ArgumentOutOfRangeException(
+                        nameof(value),
+                        "Timeout must be greater than zero.");
+
+                timeout = value;
+            }
         }
 
-        public bool Connect(String server, int port)
+        public bool Connect()
         {
+            return Connect(IP, Port);
+        }
+
+        public bool Connect(string server, int serverPort)
+        {
+            if (string.IsNullOrWhiteSpace(server))
+                throw new ArgumentException(
+                    "A server name or IP address is required.",
+                    nameof(server));
+
+            CloseConnection();
+
             try
             {
-                //client = new HttpClient();
-                //client.BaseAddress = new Uri("http://" + server + ":2000/");
-                //client.DefaultRequestHeaders.Accept.Clear();
-                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("-r -S "));
-                // Create a TcpClient. 
-                // Note, for this client to work you need to have a TcpServer  
-                // connected to the same address as specified by the server, port 
-                // combination.
-                // Connect to the specified host.
-                if (client != null)
+                client = new TcpClient
                 {
-                    client.Close(); //allows thread associated with previous socket connection to terminate. 
-                }
+                    SendTimeout = timeout,
+                    ReceiveTimeout = timeout,
+                    NoDelay = true
+                };
 
-                client = new TcpClient();
+                // TcpClient.Connect(string, int) handles hostname resolution
+                // and avoids relying on DNS address ordering.
+                client.Connect(server, serverPort);
 
-                //get IP addresses. 1st address is ip6, 2nd is ip4
-                //if there is only one address returned then it is ip4
+                stream = client.GetStream();
+                stream.ReadTimeout = timeout;
+                stream.WriteTimeout = timeout;
 
+                IP = server;
+                Port = serverPort;
 
-                IPAddress ip4;
-
-                IPAddress[] IPAddresses = Dns.GetHostAddresses(server);
-
-
-                if (IPAddresses.Length == 2)
-                {
-                    ip4 = IPAddresses[0];
-                }
-                else ip4 = IPAddresses[0];
-
-                client.Connect(ip4, port);
-
-
-
-                return client.Connected;
-
+                return true;
             }
-
-            catch (SocketException e)
+            catch (SocketException)
             {
+                CloseConnection();
+                return false;
+            }
+            catch (IOException)
+            {
+                CloseConnection();
                 return false;
             }
         }
 
-        public bool isConnected()
+        public bool IsConnected()
         {
-            if (client == null) return false;
+            if (client == null || stream == null || !client.Connected)
+                return false;
+
             try
             {
-                return client.Connected;
+                Socket socket = client.Client;
+
+                // If readable and no bytes are available, the remote side
+                // has performed an orderly shutdown.
+                bool disconnected =
+                    socket.Poll(0, SelectMode.SelectRead) &&
+                    socket.Available == 0;
+
+                return !disconnected;
             }
             catch (SocketException)
             {
                 return false;
             }
-
-
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
         }
 
-        public bool sendReceiveData(String request, ref string result)
+        public bool SendData(string command)
         {
             try
             {
-                // Translate the passed message into ASCII and store it as a Byte array.
-                Byte[] data = System.Text.Encoding.ASCII.GetBytes(request);
-
-                // Get a client stream for reading and writing. 
-                //  Stream stream = client.GetStream();
-                client.SendTimeout = timeout;
-                stream = client.GetStream();
-
-                // Send the message to the connected TcpServer. 
-                stream.Write(data, 0, data.Length);
-
-                //Console.WriteLine("Sent: {0}", request);
-
-                // Receive the TcpServer.response. 
-
-                // Buffer to store the response bytes.
-                data = new Byte[256];
-
-
-
-                stream.ReadTimeout = timeout;
-                //stream.BeginRead(data,0,data.Length,)
-                // Read the first batch of the TcpServer response bytes.
-                Int32 bytes = stream.Read(data, 0, data.Length);
-                result = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
-                //Console.WriteLine("Received: {0}", responseData);
-
-
-                return true;
+                lock (ioLock)
+                {
+                    EnsureConnected();
+                    WriteCommand(command);
+                    return true;
+                }
             }
-            catch (ArgumentNullException)
+            catch (IOException)
             {
+                CloseConnection();
                 return false;
             }
-            catch (System.IO.IOException e)
+            catch (SocketException)
             {
-                //This error usually occurs because the device failed to respond.  
-                //The appropriate course of action here is to close the Network stream and Close the socket connection (this releases resoures appropriately).
-                if (client != null) client.Close(); // this will close the network stream associated with the socket connection too.
+                CloseConnection();
                 return false;
             }
-            catch (TimeoutException)
+            catch (ObjectDisposedException)
             {
+                CloseConnection();
                 return false;
             }
-
         }
+
+        public bool SendReceiveData(
+            string command,
+            ref string result)
+        {
+            result = string.Empty;
+
+            try
+            {
+                lock (ioLock)
+                {
+                    EnsureConnected();
+                    WriteCommand(command);
+                    result = ReadToCarriageReturn();
+                    return true;
+                }
+            }
+            catch (IOException)
+            {
+                CloseConnection();
+                return false;
+            }
+            catch (SocketException)
+            {
+                CloseConnection();
+                return false;
+            }
+            catch (ObjectDisposedException)
+            {
+                CloseConnection();
+                return false;
+            }
+        }
+
+        private void WriteCommand(string command)
+        {
+            if (stream == null)
+                throw new InvalidOperationException(
+                    "The client is not connected.");
+
+            if (string.IsNullOrWhiteSpace(command))
+                throw new ArgumentException(
+                    "The command cannot be empty.",
+                    nameof(command));
+
+            // The milliK manual specifies CR, ASCII 13, as the terminator.
+            string terminatedCommand =
+                command.TrimEnd('\r', '\n') + "\r";
+
+            byte[] data =
+                Encoding.ASCII.GetBytes(terminatedCommand);
+
+            stream.Write(data, 0, data.Length);
+            stream.Flush();
+        }
+
+        private string ReadToCarriageReturn()
+        {
+            if (stream == null)
+                throw new InvalidOperationException(
+                    "The client is not connected.");
+
+            var response = new StringBuilder();
+            var buffer = new byte[1];
+
+            while (true)
+            {
+                int count = stream.Read(buffer, 0, 1);
+
+                if (count == 0)
+                {
+                    throw new IOException(
+                        "The remote instrument closed the connection.");
+                }
+
+                char character = (char)buffer[0];
+
+                if (character == '\r')
+                    break;
+
+                // Tolerate CRLF even though the milliK documents CR.
+                if (character != '\n')
+                    response.Append(character);
+            }
+
+            return response.ToString().Trim();
+        }
+
+        private void EnsureConnected()
+        {
+            if (!IsConnected())
+            {
+                throw new InvalidOperationException(
+                    "The TCP client is not connected.");
+            }
+        }
+
+        public bool CloseConnection()
+        {
+            bool success = true;
+
+            try
+            {
+                stream?.Close();
+            }
+            catch
+            {
+                success = false;
+            }
+            finally
+            {
+                stream = null;
+            }
+
+            try
+            {
+                client?.Close();
+            }
+            catch
+            {
+                success = false;
+            }
+            finally
+            {
+                client = null;
+            }
+
+            return success;
+        }
+
+        // Compatibility with the original method name.
         public bool closeConnection()
         {
-            try
-            {
-                // Close everything.
-                stream.Close();
-                client.Close();
-                return true;
-            }
-            catch (SocketException)
-            {
-                return false;
-            }
+            return CloseConnection();
         }
 
+        // Compatibility with the original method name.
+        public bool isConnected()
+        {
+            return IsConnected();
+        }
+
+        // Compatibility with the original method name.
+        public bool sendReceiveData(
+            string request,
+            ref string result)
+        {
+            return SendReceiveData(request, ref result);
+        }
+
+        public void Dispose()
+        {
+            CloseConnection();
+        }
     }
 }

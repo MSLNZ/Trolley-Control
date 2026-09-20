@@ -86,18 +86,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="32Feet_BlueTooth.cs" />
-    <Compile Include="AgilentBridge.cs" />
-    <Compile Include="AgilentMUX.cs" />
     <Compile Include="Barometer.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="DUT.cs" />
     <Compile Include="EDM.cs" />
     <Compile Include="INI2XML.cs" />
-    <Compile Include="MUX.cs" />
+    <Compile Include="IsotechMilliK.cs" />
     <Compile Include="PRT.cs" />
     <Compile Include="PTU303.cs" />
-    <Compile Include="RemoteDataServer.cs" />
-    <Compile Include="ResistanceBridge.cs" />
     <Compile Include="SurveyCalibrationSystem.cs">
       <SubType>Form</SubType>
     </Compile>

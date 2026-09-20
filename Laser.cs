@@ -895,7 +895,7 @@ namespace Trolley_Control
                     {
                         overflow = false;
                         tick_count3 = current_tick_count;
-                        asyc_functions.execution_commands.Add(ProcName.E1735A_GET_PARAMETER);
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_SET_PARAMETER);
                     }
 
                     //every 1000 ms we set the laser parameters
@@ -903,9 +903,10 @@ namespace Trolley_Control
                     {
                         overflow = false;
                         tick_count4 = current_tick_count;
-                        asyc_functions.execution_commands.Add(ProcName.E1735A_SET_PARAMETER);
+                        asyc_functions.execution_commands.Add(ProcName.E1735A_GET_PARAMETER);
                     }
                 }
+                
                 if (asyc_functions.query == true)
                 {
 

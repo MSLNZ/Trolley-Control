@@ -200,7 +200,7 @@ namespace Trolley_Control
             ref_barometer = barometer;
             Measurement.CurrentExecutionStage = ExecutionStage.IDLE;
             temperatures = new double[30]; //There are 30 prts in the tunnel
-            path1 = @"G:\Shared drives\MSL - Length\Length\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
+            path1 = @"L:\Edm\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
             path2 = @"C:\TunnelResults\" + "EDMresults" + System.Environment.TickCount.ToString() + ".txt";
         }
         public void setThread(ref Thread m_thread)
@@ -568,7 +568,7 @@ namespace Trolley_Control
             //prts to include
             //prts are included at:
             //actual position of prts                 relative to laser reading (m): 0.8, 4.8, 8.8 , 12.8, 16.8, 20.8, 24.8, 28.8, 32.8, 36.8, 40.8, 44.8, 48.8, 52.8
-            //position position to increase prt count relative to laser reading (m): 2.8, 6.8, 10.8, 14.8, 18.8, 22.8, 26.8, 30.8, 34.8, 38.8, 42.8, 46.8, 50.8, 54.8
+            //position to increase prt count relative to laser reading (m): 2.8, 6.8, 10.8, 14.8, 18.8, 22.8, 26.8, 30.8, 34.8, 38.8, 42.8, 46.8, 50.8, 54.8
             //if postion of laser is over 2.8 metres the prt count goes to 2, then every 4 m thereafter the prt count increases by 1.
             //prt name mapping is stored in prtmap array. 
             if (pos.Equals(double.NaN)) return -1;  //laser not returning a value

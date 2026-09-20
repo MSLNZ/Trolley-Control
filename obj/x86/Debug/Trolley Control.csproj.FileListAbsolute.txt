@@ -16,7 +16,6 @@ C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\bin\Debug\Trolley Control.
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\bin\Debug\Trolley Control.application
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\bin\Debug\Trolley Control.exe
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\bin\Debug\Trolley Control.pdb
-C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Control.csprojAssemblyReference.cache
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Control.csproj.ResolveComReference.cache
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley_Control.Tunnel_Control_Form.resources
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley_Control.Properties.Resources.resources
@@ -24,6 +23,8 @@ C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Cont
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Control.csproj.CoreCompileInputs.cache
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Control.exe.manifest
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Control.application
-C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Control.csproj.CopyComplete
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Control.exe
 C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Control.pdb
+C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley Control.csproj.AssemblyReference.cache
+C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\bin\Debug\Trolley Control.exe.config
+C:\Users\LAB ACCOUNT\Documents\GitHub\Trolley-Control\obj\x86\Debug\Trolley .B9A9C50E.Up2Date

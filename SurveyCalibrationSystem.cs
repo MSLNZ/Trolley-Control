@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.IO.Ports;
 using System.IO;
-using System.Threading;
-using System.Xml;
+using System.IO.Ports;
+using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading;
 using System.Windows;
+using System.Windows.Forms;
+using System.Xml;
+using Temperature_Monitor;
 
 
 
@@ -39,10 +40,7 @@ namespace Trolley_Control
         private TemperatureMeasurement[] pending_list;       // a list of pending measurements to be added
         private Thread[] Threads;
         private static short measurement_index = 0;
-        private MUX multiplexor;
-        private AgilentMUX a_plexor;
-        private ResistanceBridge bridge;
-        private AgilentBridge c_agilent;
+        private IsotechMilliK milliK_b;
         private PRT[] prts;
         private bool force_update_server;
         private double OA_date;
@@ -870,7 +868,7 @@ namespace Trolley_Control
             // Set filter options and filter index.
             openFileDialog1.Filter = "Text Files (.txt)|*.txt|All Files (*.*)|*.*";
             openFileDialog1.FilterIndex = 1;
-            openFileDialog1.InitialDirectory = @"G:\Shared drives\MSL - Length\Length\Edm\Tunnel Config\";
+            openFileDialog1.InitialDirectory = @"L:\Edm\Tunnel Config\";
 
             openFileDialog1.Multiselect = false;
 
@@ -1286,8 +1284,8 @@ namespace Trolley_Control
 
             //calibration data file is better accessed off the C drive, so parse .ini file
             //is saved to the C drive.
-            xmlfilename = @"G:\Shared drives\MSL - Length\Length\EQUIPREG\XML files\cal_data.xml";
-            string inifilename = @"G:\Shared drives\MSL - Length\Length\EQUIPREG\Length_Stds_Calibration_Data\cal_data.ini";
+            xmlfilename = @"L:\EQUIPREG\XML files\cal_data.xml";
+            string inifilename = @"L:\EQUIPREG\Length_Stds_Calibration_Data\cal_data.ini";
 
             if (INI2XML.Convert(inifilename, ref xmlfilename))
             {
@@ -1326,15 +1324,8 @@ namespace Trolley_Control
 
 
 
-
-            a_plexor = new AgilentMUX(ref prts);
-            multiplexor = a_plexor;
-
-
-
-
             //Open a config file for reading
-            openConfigFile.InitialDirectory = @"G:\Shared drives\MSL - Length\Length\Temperature Monitoring Data\Laboratory Configurations\";
+            openConfigFile.InitialDirectory = @"L:\Temperature Monitoring Data\Laboratory Configurations\";
             openConfigFile.FileName = "Tunnel";
             DialogResult result;
             try
@@ -1345,7 +1336,7 @@ namespace Trolley_Control
             catch (DirectoryNotFoundException)
             {
                 MessageBox.Show("The directory the configurations are normally kept in no longer exists - please recreate:\n" +
-                     @"G:\Shared drives\MSL - Length\Length\Temperature Monitoring Data\Laboratory Configurations");
+                     @"L:\Temperature Monitoring Data\Laboratory Configurations");
                 return;
             }
 
@@ -1423,9 +1414,8 @@ namespace Trolley_Control
                 {
                     line_read = line_read.Remove(0, 12);
                     bridgename = line_read;
-                    c_agilent = new AgilentBridge(3, "GPIB3::", ref multiplexor);
+                    if(milliK_b==null) milliK_b = new IsotechMilliK(ref prts);
                     getBridgeCorrections(line_read);
-                    bridge = c_agilent;
                     continue;
                 }
                 else if (line_read.Contains("MUX_TYPE:"))
@@ -1477,19 +1467,17 @@ namespace Trolley_Control
             //remember to store the name of the PRT associated with this measurement
             //this is so that we can easily load a prt from the config file
             got.PRTName = prt_n;
-            multiplexor.setProbe(got, current_channel);      //associates a probe with a channel
-
+            milliK_b.setProbe(got, current_channel);      //associates a probe with a channel
 
 
             //create a temperature measurement object for this temperature measurement
-            TemperatureMeasurement to_add = new TemperatureMeasurement(ref got, ref multiplexor, ref bridge, current_channel, measurement_index);
+            TemperatureMeasurement to_add = new TemperatureMeasurement(got, ref milliK_b, current_channel, measurement_index);
 
             //set the details of this measurement
             to_add.Inverval = interval;
             to_add.Date = getDT();
             to_add.LabLocation = lab_n;
             to_add.Filename = location_n;
-            to_add.MUXName = mux_n;
             to_add.BridgeName = bridge_n;
 
             //increase the measurement list to fit the next measurement that might be added
@@ -1695,16 +1683,26 @@ namespace Trolley_Control
             xmlreader.ReadToNextSibling("RESISTANCEBRIDGE");
             xmlreader.ReadToDescendant(string.Concat("resistancebridge", bridge_name_));
             xmlreader.ReadToFollowing("A1_1");
-            c_agilent.A1Card1 = xmlreader.ReadElementContentAsDouble();
-            c_agilent.A2Card1 = xmlreader.ReadElementContentAsDouble();
-            c_agilent.A3Card1 = xmlreader.ReadElementContentAsDouble();
-            c_agilent.A1Card2 = xmlreader.ReadElementContentAsDouble();
-            c_agilent.A2Card2 = xmlreader.ReadElementContentAsDouble();
-            c_agilent.A3Card2 = xmlreader.ReadElementContentAsDouble();
-            c_agilent.A1Card3 = xmlreader.ReadElementContentAsDouble();
-            c_agilent.A2Card3 = xmlreader.ReadElementContentAsDouble();
-            c_agilent.A3Card3 = xmlreader.ReadElementContentAsDouble();
-
+            milliK_b.A1_1 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A2_1 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A3_1 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A4_1 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A1_2 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A2_2 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A3_2 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A4_2 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A1_3 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A2_3 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A3_3 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A4_3 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A1_4 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A2_4 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A3_4 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.A4_4 = xmlreader.ReadElementContentAsDouble();
+            milliK_b.Port(xmlreader.ReadElementContentAsInt());
+            milliK_b.IP(xmlreader.ReadElementContentAsString());
+            //milliK_b.Init();
+            milliK_b.Timeout(1000);
 
         }
 

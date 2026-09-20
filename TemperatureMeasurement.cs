@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
+using Temperature_Monitor;
 
 
 namespace Trolley_Control
@@ -17,13 +18,11 @@ namespace Trolley_Control
         private static Thread thread_running;
         private static TemperatureMeasurement[] current_measurements = new TemperatureMeasurement[1];
         //private static long thread_count;
-        private MUX mux;
-        private ResistanceBridge bridge;
+      
         private static PrintTemperatureData data;
         private DateTime date;
         private string lab_location;
         private static int measurement_anomalies;
-        private string mux_name;
         private string bridge_name;
         private string directory;
         private string directory2;
@@ -36,6 +35,7 @@ namespace Trolley_Control
         private short channel_for_measurement;
         private static long measurement_index_;
         private System.DateTime date_time;
+        private IsotechMilliK bridge;
         private StringBuilder x_data;
         private StringBuilder y_data;
         private static Mutex measurementMutex = new Mutex(false);
@@ -51,10 +51,9 @@ namespace Trolley_Control
         /// <param name="bridge_m">The type of resistance bridge the PRT is plugged into</param>
         /// <param name="bridge_m">The channel for the measurement</param>
         /// <param name="bridge_m">A delegate to be called when temperature data becomes available</param>
-        public TemperatureMeasurement(ref PRT PRT_m, ref MUX MUX_m, ref ResistanceBridge bridge_m, short channel, long measurement_index)
+        public TemperatureMeasurement(PRT PRT_m, ref IsotechMilliK bridge_m, short channel, long measurement_index)
         {
             prt = PRT_m;
-            mux = MUX_m;
             bridge = bridge_m;
             lab_location = "";
             filename = "";
@@ -67,14 +66,9 @@ namespace Trolley_Control
             date = DateTime.Now;
             assigned_thread_priority = 1;  //make the fresh measurement added have the highest execution priority.
 
-            //everytime we add a new measurement change the size of the thread array
-            //Array.Resize(ref threads_running,(int) measurement_index);
             Array.Resize(ref current_measurements, (int)measurement_index + 1);
             current_measurements[measurement_index] = this;
 
-            //Array.Resize(ref threadexecution, (int)measurement_index);
-
-            //threadexecution[measurement_index] = true;
         }
         public void MsgDel(ref PrintTemperatureData msg)
         {
@@ -142,7 +136,7 @@ namespace Trolley_Control
         //}
         public double Measure()
         {
-            result = bridge.getTemperature(prt, channel_for_measurement, false);
+            result = bridge.getTemperature(prt, channel_for_measurement);
             return result;
         }
 
@@ -193,7 +187,7 @@ namespace Trolley_Control
 
             //The default directory is on C & G:  Each measurement in written to C when it arrives 
             directory = @"C:\Temperature Monitoring Data\" + lb + @"\" + year.ToString() + @"\" + year.ToString() + "-" + month.ToString() + @"\";
-            directory2 = @"G:\Shared drives\MSL - Length\Length\Temperature Monitoring Data\" + lb + @"\" + year.ToString() + @"\" + year.ToString() + "-" + month.ToString() + @"\";
+            directory2 = @"L:\Temperature Monitoring Data\" + lb + @"\" + year.ToString() + @"\" + year.ToString() + "-" + month.ToString() + @"\";
             //directory2 = @"I:\MSL\Private\LENGTH\Temperature Monitoring Data\" + lb + @"\" + year.ToString() + @"\" + year.ToString() + "-" + month.ToString() + @"\";
 
             //create the directories if they don't exist already
@@ -218,22 +212,6 @@ namespace Trolley_Control
                 result = value;
             }
 
-        }
-
-        public StringBuilder X
-        {
-            get
-            {
-                return x_data;
-            }
-        }
-
-        public StringBuilder Y
-        {
-            get
-            {
-                return y_data;
-            }
         }
 
         public PRT PRT
@@ -272,22 +250,14 @@ namespace Trolley_Control
         {
             get { return measurement_index_; }
         }
-        public string MUXName
-        {
-            set { mux_name = value; }
-            get { return mux_name; }
-        }
+     
         public string BridgeName
         {
             set { bridge_name = value; }
             get { return bridge_name; }
         }
 
-        public MUX MUX
-        {
-            get { return mux; }
-        }
-        public void setMUXChannel()
+        public void setCurrentChannel()
         {
             bridge.setCurrentChannel(channel_for_measurement);
         }
@@ -304,11 +274,6 @@ namespace Trolley_Control
 
         public static void MeasureAll()
         {
-
-            string init_string = String.Concat(TemperatureMeasurement.MeasurementList[0].bridge.GPIBSICL, TemperatureMeasurement.MeasurementList[0].bridge.GPIBAddr);
-            ResistanceBridge.createInteropObject();
-            TemperatureMeasurement.MeasurementList[0].bridge.InitIO(init_string);
-            //TemperatureMeasurement measuring = (TemperatureMeasurement)stateInfo;
 
             while (TemperatureMeasurement.MeasurementList.Length != 30) TemperatureMeasurement.thread_running.Join(1000);
             //The file paths
@@ -331,7 +296,7 @@ namespace Trolley_Control
                     bool appenditure = false;
 
                     path = TemperatureMeasurement.MeasurementList[i].directory + TemperatureMeasurement.MeasurementList[i].Filename + ".txt";
-                    path2 = @"G:\Shared drives\MSL - Length\Length\Temperature Monitoring Data\" + TemperatureMeasurement.MeasurementList[i].Filename + "_" + System.DateTime.Now.Ticks.ToString() + ".txt";
+                    path2 = @"L:\Temperature Monitoring Data\" + TemperatureMeasurement.MeasurementList[i].Filename + "_" + System.DateTime.Now.Ticks.ToString() + ".txt";
 
 
                     try
@@ -359,27 +324,8 @@ namespace Trolley_Control
                             writer.WriteLine("Automatically Generated File!\n");
                         }
 
-
-
-
-
-                        //set the current (incoming) measurements priority to be the lowest (biggest number)
-                        //measuring.AssignedThreadPriority = thread_count;
-
-
-                        //make the current thread wait until its priority reaches 1
-                        //lock (lockthis) while (measuring.AssignedThreadPriority != 1) Monitor.Wait(lockthis);
-
-                        //---------------------------------------------------------------------START OF CRITICAL SECTION-------------------------------------------------------------
-                        //lock(lockthis)
-                        //{
-
-
-                        //make sure the channel is correct (it may have been changed by another thread)
-                        TemperatureMeasurement.MeasurementList[i].setMUXChannel();
-
-                        //sleep the thread for the specified dead time
-                        //Thread.Sleep((int)(measuring.Inverval * 1000));
+                        //make sure the channel is correct 
+                        TemperatureMeasurement.MeasurementList[i].setCurrentChannel();
 
                         //take the measurement
                         double measurement_result = TemperatureMeasurement.MeasurementList[i].Measure();
@@ -414,7 +360,7 @@ namespace Trolley_Control
                         try
                         {
                             //write the measurement to file
-                            writer.WriteLine(string.Concat(measurement_result.ToString() + ", " + TemperatureMeasurement.MeasurementList[i].MUX.getCurrentChannel().ToString()
+                            writer.WriteLine(string.Concat(measurement_result.ToString() + ", " + TemperatureMeasurement.MeasurementList[i].bridge.getCurrentChannel().ToString()
                                 , "," + TemperatureMeasurement.MeasurementList[i].date_time.ToString() + ", " + TemperatureMeasurement.MeasurementList[i].lab_location
                                 , ", " + TemperatureMeasurement.MeasurementList[i].Filename));
                             writer.Flush();

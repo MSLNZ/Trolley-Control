@@ -324,7 +324,8 @@
             "US45220279",
             "3216A00170",
             "US52140451",
-            "US40091129"});
+            "US40091129",
+            "US52140736"});
             this.Laser_Picker_ComboBox.Location = new System.Drawing.Point(9, 91);
             this.Laser_Picker_ComboBox.Name = "Laser_Picker_ComboBox";
             this.Laser_Picker_ComboBox.Size = new System.Drawing.Size(139, 21);
@@ -535,7 +536,7 @@
             // 
             // Targets_RichTextbox
             // 
-            this.Targets_RichTextbox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.Targets_RichTextbox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.Targets_RichTextbox.Location = new System.Drawing.Point(433, 47);
             this.Targets_RichTextbox.Name = "Targets_RichTextbox";
@@ -554,8 +555,8 @@
             // 
             // LaserParameters
             // 
-            this.LaserParameters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.LaserParameters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LaserParameters.Location = new System.Drawing.Point(842, 47);
             this.LaserParameters.Name = "LaserParameters";
@@ -565,8 +566,8 @@
             // 
             // Laser_Parameters_Label
             // 
-            this.Laser_Parameters_Label.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.Laser_Parameters_Label.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.Laser_Parameters_Label.AutoSize = true;
             this.Laser_Parameters_Label.Location = new System.Drawing.Point(839, 31);
