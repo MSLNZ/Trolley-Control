@@ -1,0 +1,49 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Publish output
+publish/
+Publish/
+
+# Test results
+TestResults/
+
+# NuGet
+packages/
+
+# Rider
+.idea/
+
+# ReSharper
+_ReSharper*/
+*.DotSettings.user
+
+# Logs
+*.log
+
+# Temp files
+*.tmp
+*.temp
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+
+# Camera/image scratch data
+TempImages/
+Scratch/
+
+# Optional measurement output
+MeasurementOutput/
