@@ -1,0 +1,87 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\c.young\\Documents\\GitHub\\Trolley-Control\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|c:\\users\\c.young\\documents\\github\\trolley-control\\surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|c:\\users\\c.young\\documents\\github\\trolley-control\\measurement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:measurement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|c:\\users\\c.young\\documents\\github\\trolley-control\\surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|c:\\users\\c.young\\documents\\github\\trolley-control\\surveycalibrationsystem.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:surveycalibrationsystem.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "SurveyCalibrationSystem.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\c.young\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.Designer.cs",
+              "RelativeDocumentMoniker": "SurveyCalibrationSystem.Designer.cs",
+              "ToolTip": "C:\\Users\\c.young\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.Designer.cs",
+              "RelativeToolTip": "SurveyCalibrationSystem.Designer.cs",
+              "ViewState": "AgIAAG0DAAAAAAAAAAAWwIYDAAA8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-20T22:54:38.297Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "SurveyCalibrationSystem.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\c.young\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs",
+              "RelativeDocumentMoniker": "SurveyCalibrationSystem.cs",
+              "ToolTip": "C:\\Users\\c.young\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs [Design]",
+              "RelativeToolTip": "SurveyCalibrationSystem.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-20T22:51:51.615Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Measurement.cs",
+              "DocumentMoniker": "C:\\Users\\c.young\\Documents\\GitHub\\Trolley-Control\\Measurement.cs",
+              "RelativeDocumentMoniker": "Measurement.cs",
+              "ToolTip": "C:\\Users\\c.young\\Documents\\GitHub\\Trolley-Control\\Measurement.cs",
+              "RelativeToolTip": "Measurement.cs",
+              "ViewState": "AgIAAKgDAAAAAAAAAAAAAHEDAABXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-20T22:27:37.421Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SurveyCalibrationSystem.cs",
+              "DocumentMoniker": "C:\\Users\\c.young\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs",
+              "RelativeDocumentMoniker": "SurveyCalibrationSystem.cs",
+              "ToolTip": "C:\\Users\\c.young\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs",
+              "RelativeToolTip": "SurveyCalibrationSystem.cs",
+              "ViewState": "AgIAAH4HAAAAAAAAAAAAwJ8HAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-20T22:27:07.516Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

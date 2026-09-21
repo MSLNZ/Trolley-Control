@@ -93,6 +93,10 @@ namespace Trolley_Control
     {
         private static bool measurement_status;  //ready to measure or not?
         private static double targt = 0;
+        public static int numprtsrow2 = 15;
+        public static int numprtsrow3 = 15;
+        public static int numprtsrow4 = 15;
+
         private bool not_reached_target;
         private double start_pos;
         private double[] start_pos_value;
@@ -833,7 +837,7 @@ namespace Trolley_Control
                 //for this part of the beam we are averaging the two rows of prts
 
                 int valid_results = 0;
-                double second_row_avg = secondAverageRI(ref valid_results, 11, ref ug, is_laser, store);
+                double second_row_avg = secondAverageRI(ref valid_results, numprtsrow2, ref ug, is_laser, store);
 
                 //compute the weighted average of the first and second rows
                 double second_row_sum = second_row_avg * valid_results;
@@ -847,11 +851,11 @@ namespace Trolley_Control
                 //Range for bench row is 1 to 15.  Range for walkway row is 16 to 30. -->> should correspond to number written on the prts e.g 001 002 003 etc
                 //For this part of the beam we are average the two rows of prts;
                 int valid_results = 0;
-                double second_row_avg = secondAverageRI(ref valid_results, 15, ref ug, is_laser, store);
+                double second_row_avg = secondAverageRI(ref valid_results, numprtsrow2, ref ug, is_laser, store);
 
                 //include the partial third beam temperatures - this only includes prts in row 2
                 int valid_results2 = 0;
-                double third_row_avg = thirdAverageRI(ref valid_results2, 11, ref ug, is_laser, store);
+                double third_row_avg = thirdAverageRI(ref valid_results2, numprtsrow3, ref ug, is_laser, store);
 
                 //compute the weighted average of the first and second rows
                 double first_row_sum = first_row_avg * num_prts_involved;
@@ -868,14 +872,14 @@ namespace Trolley_Control
 
 
                 int valid_results = 0;
-                double second_row_avg = secondAverageRI(ref valid_results, 15, ref ug, is_laser, store);
+                double second_row_avg = secondAverageRI(ref valid_results, numprtsrow2, ref ug, is_laser, store);
 
                 //include the partial third beam temperatures - this only includes prts in row 2
                 int valid_results2 = 0;
-                double third_row_avg = thirdAverageRI(ref valid_results2, 15, ref ug, is_laser, store);
+                double third_row_avg = thirdAverageRI(ref valid_results2, numprtsrow3, ref ug, is_laser, store);
 
                 int valid_results3 = 0;
-                double fourth_row_avg = fourthAverageRI(ref valid_results3, 11, ref ug, is_laser, store);
+                double fourth_row_avg = fourthAverageRI(ref valid_results3, numprtsrow4, ref ug, is_laser, store);
                 //compute the weighted average of the first and second rows
                 double first_row_sum = first_row_avg * num_prts_involved;
                 double second_row_sum = second_row_avg * valid_results;

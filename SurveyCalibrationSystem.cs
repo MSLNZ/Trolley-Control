@@ -999,15 +999,31 @@ namespace Trolley_Control
                                 {
                                     case 0:
                                         DUT.Beamfolds = 0;
+                                        groupBoxBeamFolds.Enabled = false;
+                                        numericUpDownRow2BeamFolds.Enabled = false;
+                                        numericUpDownRow3BeamFolds.Enabled = false;
+                                        numericUpDownRow4BeamFolds.Enabled = false;
                                         break;
                                     case 1:
                                         DUT.Beamfolds = 1;
+                                        groupBoxBeamFolds.Enabled = true;
+                                        numericUpDownRow2BeamFolds.Enabled = true;
+                                        numericUpDownRow3BeamFolds.Enabled = false;
+                                        numericUpDownRow4BeamFolds.Enabled = false;
                                         break;
                                     case 2:
                                         DUT.Beamfolds = 2;
+                                        groupBoxBeamFolds.Enabled = true;
+                                        numericUpDownRow2BeamFolds.Enabled = false;
+                                        numericUpDownRow3BeamFolds.Enabled = true;
+                                        numericUpDownRow4BeamFolds.Enabled = false;
                                         break;
                                     case 3:
                                         DUT.Beamfolds = 3;
+                                        groupBoxBeamFolds.Enabled = true;
+                                        numericUpDownRow2BeamFolds.Enabled = false;
+                                        numericUpDownRow3BeamFolds.Enabled = false;
+                                        numericUpDownRow4BeamFolds.Enabled = true;
                                         break;
                                     default:
                                         break;
@@ -1906,6 +1922,44 @@ namespace Trolley_Control
         private void Laser_Picker_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             setLaserConfig(Laser_Picker_ComboBox.Text);
+        }
+
+        private void numericUpDownRow2BeamFolds_ValueChanged(object sender, EventArgs e)
+        {
+            Measurement.numprtsrow2 = Convert.ToInt16(numericUpDownRow2BeamFolds.Value);
+        }
+
+        private void numericUpDownRow3BeamFolds_ValueChanged(object sender, EventArgs e)
+        {
+            Measurement.numprtsrow3 = Convert.ToInt16(numericUpDownRow3BeamFolds.Value);
+        }
+
+        private void numericUpDownRow4BeamFolds_ValueChanged(object sender, EventArgs e)
+        {
+            Measurement.numprtsrow4 = Convert.ToInt16(numericUpDownRow4BeamFolds.Value);
+        }
+
+        private void buttonInfoRow2_Click(object sender, EventArgs e)
+        {
+            string i = "The number of PRT to be used for Refractive index correction on Beam 2\n"
+                     + "e.g choosing 5 will include prts over the walkway from positions 16 to 20\n"
+                     + "For this example (i.e 5 prts used), the refractive index will be calculated\n"
+                     + "from averaging prt temperatures over the walkway and the bench.\n"
+                     + "The following prt pairs are used to calculate temperature temprature\n"
+                     + "averages at the 5 positions in the extra beam [16,15],[17,14],[18,13],[19,12]\n"
+                     + "and [20,11].\n";
+
+            MessageBox.Show(i);
+        }
+
+        private void buttonInfoRow3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonInfoRow4_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void LaserInfoButton_Click(object sender, EventArgs e)
