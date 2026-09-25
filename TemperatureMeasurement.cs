@@ -288,7 +288,7 @@ namespace Trolley_Control
             thread_running.Join(3000);
             while (true)
             {
-
+                thread_running.Join(1000);
                 int i = 0;
                 foreach (TemperatureMeasurement current_m in TemperatureMeasurement.MeasurementList)
                 {
@@ -329,7 +329,9 @@ namespace Trolley_Control
 
                         //take the measurement
                         double measurement_result = TemperatureMeasurement.MeasurementList[i].Measure();
-                        TemperatureMeasurement.MeasurementList[i].Result = measurement_result;
+                        if(measurement_result != -1.0) TemperatureMeasurement.MeasurementList[i].Result = measurement_result;
+                        else measurement_result = TemperatureMeasurement.MeasurementList[i].Result;  //if the measurement failed then use the last valid result
+
                         TemperatureMeasurement.MeasurementList[i].y_data.Append(measurement_result.ToString() + ",");
 
                         //record the time of the measurement
@@ -342,7 +344,7 @@ namespace Trolley_Control
                              , TemperatureMeasurement.MeasurementList[i].filename + " on CH" + TemperatureMeasurement.MeasurementList[i].channel_for_measurement.ToString() + " in " + TemperatureMeasurement.MeasurementList[i].lab_location + "\n"
                              , i);
 
-                        TemperatureMeasurement.MeasurementList[i].Result = measurement_result;
+                        //TemperatureMeasurement.MeasurementList[i].Result = measurement_result;
 
                         try
                         {
@@ -373,31 +375,7 @@ namespace Trolley_Control
 
                         }
 
-
-
-                        //now that the critical section has finished let the exiting thread decrement all the measurement priorities 
-                        //for (int i = 0; i < TemperatureMeasurement.ThreadCount; i++)
-                        //{
-
-
-                        //    current_measurements[i].AssignedThreadPriority--;
-                        //    Monitor.PulseAll(lockthis);
-
-                        //}
-
-                        //if we have removed an item then we need to reorder the priorities
-                        //if (measuring.measurementRemoved)
-                        //{
-                        //    measuring.measurementRemoved = false;
-                        //    for (long i = measuring.measurementRemovalIndex; i < TemperatureMeasurement.ThreadCount; i++)
-                        //    {
-
-
-                        //        current_measurements[i].AssignedThreadPriority--;
-                        //        Monitor.PulseAll(lockthis);
-
-                        //    }
-                        //}
+                       
                         writer.Close();
                     }
 

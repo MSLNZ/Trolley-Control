@@ -17,7 +17,7 @@ namespace Trolley_Control
 
         public override bool Request(string request, ref string result)
         {
-            return TCPClient.sendReceiveData(request, ref result);
+            return TCPClient.sendReceiveData_(request, ref result);
 
         }
         public override void setTimeOut(int num_samples)

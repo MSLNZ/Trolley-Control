@@ -631,13 +631,7 @@ namespace Temperature_Monitor
              *
              * Horner form reduces repeated operations.
              */
-            return bridgeReading
-                + correction.A1
-                + bridgeReading *
-                  (correction.A2
-                   + bridgeReading *
-                     (correction.A3
-                      + correction.A4 * bridgeReading));
+            return bridgeReading + correction.A1 + bridgeReading * (correction.A2 + bridgeReading * (correction.A3 + correction.A4 * bridgeReading));
         }
 
         private static double ResistanceToTemperature(
@@ -647,6 +641,7 @@ namespace Temperature_Monitor
             double a = probe.getA();
             double b = probe.getB();
             double r0 = probe.getR0();
+
 
             if (r0 <= 0.0)
             {
@@ -663,26 +658,13 @@ namespace Temperature_Monitor
              *
              * B*t^2 + A*t + (1 - R/R0) = 0
              */
-            if (resistance < r0)
-            {
-                throw new NotSupportedException(
-                    "This conversion implementation only supports " +
-                    "the positive-temperature Callendar-Van Dusen " +
-                    "equation. A PRT resistance below R0 requires the " +
-                    "negative-temperature C coefficient and a numeric " +
-                    "root solution.");
-            }
+            //if (resistance < r0)
+            //{
+            //    return -1.0; // Temperature is below 0 degrees C.
+            //}
 
-            if (Math.Abs(b) < 1e-30)
-            {
-                if (Math.Abs(a) < 1e-30)
-                {
-                    throw new InvalidOperationException(
-                        "The PRT A and B coefficients cannot both be zero.");
-                }
 
-                return (resistance / r0 - 1.0) / a;
-            }
+            
 
             double discriminant =
                 a * a

@@ -289,9 +289,22 @@ namespace Trolley_Control
 
                             double result1 = TH_logger1.getHu();
                             double result2 = TH_logger2.getHu();
-                            if (OmegaTHLogger.numConnectedLoggers == 2) Measurement.AverageHumidity = (result1 + result2) / 2;                     //we have both omega loggers working.
-                            else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger1.isActive)) Measurement.AverageHumidity = result1;     //only have one valid result - logger 1
-                            else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger2.isActive)) Measurement.AverageHumidity = result2;     //only have one valid result - logger 2
+                            if (OmegaTHLogger.numConnectedLoggers == 2)//we have both omega loggers working.
+                            {
+                                Measurement.AverageHumidity = (result1 + result2) / 2;
+                                Measurement.HumidityLogger1CorrectedResult = result1;
+                                Measurement.HumidityLogger2CorrectedResult = result2;
+                            }
+                            else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger1.isActive)) //only have one valid result - logger 1
+                            {
+                                Measurement.AverageHumidity = result1;  
+                                Measurement.HumidityLogger1CorrectedResult = result1;
+                            }
+                            else if ((OmegaTHLogger.numConnectedLoggers == 1) && (TH_logger2.isActive)) //only have one valid result - logger 2
+                            {
+                                Measurement.AverageHumidity = result2;     
+                                Measurement.HumidityLogger2CorrectedResult = result2;
+                            }
 
                             Thread printerThread;
                             try
@@ -553,6 +566,42 @@ namespace Trolley_Control
                         break;
                     case ProcNameMeasurement.STDEV:
                         Stdev_Textbox.Text = msg;
+                        break;
+                    case ProcNameMeasurement.NUM_BEAM_FOLDS:
+                        switch(msg)
+                        {
+                            case "0":
+                                DUT.Beamfolds = 0;
+                                mug(ProcNameMeasurement.NUM_BEAM_FOLDS, "0", false);
+                                groupBoxBeamFolds.Enabled = false;
+                                numericUpDownRow2BeamFolds.Enabled = false;
+                                numericUpDownRow3BeamFolds.Enabled = false;
+                                numericUpDownRow4BeamFolds.Enabled = false;
+                                break;
+                            case "1":
+                                DUT.Beamfolds = 1;
+                                groupBoxBeamFolds.Enabled = true;
+                                numericUpDownRow2BeamFolds.Enabled = true;
+                                numericUpDownRow3BeamFolds.Enabled = false;
+                                numericUpDownRow4BeamFolds.Enabled = false;
+                                break;
+                            case "2":
+                                DUT.Beamfolds = 2;
+                                groupBoxBeamFolds.Enabled = true;
+                                numericUpDownRow2BeamFolds.Enabled = false;
+                                numericUpDownRow3BeamFolds.Enabled = true;
+                                numericUpDownRow4BeamFolds.Enabled = false;
+                                break;
+                            case "3":
+                                DUT.Beamfolds = 3;
+                                groupBoxBeamFolds.Enabled = true;
+                                numericUpDownRow2BeamFolds.Enabled = false;
+                                numericUpDownRow3BeamFolds.Enabled = false;
+                                numericUpDownRow4BeamFolds.Enabled = true;
+                                break;
+                            default:
+                                break;
+                        }   
                         break;
                     default:                    //by default if the gui has been invoked it is because there is a new edm measurement to report in this case the message msg is the EDM value
 
@@ -995,39 +1044,7 @@ namespace Trolley_Control
                                 break;
                             case "BEAM FOLDS":
                                 int n = Convert.ToInt32(number);
-                                switch (n)
-                                {
-                                    case 0:
-                                        DUT.Beamfolds = 0;
-                                        groupBoxBeamFolds.Enabled = false;
-                                        numericUpDownRow2BeamFolds.Enabled = false;
-                                        numericUpDownRow3BeamFolds.Enabled = false;
-                                        numericUpDownRow4BeamFolds.Enabled = false;
-                                        break;
-                                    case 1:
-                                        DUT.Beamfolds = 1;
-                                        groupBoxBeamFolds.Enabled = true;
-                                        numericUpDownRow2BeamFolds.Enabled = true;
-                                        numericUpDownRow3BeamFolds.Enabled = false;
-                                        numericUpDownRow4BeamFolds.Enabled = false;
-                                        break;
-                                    case 2:
-                                        DUT.Beamfolds = 2;
-                                        groupBoxBeamFolds.Enabled = true;
-                                        numericUpDownRow2BeamFolds.Enabled = false;
-                                        numericUpDownRow3BeamFolds.Enabled = true;
-                                        numericUpDownRow4BeamFolds.Enabled = false;
-                                        break;
-                                    case 3:
-                                        DUT.Beamfolds = 3;
-                                        groupBoxBeamFolds.Enabled = true;
-                                        numericUpDownRow2BeamFolds.Enabled = false;
-                                        numericUpDownRow3BeamFolds.Enabled = false;
-                                        numericUpDownRow4BeamFolds.Enabled = true;
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                mug(ProcNameMeasurement.NUM_BEAM_FOLDS, n.ToString(), false);
                                 break;
                             default:
                                 break;

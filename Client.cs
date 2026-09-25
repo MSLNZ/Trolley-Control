@@ -11,7 +11,7 @@ namespace Trolley_Control
         private TcpClient client;
         private NetworkStream stream;
 
-        private int timeout = 5000;
+        private int timeout = 60000;
         private int port = 1000;
         private string ipAddress = string.Empty;
 
@@ -152,6 +152,55 @@ namespace Trolley_Control
                 CloseConnection();
                 return false;
             }
+        }
+
+        public bool SendReceiveData_(String request, ref string result)
+        {
+            try
+            {
+                // Translate the passed message into ASCII and store it as a Byte array.
+                Byte[] data = System.Text.Encoding.ASCII.GetBytes(request);
+
+                // Get a client stream for reading and writing. 
+                //  Stream stream = client.GetStream();
+                client.SendTimeout = 1000;
+                stream = client.GetStream();
+
+                // Send the message to the connected TcpServer. 
+                stream.Write(data, 0, data.Length);
+
+                //Console.WriteLine("Sent: {0}", request);
+
+                // Receive the TcpServer.response. 
+
+                // Buffer to store the response bytes.
+                data = new Byte[256];
+
+
+
+                stream.ReadTimeout = timeout;
+                //  stream.BeginRead(
+                // Read the first batch of the TcpServer response bytes.
+                Int32 bytes = stream.Read(data, 0, data.Length);
+                result = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
+                //Console.WriteLine("Received: {0}", responseData);
+
+
+                return true;
+            }
+            catch (ArgumentNullException)
+            {
+                return false;
+            }
+            catch (System.IO.IOException)
+            {
+                return false;
+            }
+            catch (TimeoutException)
+            {
+                return false;
+            }
+
         }
 
         public bool SendReceiveData(
@@ -301,6 +350,13 @@ namespace Trolley_Control
             ref string result)
         {
             return SendReceiveData(request, ref result);
+        }
+
+        public bool sendReceiveData_(
+            string request,
+            ref string result)
+        {
+            return SendReceiveData_(request, ref result);
         }
 
         public void Dispose()

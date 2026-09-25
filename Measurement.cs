@@ -27,6 +27,7 @@ namespace Trolley_Control
         public const short EXECUTION_COMPLETE = 106;
         public const short STDEV = 107;
         public const short EDM_BEAM_TEMPERATURE = 108;
+        public const short NUM_BEAM_FOLDS = 109;
         public const short IDLE = 255;
 
     }
@@ -125,11 +126,13 @@ namespace Trolley_Control
         private static bool edm_beam_temperature_error_reported = false;
         private static bool beam_temperature_error_reported = false;
         public static double CO2_Concentration = 450E-6;
-        private static readonly double EDM_TS_default_correction = 281.772087 / 1000000;
+        private static readonly double EDM_TS_default_correction = 286.338 / 1000000;
         private static string hlogger_1_equation = "";
         private static string hlogger_2_equation = "";
         private static double hlogger1_correction = 0.0;
         private static double hlogger2_correction = 0.0;
+        private static double hlogger1_corrected_result = 50.0;
+        private static double hlogger2_corrected_result = 50.0;
         private static double offset = 2.0;
         private static Object lockthis = new Object();
         private static int d_type = Device.EDM;
@@ -270,6 +273,19 @@ namespace Trolley_Control
             get { return hlogger2_correction; }
             set { hlogger2_correction = value; }
         }
+
+        public static double HumidityLogger1CorrectedResult
+        {
+            set { hlogger1_corrected_result = value; }
+            get { return hlogger1_corrected_result  ; }
+        }
+
+        public static double HumidityLogger2CorrectedResult
+        {
+            set { hlogger2_corrected_result = value; }
+            get { return hlogger2_corrected_result; }
+        }
+
 
 
         public static double AverageHumidity
@@ -2114,7 +2130,7 @@ namespace Trolley_Control
                     asyc_meas.measurement_thread.Join((int)asyc_meas.dwell_time * 1000);
                     //Thread.Sleep((int) asyc_meas.dwell_time*1000);                              
 
-                    double[] vals = new double[18];
+                    double[] vals = new double[19];
                     //Record a reading of the laser.
                     vals[0] = asyc_meas.reflaser.R_Sample;
 
@@ -2242,12 +2258,14 @@ namespace Trolley_Control
 
                     vals[5] = vals[4] / vals[6];
 
-                    vals[11] = Pressure;
+                    vals[11] = Measurement.Pressure;
                     vals[12] = asyc_meas.ref_barometer.Correction;
-                    vals[14] = AverageHumidity;
-                    vals[13] = asyc_meas.ref_logger1.Correction;
-                    vals[15] = asyc_meas.ref_logger2.Correction;
-                    vals[16] = CO2;
+                    vals[13] = Measurement.HumidityLogger1CorrectedResult;
+                    vals[14] = asyc_meas.ref_logger1.Correction;
+                    vals[15] = Measurement.HumidityLogger2CorrectedResult;
+                    vals[16] = asyc_meas.ref_logger2.Correction;
+                    vals[17] = Measurement.AverageHumidity;
+                    vals[18] = CO2;
 
 
                     //note which prts we used for each beam
@@ -2370,18 +2388,18 @@ namespace Trolley_Control
                         case ExecutionStage.START:
                             asyc_meas.start_pos_value = vals;
 
-                            string version = "Software Version 1.4";
+                            string version = "Software Version 1.6";
                             string config_file = "Configuration File Name: " + asyc_meas.ConfigFileName;
 
-                            string line_title = "Position,Laser Raw,RI Correction Laser,Laser with Phase RI Correction,DUT Raw Reading,DUT with Default Correction Removed,DUT with group RI applied,DUT Group RI Correction,DUT Standard Deviation,DUT averaging,Laser Beam Temperature,Average DUT beam Temperature,Average Pressure,Average Humidity,Barometer Correction, Humidity Logger 1 Correction, Humidity Logger 2 Correction, CO2 Concentration, DateTime,Laser PRTS Used, EDM PRTS Used," + phase_prt_names + fold0_EDM_prt_names + fold1_EDM_prt_names + fold2_EDM_prt_names + fold3_EDM_prt_names + phase_pressure_names + fold0_pressure_names + fold1_pressure_names + fold2_pressure_names + fold3_pressure_names + phase_humidity_names + fold0_humidity_names + fold1_humidity_names + fold2_humidity_names + fold3_humidity_names;
+                            string line_title = "Position,Laser Raw,RI Correction Laser,Laser with Phase RI Correction,DUT Raw Reading,DUT with Default Correction Removed,DUT with group RI applied,DUT Group RI Correction,DUT Standard Deviation,DUT averaging,Laser Beam Temperature,Average DUT beam Temperature,Average Pressure,Barometer Correction,Corrected Humidity (Logger 1), Humidity Logger 1 Correction, Corrected Humidity (Logger 2), Humidity Logger 2 Correction,Average Humidity, CO2 Concentration, DateTime,Laser PRTS Used, EDM PRTS Used," + phase_prt_names + fold0_EDM_prt_names + fold1_EDM_prt_names + fold2_EDM_prt_names + fold3_EDM_prt_names + phase_pressure_names + fold0_pressure_names + fold1_pressure_names + fold2_pressure_names + fold3_pressure_names + phase_humidity_names + fold0_humidity_names + fold1_humidity_names + fold2_humidity_names + fold3_humidity_names;
 
                             string line = "Start," + vals[0].ToString() + "," + vals[1].ToString() + "," + vals[2].ToString()
                                         + "," + vals[3].ToString() + "," + vals[4].ToString() + "," + vals[5].ToString()
                                         + "," + vals[6].ToString() + "," + vals[7].ToString() + "," + vals[8].ToString()
                                         + "," + vals[9].ToString() + "," + vals[10].ToString() + "," + vals[11].ToString()
                                         + "," + vals[12].ToString() + "," + vals[13].ToString() + "," + vals[14].ToString()
-                                        + "," + vals[15].ToString() + "," + vals[16].ToString()
-                                        + "," + DateTime.Now.ToString() + "," + laser_prts_ + "," + EDM_prts_ + ","
+                                        + "," + vals[15].ToString() + "," + vals[16].ToString() + "," + vals[17].ToString()
+                                        + "," + vals[18].ToString() + "," + DateTime.Now.ToString() + "," + laser_prts_ + "," + EDM_prts_ + ","
                                         + phase_temperatures + fold0_temperatures + fold1_temperatures + fold2_temperatures + fold3_temperatures
                                         + phase_pressures + fold0_pressures + fold1_pressures + fold2_pressures + fold3_pressures
                                         + phase_humidities + fold0_humidities + fold1_humidities + fold2_humidities + fold3_humidities;
@@ -2420,8 +2438,8 @@ namespace Trolley_Control
                                         + "," + vals[6].ToString() + "," + vals[7].ToString() + "," + vals[8].ToString()
                                         + "," + vals[9].ToString() + "," + vals[10].ToString() + "," + vals[11].ToString()
                                         + "," + vals[12].ToString() + "," + vals[13].ToString() + "," + vals[14].ToString()
-                                        + "," + vals[15].ToString() + "," + vals[16].ToString()
-                                        + "," + DateTime.Now.ToString() + "," + laser_prts_ + "," + EDM_prts_ + ","
+                                        + "," + vals[15].ToString() + "," + vals[16].ToString() + "," + vals[17].ToString()
+                                        + "," + vals[18].ToString() + "," + DateTime.Now.ToString() + "," + laser_prts_ + "," + EDM_prts_ + ","
                                         + phase_temperatures + fold0_temperatures + fold1_temperatures + fold2_temperatures + fold3_temperatures
                                         + phase_pressures + fold0_pressures + fold1_pressures + fold2_pressures + fold3_pressures
                                         + phase_humidities + fold0_humidities + fold1_humidities + fold2_humidities + fold3_humidities;
@@ -2445,8 +2463,8 @@ namespace Trolley_Control
                                         + "," + vals[6].ToString() + "," + vals[7].ToString() + "," + vals[8].ToString()
                                         + "," + vals[9].ToString() + "," + vals[10].ToString() + "," + vals[11].ToString()
                                         + "," + vals[12].ToString() + "," + vals[13].ToString() + "," + vals[14].ToString()
-                                        + "," + vals[15].ToString() + "," + vals[16].ToString()
-                                        + "," + DateTime.Now.ToString() + "," + laser_prts_ + "," + EDM_prts_ + ","
+                                        + "," + vals[15].ToString() + "," + vals[16].ToString() + "," + vals[17].ToString()
+                                        + "," + vals[18].ToString() + "," + DateTime.Now.ToString() + "," + laser_prts_ + "," + EDM_prts_ + ","
                                         + phase_temperatures + fold0_temperatures + fold1_temperatures + fold2_temperatures + fold3_temperatures
                                         + phase_pressures + fold0_pressures + fold1_pressures + fold2_pressures + fold3_pressures
                                         + phase_humidities + fold0_humidities + fold1_humidities + fold2_humidities + fold3_humidities;

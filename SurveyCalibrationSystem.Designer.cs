@@ -116,10 +116,9 @@
             // 
             // Go_Stop_Button
             // 
-            this.Go_Stop_Button.Location = new System.Drawing.Point(24, 29);
-            this.Go_Stop_Button.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Go_Stop_Button.Location = new System.Drawing.Point(16, 19);
             this.Go_Stop_Button.Name = "Go_Stop_Button";
-            this.Go_Stop_Button.Size = new System.Drawing.Size(520, 35);
+            this.Go_Stop_Button.Size = new System.Drawing.Size(347, 23);
             this.Go_Stop_Button.TabIndex = 3;
             this.Go_Stop_Button.Text = "Set In Motion";
             this.Go_Stop_Button.UseVisualStyleBackColor = true;
@@ -127,10 +126,9 @@
             // 
             // Forward_Reverse_Button
             // 
-            this.Forward_Reverse_Button.Location = new System.Drawing.Point(24, 74);
-            this.Forward_Reverse_Button.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Forward_Reverse_Button.Location = new System.Drawing.Point(16, 48);
             this.Forward_Reverse_Button.Name = "Forward_Reverse_Button";
-            this.Forward_Reverse_Button.Size = new System.Drawing.Size(520, 35);
+            this.Forward_Reverse_Button.Size = new System.Drawing.Size(347, 23);
             this.Forward_Reverse_Button.TabIndex = 4;
             this.Forward_Reverse_Button.Text = "Toggle Forward Reverse";
             this.Forward_Reverse_Button.UseVisualStyleBackColor = true;
@@ -139,12 +137,11 @@
             // Motor_Speed
             // 
             this.Motor_Speed.LargeChange = 20;
-            this.Motor_Speed.Location = new System.Drawing.Point(24, 155);
-            this.Motor_Speed.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Motor_Speed.Location = new System.Drawing.Point(16, 101);
             this.Motor_Speed.Maximum = 0;
             this.Motor_Speed.Minimum = -255;
             this.Motor_Speed.Name = "Motor_Speed";
-            this.Motor_Speed.Size = new System.Drawing.Size(520, 69);
+            this.Motor_Speed.Size = new System.Drawing.Size(347, 45);
             this.Motor_Speed.TabIndex = 5;
             this.Motor_Speed.TickFrequency = 10;
             this.Motor_Speed.Scroll += new System.EventHandler(this.Motor_Speed_Scroll);
@@ -152,30 +149,27 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(38, 129);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(25, 84);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(101, 20);
+            this.label1.Size = new System.Drawing.Size(68, 13);
             this.label1.TabIndex = 6;
             this.label1.Text = "Motor Speed";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(442, 205);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Location = new System.Drawing.Point(295, 133);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(38, 20);
+            this.label2.Size = new System.Drawing.Size(27, 13);
             this.label2.TabIndex = 7;
             this.label2.Text = "Max";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(20, 205);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label3.Location = new System.Drawing.Point(13, 133);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(34, 20);
+            this.label3.Size = new System.Drawing.Size(24, 13);
             this.label3.TabIndex = 8;
             this.label3.Text = "Min";
             // 
@@ -187,42 +181,38 @@
             this.groupBox1.Controls.Add(this.Forward_Reverse_Button);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.Motor_Speed);
-            this.groupBox1.Location = new System.Drawing.Point(18, 303);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.groupBox1.Location = new System.Drawing.Point(12, 197);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox1.Size = new System.Drawing.Size(578, 240);
+            this.groupBox1.Size = new System.Drawing.Size(385, 156);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Motor Controls";
             // 
             // BeamStrength
             // 
-            this.BeamStrength.Location = new System.Drawing.Point(87, 222);
-            this.BeamStrength.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.BeamStrength.Location = new System.Drawing.Point(58, 144);
             this.BeamStrength.Name = "BeamStrength";
-            this.BeamStrength.Size = new System.Drawing.Size(178, 35);
+            this.BeamStrength.Size = new System.Drawing.Size(119, 23);
             this.BeamStrength.TabIndex = 11;
             // 
             // BeamStrength_label
             // 
             this.BeamStrength_label.AutoSize = true;
-            this.BeamStrength_label.Location = new System.Drawing.Point(92, 197);
-            this.BeamStrength_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.BeamStrength_label.Location = new System.Drawing.Point(61, 128);
             this.BeamStrength_label.Name = "BeamStrength_label";
-            this.BeamStrength_label.Size = new System.Drawing.Size(117, 20);
+            this.BeamStrength_label.Size = new System.Drawing.Size(77, 13);
             this.BeamStrength_label.TabIndex = 12;
             this.BeamStrength_label.Text = "Beam Strength";
             // 
             // FileMenu
             // 
-            this.FileMenu.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.FileMenu.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.FileMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem});
             this.FileMenu.Location = new System.Drawing.Point(0, 0);
             this.FileMenu.Name = "FileMenu";
-            this.FileMenu.Size = new System.Drawing.Size(1850, 33);
+            this.FileMenu.Padding = new System.Windows.Forms.Padding(4, 1, 0, 1);
+            this.FileMenu.Size = new System.Drawing.Size(1233, 24);
             this.FileMenu.TabIndex = 13;
             this.FileMenu.Text = "menuStrip1";
             // 
@@ -234,52 +224,50 @@
             this.abortMeasurementToolStripMenuItem,
             this.loadTemperatureConfigFileToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(54, 29);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 22);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(345, 34);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.openToolStripMenuItem.Text = "Open Measurement Config";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // startMeasurementToolStripMenuItem
             // 
             this.startMeasurementToolStripMenuItem.Name = "startMeasurementToolStripMenuItem";
-            this.startMeasurementToolStripMenuItem.Size = new System.Drawing.Size(345, 34);
+            this.startMeasurementToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.startMeasurementToolStripMenuItem.Text = "Start Measurement";
             this.startMeasurementToolStripMenuItem.Click += new System.EventHandler(this.startMeasurementToolStripMenuItem_Click);
             // 
             // abortMeasurementToolStripMenuItem
             // 
             this.abortMeasurementToolStripMenuItem.Name = "abortMeasurementToolStripMenuItem";
-            this.abortMeasurementToolStripMenuItem.Size = new System.Drawing.Size(345, 34);
+            this.abortMeasurementToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.abortMeasurementToolStripMenuItem.Text = "Abort Measurement";
             this.abortMeasurementToolStripMenuItem.Click += new System.EventHandler(this.abortMeasurementToolStripMenuItem_Click);
             // 
             // loadTemperatureConfigFileToolStripMenuItem
             // 
             this.loadTemperatureConfigFileToolStripMenuItem.Name = "loadTemperatureConfigFileToolStripMenuItem";
-            this.loadTemperatureConfigFileToolStripMenuItem.Size = new System.Drawing.Size(345, 34);
+            this.loadTemperatureConfigFileToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
             this.loadTemperatureConfigFileToolStripMenuItem.Text = "Load Temperature Config File";
             this.loadTemperatureConfigFileToolStripMenuItem.Click += new System.EventHandler(this.loadTemperatureConfigFileToolStripMenuItem_Click);
             // 
             // Laser_Reading
             // 
-            this.Laser_Reading.Location = new System.Drawing.Point(87, 301);
-            this.Laser_Reading.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Laser_Reading.Location = new System.Drawing.Point(58, 196);
             this.Laser_Reading.Name = "Laser_Reading";
-            this.Laser_Reading.Size = new System.Drawing.Size(180, 26);
+            this.Laser_Reading.Size = new System.Drawing.Size(121, 20);
             this.Laser_Reading.TabIndex = 14;
             this.Laser_Reading.Text = "0.000000";
             // 
             // Reset_Laser
             // 
-            this.Reset_Laser.Location = new System.Drawing.Point(12, 197);
-            this.Reset_Laser.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Reset_Laser.Location = new System.Drawing.Point(8, 128);
             this.Reset_Laser.Name = "Reset_Laser";
-            this.Reset_Laser.Size = new System.Drawing.Size(66, 130);
+            this.Reset_Laser.Size = new System.Drawing.Size(44, 84);
             this.Reset_Laser.TabIndex = 16;
             this.Reset_Laser.Text = "Reset";
             this.Reset_Laser.UseVisualStyleBackColor = true;
@@ -287,21 +275,19 @@
             // 
             // DUTHostName
             // 
-            this.DUTHostName.Location = new System.Drawing.Point(258, 48);
-            this.DUTHostName.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.DUTHostName.Location = new System.Drawing.Point(172, 31);
             this.DUTHostName.Name = "DUTHostName";
-            this.DUTHostName.Size = new System.Drawing.Size(235, 26);
+            this.DUTHostName.Size = new System.Drawing.Size(158, 20);
             this.DUTHostName.TabIndex = 17;
-            this.DUTHostName.Text = "172.16.20.79";
+            this.DUTHostName.Text = "10.14.102.8";
             this.DUTHostName.TextChanged += new System.EventHandler(this.EDMHostName_TextChanged);
             // 
             // DUT_Server_label
             // 
             this.DUT_Server_label.AutoSize = true;
-            this.DUT_Server_label.Location = new System.Drawing.Point(22, 52);
-            this.DUT_Server_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.DUT_Server_label.Location = new System.Drawing.Point(15, 34);
             this.DUT_Server_label.Name = "DUT_Server_label";
-            this.DUT_Server_label.Size = new System.Drawing.Size(130, 20);
+            this.DUT_Server_label.Size = new System.Drawing.Size(89, 13);
             this.DUT_Server_label.TabIndex = 18;
             this.DUT_Server_label.Text = "DUT Server Host";
             // 
@@ -318,21 +304,18 @@
             this.Laser_Control.Controls.Add(this.BeamStrength_label);
             this.Laser_Control.Controls.Add(this.Laser_Reading);
             this.Laser_Control.Controls.Add(this.BeamStrength);
-            this.Laser_Control.Location = new System.Drawing.Point(18, 568);
-            this.Laser_Control.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Laser_Control.Location = new System.Drawing.Point(12, 369);
             this.Laser_Control.Name = "Laser_Control";
-            this.Laser_Control.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Laser_Control.Size = new System.Drawing.Size(274, 345);
+            this.Laser_Control.Size = new System.Drawing.Size(183, 224);
             this.Laser_Control.TabIndex = 19;
             this.Laser_Control.TabStop = false;
             this.Laser_Control.Text = "Laser Control";
             // 
             // LaserInfoButton
             // 
-            this.LaserInfoButton.Location = new System.Drawing.Point(204, 20);
-            this.LaserInfoButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.LaserInfoButton.Location = new System.Drawing.Point(136, 13);
             this.LaserInfoButton.Name = "LaserInfoButton";
-            this.LaserInfoButton.Size = new System.Drawing.Size(62, 40);
+            this.LaserInfoButton.Size = new System.Drawing.Size(41, 26);
             this.LaserInfoButton.TabIndex = 36;
             this.LaserInfoButton.Text = "info";
             this.LaserInfoButton.UseVisualStyleBackColor = true;
@@ -341,10 +324,9 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(9, 114);
-            this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label16.Location = new System.Drawing.Point(6, 74);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(92, 20);
+            this.label16.Size = new System.Drawing.Size(62, 13);
             this.label16.TabIndex = 35;
             this.label16.Text = "Laser Head";
             // 
@@ -360,10 +342,9 @@
             "US52140451",
             "US40091129",
             "US52140736"});
-            this.Laser_Picker_ComboBox.Location = new System.Drawing.Point(14, 140);
-            this.Laser_Picker_ComboBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Laser_Picker_ComboBox.Location = new System.Drawing.Point(9, 91);
             this.Laser_Picker_ComboBox.Name = "Laser_Picker_ComboBox";
-            this.Laser_Picker_ComboBox.Size = new System.Drawing.Size(206, 28);
+            this.Laser_Picker_ComboBox.Size = new System.Drawing.Size(139, 21);
             this.Laser_Picker_ComboBox.TabIndex = 34;
             this.Laser_Picker_ComboBox.Text = "3216A00160";
             this.Laser_Picker_ComboBox.SelectedIndexChanged += new System.EventHandler(this.Laser_Picker_ComboBox_SelectedIndexChanged);
@@ -371,30 +352,27 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(9, 45);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Location = new System.Drawing.Point(6, 29);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(156, 20);
+            this.label4.Size = new System.Drawing.Size(107, 13);
             this.label4.TabIndex = 5;
             this.label4.Text = "Vacuum Wavelength";
             // 
             // nm_label
             // 
             this.nm_label.AutoSize = true;
-            this.nm_label.Location = new System.Drawing.Point(226, 74);
-            this.nm_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.nm_label.Location = new System.Drawing.Point(151, 48);
             this.nm_label.Name = "nm_label";
-            this.nm_label.Size = new System.Drawing.Size(31, 20);
+            this.nm_label.Size = new System.Drawing.Size(21, 13);
             this.nm_label.TabIndex = 33;
             this.nm_label.Text = "nm";
             // 
             // VacuumWavelenthTextbox
             // 
             this.VacuumWavelenthTextbox.Enabled = false;
-            this.VacuumWavelenthTextbox.Location = new System.Drawing.Point(14, 69);
-            this.VacuumWavelenthTextbox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.VacuumWavelenthTextbox.Location = new System.Drawing.Point(9, 45);
             this.VacuumWavelenthTextbox.Name = "VacuumWavelenthTextbox";
-            this.VacuumWavelenthTextbox.Size = new System.Drawing.Size(206, 26);
+            this.VacuumWavelenthTextbox.Size = new System.Drawing.Size(139, 20);
             this.VacuumWavelenthTextbox.TabIndex = 33;
             this.VacuumWavelenthTextbox.Text = "632.99137225";
             this.VacuumWavelenthTextbox.TextChanged += new System.EventHandler(this.VacuumWavelenthTextbox_TextChanged);
@@ -402,10 +380,9 @@
             // Laser_Reading_Label
             // 
             this.Laser_Reading_Label.AutoSize = true;
-            this.Laser_Reading_Label.Location = new System.Drawing.Point(92, 276);
-            this.Laser_Reading_Label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Laser_Reading_Label.Location = new System.Drawing.Point(61, 179);
             this.Laser_Reading_Label.Name = "Laser_Reading_Label";
-            this.Laser_Reading_Label.Size = new System.Drawing.Size(140, 20);
+            this.Laser_Reading_Label.Size = new System.Drawing.Size(93, 13);
             this.Laser_Reading_Label.TabIndex = 21;
             this.Laser_Reading_Label.Text = "Laser Reading (m)";
             // 
@@ -420,21 +397,18 @@
             this.DUT_Groupbox.Controls.Add(this.DUT_Read);
             this.DUT_Groupbox.Controls.Add(this.DUT_Reading_Label);
             this.DUT_Groupbox.Controls.Add(this.EDM_Reading);
-            this.DUT_Groupbox.Location = new System.Drawing.Point(316, 568);
-            this.DUT_Groupbox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.DUT_Groupbox.Location = new System.Drawing.Point(211, 369);
             this.DUT_Groupbox.Name = "DUT_Groupbox";
-            this.DUT_Groupbox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.DUT_Groupbox.Size = new System.Drawing.Size(280, 345);
+            this.DUT_Groupbox.Size = new System.Drawing.Size(187, 224);
             this.DUT_Groupbox.TabIndex = 20;
             this.DUT_Groupbox.TabStop = false;
             this.DUT_Groupbox.Text = "DUT";
             // 
             // DUT_Reset_Button
             // 
-            this.DUT_Reset_Button.Location = new System.Drawing.Point(114, 114);
-            this.DUT_Reset_Button.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.DUT_Reset_Button.Location = new System.Drawing.Point(76, 74);
             this.DUT_Reset_Button.Name = "DUT_Reset_Button";
-            this.DUT_Reset_Button.Size = new System.Drawing.Size(98, 35);
+            this.DUT_Reset_Button.Size = new System.Drawing.Size(65, 23);
             this.DUT_Reset_Button.TabIndex = 38;
             this.DUT_Reset_Button.Text = "Reset";
             this.DUT_Reset_Button.UseVisualStyleBackColor = true;
@@ -443,58 +417,52 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(178, 74);
-            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label7.Location = new System.Drawing.Point(119, 48);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(31, 20);
+            this.label7.Size = new System.Drawing.Size(21, 13);
             this.label7.TabIndex = 37;
             this.label7.Text = "nm";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 45);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label5.Location = new System.Drawing.Point(8, 29);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(156, 20);
+            this.label5.Size = new System.Drawing.Size(107, 13);
             this.label5.TabIndex = 34;
             this.label5.Text = "Vacuum Wavelength";
             // 
             // DUT_Wavelength
             // 
-            this.DUT_Wavelength.Location = new System.Drawing.Point(14, 69);
-            this.DUT_Wavelength.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.DUT_Wavelength.Location = new System.Drawing.Point(9, 45);
             this.DUT_Wavelength.Name = "DUT_Wavelength";
-            this.DUT_Wavelength.Size = new System.Drawing.Size(154, 26);
+            this.DUT_Wavelength.Size = new System.Drawing.Size(104, 20);
             this.DUT_Wavelength.TabIndex = 5;
             this.DUT_Wavelength.Text = "658";
             this.DUT_Wavelength.TextChanged += new System.EventHandler(this.DUT_Wavelength_TextChanged);
             // 
             // Stdev_Textbox
             // 
-            this.Stdev_Textbox.Location = new System.Drawing.Point(16, 245);
-            this.Stdev_Textbox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Stdev_Textbox.Location = new System.Drawing.Point(11, 159);
             this.Stdev_Textbox.Name = "Stdev_Textbox";
-            this.Stdev_Textbox.Size = new System.Drawing.Size(196, 26);
+            this.Stdev_Textbox.Size = new System.Drawing.Size(132, 20);
             this.Stdev_Textbox.TabIndex = 4;
             this.Stdev_Textbox.Text = "0.000000";
             // 
             // Stdev_label
             // 
             this.Stdev_label.AutoSize = true;
-            this.Stdev_label.Location = new System.Drawing.Point(12, 220);
-            this.Stdev_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Stdev_label.Location = new System.Drawing.Point(8, 143);
             this.Stdev_label.Name = "Stdev_label";
-            this.Stdev_label.Size = new System.Drawing.Size(172, 20);
+            this.Stdev_label.Size = new System.Drawing.Size(115, 13);
             this.Stdev_label.TabIndex = 3;
             this.Stdev_label.Text = "Standard Deviation (m)";
             // 
             // DUT_Read
             // 
-            this.DUT_Read.Location = new System.Drawing.Point(16, 114);
-            this.DUT_Read.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.DUT_Read.Location = new System.Drawing.Point(11, 74);
             this.DUT_Read.Name = "DUT_Read";
-            this.DUT_Read.Size = new System.Drawing.Size(88, 35);
+            this.DUT_Read.Size = new System.Drawing.Size(59, 23);
             this.DUT_Read.TabIndex = 2;
             this.DUT_Read.Text = "Read";
             this.DUT_Read.UseVisualStyleBackColor = true;
@@ -503,19 +471,17 @@
             // DUT_Reading_Label
             // 
             this.DUT_Reading_Label.AutoSize = true;
-            this.DUT_Reading_Label.Location = new System.Drawing.Point(12, 155);
-            this.DUT_Reading_Label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.DUT_Reading_Label.Location = new System.Drawing.Point(8, 101);
             this.DUT_Reading_Label.Name = "DUT_Reading_Label";
-            this.DUT_Reading_Label.Size = new System.Drawing.Size(133, 20);
+            this.DUT_Reading_Label.Size = new System.Drawing.Size(90, 13);
             this.DUT_Reading_Label.TabIndex = 1;
             this.DUT_Reading_Label.Text = "DUT Reading (m)";
             // 
             // EDM_Reading
             // 
-            this.EDM_Reading.Location = new System.Drawing.Point(14, 177);
-            this.EDM_Reading.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.EDM_Reading.Location = new System.Drawing.Point(9, 115);
             this.EDM_Reading.Name = "EDM_Reading";
-            this.EDM_Reading.Size = new System.Drawing.Size(196, 26);
+            this.EDM_Reading.Size = new System.Drawing.Size(132, 20);
             this.EDM_Reading.TabIndex = 0;
             this.EDM_Reading.Text = "0.000000";
             // 
@@ -527,90 +493,79 @@
             this.Bluetooth_Groupbox.Controls.Add(this.Status_Label);
             this.Bluetooth_Groupbox.Controls.Add(this.Status_Textbox);
             this.Bluetooth_Groupbox.Controls.Add(this.Bluetooth_Listbox);
-            this.Bluetooth_Groupbox.Location = new System.Drawing.Point(18, 937);
-            this.Bluetooth_Groupbox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Bluetooth_Groupbox.Location = new System.Drawing.Point(12, 609);
             this.Bluetooth_Groupbox.Name = "Bluetooth_Groupbox";
-            this.Bluetooth_Groupbox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Bluetooth_Groupbox.Size = new System.Drawing.Size(274, 292);
+            this.Bluetooth_Groupbox.Size = new System.Drawing.Size(183, 190);
             this.Bluetooth_Groupbox.TabIndex = 21;
             this.Bluetooth_Groupbox.TabStop = false;
             this.Bluetooth_Groupbox.Text = "Bluetooth Connection Information";
             // 
             // BTData_TextBox
             // 
-            this.BTData_TextBox.Location = new System.Drawing.Point(26, 232);
-            this.BTData_TextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.BTData_TextBox.Location = new System.Drawing.Point(17, 151);
             this.BTData_TextBox.Name = "BTData_TextBox";
-            this.BTData_TextBox.Size = new System.Drawing.Size(239, 26);
+            this.BTData_TextBox.Size = new System.Drawing.Size(161, 20);
             this.BTData_TextBox.TabIndex = 5;
             // 
             // bt_data_received_label
             // 
             this.bt_data_received_label.AutoSize = true;
-            this.bt_data_received_label.Location = new System.Drawing.Point(22, 207);
-            this.bt_data_received_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.bt_data_received_label.Location = new System.Drawing.Point(15, 135);
             this.bt_data_received_label.Name = "bt_data_received_label";
-            this.bt_data_received_label.Size = new System.Drawing.Size(187, 20);
+            this.bt_data_received_label.Size = new System.Drawing.Size(127, 13);
             this.bt_data_received_label.TabIndex = 4;
             this.bt_data_received_label.Text = "Bluetooth Data Received";
             // 
             // Connections_Label
             // 
             this.Connections_Label.AutoSize = true;
-            this.Connections_Label.Location = new System.Drawing.Point(22, 100);
-            this.Connections_Label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Connections_Label.Location = new System.Drawing.Point(15, 65);
             this.Connections_Label.Name = "Connections_Label";
-            this.Connections_Label.Size = new System.Drawing.Size(159, 20);
+            this.Connections_Label.Size = new System.Drawing.Size(108, 13);
             this.Connections_Label.TabIndex = 3;
             this.Connections_Label.Text = "Availible Connections";
             // 
             // Status_Label
             // 
             this.Status_Label.AutoSize = true;
-            this.Status_Label.Location = new System.Drawing.Point(23, 25);
-            this.Status_Label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Status_Label.Location = new System.Drawing.Point(15, 16);
             this.Status_Label.Name = "Status_Label";
-            this.Status_Label.Size = new System.Drawing.Size(56, 20);
+            this.Status_Label.Size = new System.Drawing.Size(37, 13);
             this.Status_Label.TabIndex = 2;
             this.Status_Label.Text = "Status";
             // 
             // Status_Textbox
             // 
-            this.Status_Textbox.Location = new System.Drawing.Point(26, 50);
-            this.Status_Textbox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Status_Textbox.Location = new System.Drawing.Point(17, 32);
             this.Status_Textbox.Name = "Status_Textbox";
-            this.Status_Textbox.Size = new System.Drawing.Size(239, 26);
+            this.Status_Textbox.Size = new System.Drawing.Size(161, 20);
             this.Status_Textbox.TabIndex = 1;
             this.Status_Textbox.Text = "Start up";
             // 
             // Bluetooth_Listbox
             // 
             this.Bluetooth_Listbox.FormattingEnabled = true;
-            this.Bluetooth_Listbox.ItemHeight = 20;
-            this.Bluetooth_Listbox.Location = new System.Drawing.Point(26, 125);
-            this.Bluetooth_Listbox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Bluetooth_Listbox.Location = new System.Drawing.Point(17, 81);
             this.Bluetooth_Listbox.Name = "Bluetooth_Listbox";
-            this.Bluetooth_Listbox.Size = new System.Drawing.Size(239, 64);
+            this.Bluetooth_Listbox.Size = new System.Drawing.Size(161, 43);
             this.Bluetooth_Listbox.TabIndex = 0;
             // 
             // Targets_RichTextbox
             // 
             this.Targets_RichTextbox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-            this.Targets_RichTextbox.Location = new System.Drawing.Point(650, 72);
-            this.Targets_RichTextbox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Targets_RichTextbox.Location = new System.Drawing.Point(433, 47);
             this.Targets_RichTextbox.Name = "Targets_RichTextbox";
-            this.Targets_RichTextbox.Size = new System.Drawing.Size(562, 1157);
+            this.Targets_RichTextbox.Size = new System.Drawing.Size(376, 752);
             this.Targets_RichTextbox.TabIndex = 22;
             this.Targets_RichTextbox.Text = "";
             // 
             // Targets_Label
             // 
             this.Targets_Label.AutoSize = true;
-            this.Targets_Label.Location = new System.Drawing.Point(645, 48);
-            this.Targets_Label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Targets_Label.Location = new System.Drawing.Point(430, 31);
             this.Targets_Label.Name = "Targets_Label";
-            this.Targets_Label.Size = new System.Drawing.Size(90, 20);
+            this.Targets_Label.Size = new System.Drawing.Size(60, 13);
             this.Targets_Label.TabIndex = 23;
             this.Targets_Label.Text = "Targets (m)";
             // 
@@ -619,10 +574,9 @@
             this.LaserParameters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.LaserParameters.Location = new System.Drawing.Point(1263, 72);
-            this.LaserParameters.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.LaserParameters.Location = new System.Drawing.Point(842, 47);
             this.LaserParameters.Name = "LaserParameters";
-            this.LaserParameters.Size = new System.Drawing.Size(514, 1157);
+            this.LaserParameters.Size = new System.Drawing.Size(344, 752);
             this.LaserParameters.TabIndex = 24;
             this.LaserParameters.Text = "";
             // 
@@ -632,40 +586,36 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.Laser_Parameters_Label.AutoSize = true;
-            this.Laser_Parameters_Label.Location = new System.Drawing.Point(1258, 48);
-            this.Laser_Parameters_Label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Laser_Parameters_Label.Location = new System.Drawing.Point(839, 31);
             this.Laser_Parameters_Label.Name = "Laser_Parameters_Label";
-            this.Laser_Parameters_Label.Size = new System.Drawing.Size(271, 20);
+            this.Laser_Parameters_Label.Size = new System.Drawing.Size(180, 13);
             this.Laser_Parameters_Label.TabIndex = 25;
             this.Laser_Parameters_Label.Text = "Environmental and Laser Parameters";
             // 
             // HumidityLoggerHostName1_label
             // 
             this.HumidityLoggerHostName1_label.AutoSize = true;
-            this.HumidityLoggerHostName1_label.Location = new System.Drawing.Point(22, 92);
-            this.HumidityLoggerHostName1_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.HumidityLoggerHostName1_label.Location = new System.Drawing.Point(15, 60);
             this.HumidityLoggerHostName1_label.Name = "HumidityLoggerHostName1_label";
-            this.HumidityLoggerHostName1_label.Size = new System.Drawing.Size(231, 20);
+            this.HumidityLoggerHostName1_label.Size = new System.Drawing.Size(157, 13);
             this.HumidityLoggerHostName1_label.TabIndex = 26;
             this.HumidityLoggerHostName1_label.Text = "Humidity Logger 1 IP (Device 0)";
             // 
             // HumidityLoggerHostName_label
             // 
             this.HumidityLoggerHostName_label.AutoSize = true;
-            this.HumidityLoggerHostName_label.Location = new System.Drawing.Point(22, 131);
-            this.HumidityLoggerHostName_label.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.HumidityLoggerHostName_label.Location = new System.Drawing.Point(15, 85);
             this.HumidityLoggerHostName_label.Name = "HumidityLoggerHostName_label";
-            this.HumidityLoggerHostName_label.Size = new System.Drawing.Size(231, 20);
+            this.HumidityLoggerHostName_label.Size = new System.Drawing.Size(157, 13);
             this.HumidityLoggerHostName_label.TabIndex = 27;
             this.HumidityLoggerHostName_label.Text = "Humidity Logger 2 IP (Device 1)";
             // 
             // Humidity_logger_1
             // 
             this.Humidity_logger_1.Enabled = false;
-            this.Humidity_logger_1.Location = new System.Drawing.Point(258, 88);
-            this.Humidity_logger_1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Humidity_logger_1.Location = new System.Drawing.Point(172, 57);
             this.Humidity_logger_1.Name = "Humidity_logger_1";
-            this.Humidity_logger_1.Size = new System.Drawing.Size(235, 26);
+            this.Humidity_logger_1.Size = new System.Drawing.Size(158, 20);
             this.Humidity_logger_1.TabIndex = 28;
             this.Humidity_logger_1.Text = "172.16.14.157";
             this.Humidity_logger_1.TextChanged += new System.EventHandler(this.Humidity_logger_1_TextChanged);
@@ -673,10 +623,9 @@
             // Humidity_logger_2
             // 
             this.Humidity_logger_2.Enabled = false;
-            this.Humidity_logger_2.Location = new System.Drawing.Point(258, 126);
-            this.Humidity_logger_2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Humidity_logger_2.Location = new System.Drawing.Point(172, 82);
             this.Humidity_logger_2.Name = "Humidity_logger_2";
-            this.Humidity_logger_2.Size = new System.Drawing.Size(235, 26);
+            this.Humidity_logger_2.Size = new System.Drawing.Size(158, 20);
             this.Humidity_logger_2.TabIndex = 29;
             this.Humidity_logger_2.Text = "172.16.14.156";
             this.Humidity_logger_2.TextChanged += new System.EventHandler(this.Humidity_logger_2_TextChanged);
@@ -685,10 +634,9 @@
             // 
             this.EDMRadioButton.AutoSize = true;
             this.EDMRadioButton.Checked = true;
-            this.EDMRadioButton.Location = new System.Drawing.Point(27, 255);
-            this.EDMRadioButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.EDMRadioButton.Location = new System.Drawing.Point(18, 166);
             this.EDMRadioButton.Name = "EDMRadioButton";
-            this.EDMRadioButton.Size = new System.Drawing.Size(70, 24);
+            this.EDMRadioButton.Size = new System.Drawing.Size(49, 17);
             this.EDMRadioButton.TabIndex = 30;
             this.EDMRadioButton.TabStop = true;
             this.EDMRadioButton.Text = "EDM";
@@ -698,10 +646,9 @@
             // AuxLaserRadioButton
             // 
             this.AuxLaserRadioButton.AutoSize = true;
-            this.AuxLaserRadioButton.Location = new System.Drawing.Point(150, 255);
-            this.AuxLaserRadioButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.AuxLaserRadioButton.Location = new System.Drawing.Point(100, 166);
             this.AuxLaserRadioButton.Name = "AuxLaserRadioButton";
-            this.AuxLaserRadioButton.Size = new System.Drawing.Size(105, 24);
+            this.AuxLaserRadioButton.Size = new System.Drawing.Size(72, 17);
             this.AuxLaserRadioButton.TabIndex = 32;
             this.AuxLaserRadioButton.Text = "2nd Laser";
             this.AuxLaserRadioButton.UseVisualStyleBackColor = true;
@@ -713,10 +660,9 @@
             // 
             // CO2_Level
             // 
-            this.CO2_Level.Location = new System.Drawing.Point(261, 208);
-            this.CO2_Level.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.CO2_Level.Location = new System.Drawing.Point(174, 135);
             this.CO2_Level.Name = "CO2_Level";
-            this.CO2_Level.Size = new System.Drawing.Size(232, 26);
+            this.CO2_Level.Size = new System.Drawing.Size(156, 20);
             this.CO2_Level.TabIndex = 35;
             this.CO2_Level.Text = "450";
             this.CO2_Level.TextChanged += new System.EventHandler(this.CO2_Level_TextChanged);
@@ -724,30 +670,27 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(24, 212);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label6.Location = new System.Drawing.Point(16, 138);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(93, 20);
+            this.label6.Size = new System.Drawing.Size(64, 13);
             this.label6.TabIndex = 36;
             this.label6.Text = "Tunnel CO2";
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(522, 212);
-            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label8.Location = new System.Drawing.Point(348, 138);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(40, 20);
+            this.label8.Size = new System.Drawing.Size(27, 13);
             this.label8.TabIndex = 37;
             this.label8.Text = "ppm";
             // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(24, 171);
-            this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label13.Location = new System.Drawing.Point(16, 111);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(84, 20);
+            this.label13.Size = new System.Drawing.Size(55, 13);
             this.label13.TabIndex = 45;
             this.label13.Text = "Barometer";
             // 
@@ -757,20 +700,18 @@
             this.BarometerTypeComboBox.Items.AddRange(new object[] {
             "PTB220A",
             "PTU303"});
-            this.BarometerTypeComboBox.Location = new System.Drawing.Point(261, 166);
-            this.BarometerTypeComboBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.BarometerTypeComboBox.Location = new System.Drawing.Point(174, 108);
             this.BarometerTypeComboBox.Name = "BarometerTypeComboBox";
-            this.BarometerTypeComboBox.Size = new System.Drawing.Size(232, 28);
+            this.BarometerTypeComboBox.Size = new System.Drawing.Size(156, 21);
             this.BarometerTypeComboBox.TabIndex = 48;
             this.BarometerTypeComboBox.Text = "PTB220A";
             this.BarometerTypeComboBox.SelectedIndexChanged += new System.EventHandler(this.BarometerTypeComboBox_SelectedIndexChanged);
             // 
             // H_Logger_1_Button
             // 
-            this.H_Logger_1_Button.Location = new System.Drawing.Point(513, 85);
-            this.H_Logger_1_Button.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.H_Logger_1_Button.Location = new System.Drawing.Point(342, 55);
             this.H_Logger_1_Button.Name = "H_Logger_1_Button";
-            this.H_Logger_1_Button.Size = new System.Drawing.Size(56, 34);
+            this.H_Logger_1_Button.Size = new System.Drawing.Size(37, 22);
             this.H_Logger_1_Button.TabIndex = 49;
             this.H_Logger_1_Button.Text = "Info";
             this.H_Logger_1_Button.UseVisualStyleBackColor = true;
@@ -778,10 +719,9 @@
             // 
             // H_Logger_2_Button
             // 
-            this.H_Logger_2_Button.Location = new System.Drawing.Point(513, 123);
-            this.H_Logger_2_Button.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.H_Logger_2_Button.Location = new System.Drawing.Point(342, 80);
             this.H_Logger_2_Button.Name = "H_Logger_2_Button";
-            this.H_Logger_2_Button.Size = new System.Drawing.Size(56, 35);
+            this.H_Logger_2_Button.Size = new System.Drawing.Size(37, 23);
             this.H_Logger_2_Button.TabIndex = 50;
             this.H_Logger_2_Button.Text = "Info";
             this.H_Logger_2_Button.UseVisualStyleBackColor = true;
@@ -799,19 +739,20 @@
             this.groupBoxBeamFolds.Controls.Add(this.labelRow2PRTEndPos);
             this.groupBoxBeamFolds.Controls.Add(this.labelRow3PRTEndPos);
             this.groupBoxBeamFolds.Enabled = false;
-            this.groupBoxBeamFolds.Location = new System.Drawing.Point(316, 937);
+            this.groupBoxBeamFolds.Location = new System.Drawing.Point(211, 609);
+            this.groupBoxBeamFolds.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.groupBoxBeamFolds.Name = "groupBoxBeamFolds";
-            this.groupBoxBeamFolds.Size = new System.Drawing.Size(280, 292);
+            this.groupBoxBeamFolds.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBoxBeamFolds.Size = new System.Drawing.Size(187, 190);
             this.groupBoxBeamFolds.TabIndex = 51;
             this.groupBoxBeamFolds.TabStop = false;
             this.groupBoxBeamFolds.Text = "Beam Folds";
             // 
             // buttonInfoRow4
             // 
-            this.buttonInfoRow4.Location = new System.Drawing.Point(222, 205);
-            this.buttonInfoRow4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.buttonInfoRow4.Location = new System.Drawing.Point(148, 133);
             this.buttonInfoRow4.Name = "buttonInfoRow4";
-            this.buttonInfoRow4.Size = new System.Drawing.Size(51, 27);
+            this.buttonInfoRow4.Size = new System.Drawing.Size(34, 18);
             this.buttonInfoRow4.TabIndex = 39;
             this.buttonInfoRow4.Text = "info";
             this.buttonInfoRow4.UseVisualStyleBackColor = true;
@@ -819,10 +760,9 @@
             // 
             // buttonInfoRow3
             // 
-            this.buttonInfoRow3.Location = new System.Drawing.Point(222, 124);
-            this.buttonInfoRow3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.buttonInfoRow3.Location = new System.Drawing.Point(148, 81);
             this.buttonInfoRow3.Name = "buttonInfoRow3";
-            this.buttonInfoRow3.Size = new System.Drawing.Size(51, 27);
+            this.buttonInfoRow3.Size = new System.Drawing.Size(34, 18);
             this.buttonInfoRow3.TabIndex = 38;
             this.buttonInfoRow3.Text = "info";
             this.buttonInfoRow3.UseVisualStyleBackColor = true;
@@ -830,10 +770,9 @@
             // 
             // buttonInfoRow2
             // 
-            this.buttonInfoRow2.Location = new System.Drawing.Point(222, 50);
-            this.buttonInfoRow2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.buttonInfoRow2.Location = new System.Drawing.Point(148, 32);
             this.buttonInfoRow2.Name = "buttonInfoRow2";
-            this.buttonInfoRow2.Size = new System.Drawing.Size(51, 27);
+            this.buttonInfoRow2.Size = new System.Drawing.Size(34, 18);
             this.buttonInfoRow2.TabIndex = 37;
             this.buttonInfoRow2.Text = "info";
             this.buttonInfoRow2.UseVisualStyleBackColor = true;
@@ -841,14 +780,15 @@
             // 
             // numericUpDownRow4BeamFolds
             // 
-            this.numericUpDownRow4BeamFolds.Location = new System.Drawing.Point(24, 205);
+            this.numericUpDownRow4BeamFolds.Location = new System.Drawing.Point(16, 133);
+            this.numericUpDownRow4BeamFolds.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.numericUpDownRow4BeamFolds.Maximum = new decimal(new int[] {
             15,
             0,
             0,
             0});
             this.numericUpDownRow4BeamFolds.Name = "numericUpDownRow4BeamFolds";
-            this.numericUpDownRow4BeamFolds.Size = new System.Drawing.Size(180, 26);
+            this.numericUpDownRow4BeamFolds.Size = new System.Drawing.Size(120, 20);
             this.numericUpDownRow4BeamFolds.TabIndex = 5;
             this.numericUpDownRow4BeamFolds.Value = new decimal(new int[] {
             15,
@@ -859,14 +799,15 @@
             // 
             // numericUpDownRow3BeamFolds
             // 
-            this.numericUpDownRow3BeamFolds.Location = new System.Drawing.Point(24, 125);
+            this.numericUpDownRow3BeamFolds.Location = new System.Drawing.Point(16, 81);
+            this.numericUpDownRow3BeamFolds.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.numericUpDownRow3BeamFolds.Maximum = new decimal(new int[] {
             15,
             0,
             0,
             0});
             this.numericUpDownRow3BeamFolds.Name = "numericUpDownRow3BeamFolds";
-            this.numericUpDownRow3BeamFolds.Size = new System.Drawing.Size(180, 26);
+            this.numericUpDownRow3BeamFolds.Size = new System.Drawing.Size(120, 20);
             this.numericUpDownRow3BeamFolds.TabIndex = 4;
             this.numericUpDownRow3BeamFolds.Value = new decimal(new int[] {
             15,
@@ -877,14 +818,15 @@
             // 
             // numericUpDownRow2BeamFolds
             // 
-            this.numericUpDownRow2BeamFolds.Location = new System.Drawing.Point(24, 51);
+            this.numericUpDownRow2BeamFolds.Location = new System.Drawing.Point(16, 33);
+            this.numericUpDownRow2BeamFolds.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.numericUpDownRow2BeamFolds.Maximum = new decimal(new int[] {
             15,
             0,
             0,
             0});
             this.numericUpDownRow2BeamFolds.Name = "numericUpDownRow2BeamFolds";
-            this.numericUpDownRow2BeamFolds.Size = new System.Drawing.Size(180, 26);
+            this.numericUpDownRow2BeamFolds.Size = new System.Drawing.Size(120, 20);
             this.numericUpDownRow2BeamFolds.TabIndex = 3;
             this.numericUpDownRow2BeamFolds.Value = new decimal(new int[] {
             15,
@@ -896,36 +838,39 @@
             // label4PRTEndPos
             // 
             this.label4PRTEndPos.AutoSize = true;
-            this.label4PRTEndPos.Location = new System.Drawing.Point(22, 182);
+            this.label4PRTEndPos.Location = new System.Drawing.Point(15, 118);
+            this.label4PRTEndPos.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label4PRTEndPos.Name = "label4PRTEndPos";
-            this.label4PRTEndPos.Size = new System.Drawing.Size(150, 20);
+            this.label4PRTEndPos.Size = new System.Drawing.Size(104, 13);
             this.label4PRTEndPos.TabIndex = 2;
             this.label4PRTEndPos.Text = "Num PRTs in Row 4";
             // 
             // labelRow2PRTEndPos
             // 
             this.labelRow2PRTEndPos.AutoSize = true;
-            this.labelRow2PRTEndPos.Location = new System.Drawing.Point(22, 25);
+            this.labelRow2PRTEndPos.Location = new System.Drawing.Point(15, 16);
+            this.labelRow2PRTEndPos.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelRow2PRTEndPos.Name = "labelRow2PRTEndPos";
-            this.labelRow2PRTEndPos.Size = new System.Drawing.Size(154, 20);
+            this.labelRow2PRTEndPos.Size = new System.Drawing.Size(107, 13);
             this.labelRow2PRTEndPos.TabIndex = 1;
             this.labelRow2PRTEndPos.Text = "Num PRTs in Row 2 ";
             // 
             // labelRow3PRTEndPos
             // 
             this.labelRow3PRTEndPos.AutoSize = true;
-            this.labelRow3PRTEndPos.Location = new System.Drawing.Point(22, 100);
+            this.labelRow3PRTEndPos.Location = new System.Drawing.Point(15, 65);
+            this.labelRow3PRTEndPos.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelRow3PRTEndPos.Name = "labelRow3PRTEndPos";
-            this.labelRow3PRTEndPos.Size = new System.Drawing.Size(150, 20);
+            this.labelRow3PRTEndPos.Size = new System.Drawing.Size(104, 13);
             this.labelRow3PRTEndPos.TabIndex = 0;
             this.labelRow3PRTEndPos.Text = "Num PRTs in Row 3";
             // 
             // Tunnel_Control_Form
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(1850, 1291);
+            this.ClientSize = new System.Drawing.Size(1233, 876);
             this.Controls.Add(this.groupBoxBeamFolds);
             this.Controls.Add(this.H_Logger_2_Button);
             this.Controls.Add(this.H_Logger_1_Button);
@@ -952,7 +897,6 @@
             this.Controls.Add(this.FileMenu);
             this.Controls.Add(this.Laser_Control);
             this.MainMenuStrip = this.FileMenu;
-            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "Tunnel_Control_Form";
             this.Text = "Survey Calibration System";
             ((System.ComponentModel.ISupportInitialize)(this.Motor_Speed)).EndInit();
