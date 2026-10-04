@@ -572,7 +572,7 @@ namespace Trolley_Control
                         {
                             case "0":
                                 DUT.Beamfolds = 0;
-                                mug(ProcNameMeasurement.NUM_BEAM_FOLDS, "0", false);
+                                //mug(ProcNameMeasurement.NUM_BEAM_FOLDS, "0", false);
                                 groupBoxBeamFolds.Enabled = false;
                                 numericUpDownRow2BeamFolds.Enabled = false;
                                 numericUpDownRow3BeamFolds.Enabled = false;
