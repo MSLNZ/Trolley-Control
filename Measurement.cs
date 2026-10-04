@@ -737,7 +737,7 @@ namespace Trolley_Control
                 //for this part of the beam we are average the two rows of prts
 
                 int valid_results = 0;
-                double second_row_avg = secondBeamAverage(ref valid_results, 12, ref ug);
+                double second_row_avg = secondBeamAverage(ref valid_results, numprtsrow2, ref ug);
 
                 //compute the weighted average of the first and second rows
                 double second_row_sum = second_row_avg * valid_results;
@@ -751,11 +751,11 @@ namespace Trolley_Control
                 //Range for bench row is 1 to 15.  Range for walkway row is 16 to 30. -->> should correspond to number written on the prts e.g 001 002 003 etc
                 //For this part of the beam we are average the two rows of prts;
                 int valid_results = 0;
-                double second_row_avg = secondBeamAverage(ref valid_results, 15, ref ug);
+                double second_row_avg = secondBeamAverage(ref valid_results, numprtsrow2, ref ug);
 
                 //include the partial third beam temperatures - this only includes prts in row 2
                 int valid_results2 = 0;
-                double third_row_avg = thirdBeamAverage(ref valid_results2, 11, ref ug);
+                double third_row_avg = thirdBeamAverage(ref valid_results2, numprtsrow3, ref ug);
 
                 //compute the weighted average of the first and second rows
                 double first_row_sum = first_row_avg * num_prts_involved;
@@ -772,14 +772,14 @@ namespace Trolley_Control
 
 
                 int valid_results = 0;
-                double second_row_avg = secondBeamAverage(ref valid_results, 15, ref ug);
+                double second_row_avg = secondBeamAverage(ref valid_results, numprtsrow2, ref ug);
 
                 //include the partial third beam temperatures - this only includes prts in row 2
                 int valid_results2 = 0;
-                double third_row_avg = thirdBeamAverage(ref valid_results2, 15, ref ug);
+                double third_row_avg = thirdBeamAverage(ref valid_results2, numprtsrow3, ref ug);
 
                 int valid_results3 = 0;
-                double fourth_row_avg = fourthBeamAverage(ref valid_results3, 11, ref ug);
+                double fourth_row_avg = fourthBeamAverage(ref valid_results3, numprtsrow4, ref ug);
                 //compute the weighted average of the first and second rows
                 double first_row_sum = first_row_avg * num_prts_involved;
                 double second_row_sum = second_row_avg * valid_results;
