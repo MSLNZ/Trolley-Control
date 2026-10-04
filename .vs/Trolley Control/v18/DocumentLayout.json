@@ -3,8 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|c:\\users\\lab account\\documents\\github\\trolley-control\\measurement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|c:\\users\\lab account\\documents\\github\\trolley-control\\surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\measurement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:measurement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\isotechmillik.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -13,10 +21,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\temperaturemeasurement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:temperaturemeasurement.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|Trolley Control||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
@@ -46,10 +50,6 @@
       "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:edm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:surveycalibrationsystem.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\laser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{3F3CD547-FA30-4625-AF13-51657020FA87}|Trolley Control.csproj|solutionrelative:laser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -69,49 +69,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "IsotechMilliK.cs",
-              "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\IsotechMilliK.cs",
-              "RelativeDocumentMoniker": "IsotechMilliK.cs",
-              "ToolTip": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\IsotechMilliK.cs",
-              "RelativeToolTip": "IsotechMilliK.cs",
-              "ViewState": "AgIAAIICAAAAAAAAAAAewIMCAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-18T01:24:44.329Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
               "Title": "SurveyCalibrationSystem.cs",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs",
               "RelativeDocumentMoniker": "SurveyCalibrationSystem.cs",
               "ToolTip": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs",
               "RelativeToolTip": "SurveyCalibrationSystem.cs",
-              "ViewState": "AgIAALkBAAAAAAAAAAAgwCEBAAA8AAAAAAAAAA==",
+              "ViewState": "AgIAACoCAAAAAAAAAAAAAEICAABLAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-18T01:14:42.015Z"
+              "WhenOpened": "2026-09-18T01:14:42.015Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Measurement.cs",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\Measurement.cs",
               "RelativeDocumentMoniker": "Measurement.cs",
               "ToolTip": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\Measurement.cs",
               "RelativeToolTip": "Measurement.cs",
-              "ViewState": "AgIAAE8JAAAAAAAAAAAcwFYJAABCAAAAAAAAAA==",
+              "ViewState": "AgIAAMYCAAAAAAAAAAAWwNICAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-09-18T05:03:45.261Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "Omega TH Logger.cs",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\Omega TH Logger.cs",
               "RelativeDocumentMoniker": "Omega TH Logger.cs",
@@ -123,7 +111,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "Client.cs",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\Client.cs",
               "RelativeDocumentMoniker": "Client.cs",
@@ -135,7 +123,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "TemperatureMeasurement.cs",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\TemperatureMeasurement.cs",
               "RelativeDocumentMoniker": "TemperatureMeasurement.cs",
@@ -143,12 +131,11 @@
               "RelativeToolTip": "TemperatureMeasurement.cs",
               "ViewState": "AgIAAAIBAAAAAAAAAAAowHkBAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-18T02:51:01.348Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-09-18T02:51:01.348Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "Trolley Control",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\Trolley Control.csproj",
               "RelativeDocumentMoniker": "Trolley Control.csproj",
@@ -159,7 +146,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "DUT.cs",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\DUT.cs",
               "RelativeDocumentMoniker": "DUT.cs",
@@ -171,7 +158,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "Total Station.cs",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\Total Station.cs",
               "RelativeDocumentMoniker": "Total Station.cs",
@@ -183,7 +170,31 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 2,
+              "Title": "SurveyCalibrationSystem.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs",
+              "RelativeDocumentMoniker": "SurveyCalibrationSystem.cs",
+              "ToolTip": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs [Design]",
+              "RelativeToolTip": "SurveyCalibrationSystem.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-18T06:16:11.376Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "IsotechMilliK.cs",
+              "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\IsotechMilliK.cs",
+              "RelativeDocumentMoniker": "IsotechMilliK.cs",
+              "ToolTip": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\IsotechMilliK.cs",
+              "RelativeToolTip": "IsotechMilliK.cs",
+              "ViewState": "AgIAAIICAAAAAAAAAAAewIMCAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-18T01:24:44.329Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
               "Title": "Laser_Aux.cs",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\Laser_Aux.cs",
               "RelativeDocumentMoniker": "Laser_Aux.cs",
@@ -195,7 +206,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "EDM.cs",
               "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\EDM.cs",
               "RelativeDocumentMoniker": "EDM.cs",
@@ -204,17 +215,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-09-21T01:34:53.604Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "SurveyCalibrationSystem.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs",
-              "RelativeDocumentMoniker": "SurveyCalibrationSystem.cs",
-              "ToolTip": "C:\\Users\\LAB ACCOUNT\\Documents\\GitHub\\Trolley-Control\\SurveyCalibrationSystem.cs [Design]",
-              "RelativeToolTip": "SurveyCalibrationSystem.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-18T06:16:11.376Z"
             },
             {
               "$type": "Document",
